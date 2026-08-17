@@ -83,8 +83,9 @@ public class q {
      */
     public static void a(char c2, Consumer<s> consumer, BiConsumer<Long, Long> biConsumer) {
         String string = "\\\\.\\" + c2 + ":";
-        WinNT.HANDLE hANDLE = Kernel32.INSTANCE.CreateFile(string, Integer.MIN_VALUE, 3, null, 3, 0, null);
+        WinNT.HANDLE hANDLE = Kernel32.INSTANCE.CreateFile(string, WinNT.GENERIC_READ | WinNT.GENERIC_WRITE, 3, null, 3, 0, null);
         if (Kernel32.INVALID_HANDLE_VALUE.equals(hANDLE)) {
+            System.err.println("[USN] CreateFile hatasi (" + string + "): hata kodu " + Kernel32.INSTANCE.GetLastError());
             return;
         }
         try {
@@ -92,6 +93,7 @@ public class q {
             IntByReference intByReference = new IntByReference();
             boolean bl = WinNative.INSTANCE.DeviceIoControl(hANDLE, 590068, null, 0, uSN_JOURNAL_DATA.getPointer(), uSN_JOURNAL_DATA.size(), intByReference, null);
             if (!bl) {
+                System.err.println("[USN] FSCTL_QUERY_USN_JOURNAL hatasi (" + string + "): hata kodu " + Kernel32.INSTANCE.GetLastError() + " (yonetici olarak calistiginizdan emin olun)");
                 return;
             }
             uSN_JOURNAL_DATA.read();
@@ -168,8 +170,9 @@ public class q {
      */
     public static void a(char c2, String string, Consumer<File> consumer) {
         String string2 = "\\\\.\\" + c2 + ":";
-        WinNT.HANDLE hANDLE = Kernel32.INSTANCE.CreateFile(string2, Integer.MIN_VALUE, 3, null, 3, 0, null);
+        WinNT.HANDLE hANDLE = Kernel32.INSTANCE.CreateFile(string2, WinNT.GENERIC_READ | WinNT.GENERIC_WRITE, 3, null, 3, 0, null);
         if (Kernel32.INVALID_HANDLE_VALUE.equals(hANDLE)) {
+            System.err.println("[USN] CreateFile hatasi (" + string2 + "): hata kodu " + Kernel32.INSTANCE.GetLastError());
             return;
         }
         try {
@@ -177,6 +180,7 @@ public class q {
             IntByReference intByReference = new IntByReference();
             boolean bl = WinNative.INSTANCE.DeviceIoControl(hANDLE, 590068, null, 0, uSN_JOURNAL_DATA.getPointer(), uSN_JOURNAL_DATA.size(), intByReference, null);
             if (!bl) {
+                System.err.println("[USN] FSCTL_QUERY_USN_JOURNAL hatasi (" + string2 + "): hata kodu " + Kernel32.INSTANCE.GetLastError() + " (yonetici olarak calistiginizdan emin olun)");
                 return;
             }
             uSN_JOURNAL_DATA.read();

@@ -3,6 +3,16 @@ setlocal EnableDelayedExpansion
 title Atlasoyuncu Hile Kontrol
 cd /d "%~dp0"
 
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Yonetici hakki gerekli, UAC aciliyor...
+    powershell -NoProfile -Command "Start-Process -Verb RunAs -FilePath '%~f0'"
+    exit /b
+)
+
+echo [OK] Yonetici hakkiyla calisiyor.
+echo.
+
 set "JAVA=%~dp0jre\bin\java.exe"
 
 rem 1) Gomulu JRE (Java 17) hazir mi?
