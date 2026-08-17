@@ -28,6 +28,7 @@ public class d {
         ArrayList<b> arrayList = new ArrayList<b>();
         double d2 = 0.0;
         int n2 = 0;
+        int n6 = 0;
         long l2 = file.length();
         double d3 = (double)l2 / 1024.0;
         double d4 = d3 / 1024.0;
@@ -46,9 +47,12 @@ public class d {
                     ZipEntry object3 = enumeration.nextElement();
                     String string3 = object3.getName();
                     String string4 = string3.toLowerCase();
-                    if (!bl2 && string4.endsWith(".class")) {
+                    if (string4.endsWith(".class")) {
                         d2 += d.a(string3);
                         ++n2;
+                        if (c.d.b(string3)) {
+                            ++n6;
+                        }
                     }
                     if (!bl4) continue;
                     boolean bl5 = false;
@@ -84,13 +88,35 @@ public class d {
         object2 = I18n.a("obf.unknown");
         if (n2 > 0) {
             double d5 = d2 / (double)n2;
-            object2 = d5 >= 3.1 && d5 <= 3.5 ? I18n.a("obf.high") : I18n.a("obf.low");
+            double d6 = (double)n6 / (double)n2;
+            object2 = d5 >= 3.1 && d5 <= 3.5 || d6 >= 0.25 ? I18n.a("obf.high") : I18n.a("obf.low");
         }
         for (b b2 : arrayList) {
             b2.setObfuscation((String)object2);
         }
         object = new j(file.getName(), file.getAbsolutePath(), string2, I18n.a("analysis.completed"), (String)object2);
         return new a((j)object, arrayList);
+    }
+
+    private static boolean b(String string) {
+        if (string == null || string.isEmpty()) {
+            return false;
+        }
+        String string2 = string;
+        if (string2.endsWith(".class")) {
+            string2 = string2.substring(0, string2.length() - 6);
+        }
+        int n2 = 0;
+        int n3 = 0;
+        for (String string3 : string2.split("/")) {
+            if (string3.length() == 1) {
+                ++n2;
+                n3 = Math.max(n3, n2);
+            } else {
+                n2 = 0;
+            }
+        }
+        return n3 >= 3;
     }
 
     private static double a(String string) {
