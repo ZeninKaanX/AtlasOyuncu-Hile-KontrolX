@@ -110,56 +110,36 @@ extends VBox {
         tableColumn3.setPrefWidth(90.0);
         tableColumn3.setCellFactory(tableColumn -> new TableCell<h, String>(){
 
-            /*
-             * Exception decompiling
-             */
-            protected void a(String var1_1, boolean var2_2) {
-                /*
-                 * This method has failed to decompile.  When submitting a bug report, please provide this stack trace, and (if you hold appropriate legal rights) the relevant class file.
-                 * 
-                 * org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter$TooOptimisticMatchException
-                 *     at org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter.getString(Unknown Source)
-                 *     at org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter.access$600(Unknown Source)
-                 *     at org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter$SwitchStringMatchResultCollector.collectMatches(Unknown Source)
-                 *     at org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.matchutil.ResetAfterTest.match(Unknown Source)
-                 *     at org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.matchutil.KleeneN.match(Unknown Source)
-                 *     at org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.matchutil.MatchSequence.match(Unknown Source)
-                 *     at org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.matchutil.ResetAfterTest.match(Unknown Source)
-                 *     at org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter.rewriteComplex(Unknown Source)
-                 *     at org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter.rewrite(Unknown Source)
-                 *     at org.benf.cfr.reader.bytecode.CodeAnalyser.getAnalysisInner(Unknown Source)
-                 *     at org.benf.cfr.reader.bytecode.CodeAnalyser.getAnalysisOrWrapFail(Unknown Source)
-                 *     at org.benf.cfr.reader.bytecode.CodeAnalyser.getAnalysis(Unknown Source)
-                 *     at org.benf.cfr.reader.entities.attributes.AttributeCode.analyse(Unknown Source)
-                 *     at org.benf.cfr.reader.entities.Method.analyse(Unknown Source)
-                 *     at org.benf.cfr.reader.entities.ClassFile.analyseMid(Unknown Source)
-                 *     at org.benf.cfr.reader.entities.ClassFile.analyseInnerClassesPass1(Unknown Source)
-                 *     at org.benf.cfr.reader.entities.ClassFile.analyseMid(Unknown Source)
-                 *     at org.benf.cfr.reader.entities.ClassFile.analyseTop(Unknown Source)
-                 *     at org.benf.cfr.reader.Driver.doJarVersionTypes(Unknown Source)
-                 *     at org.benf.cfr.reader.Driver.doJar(Unknown Source)
-                 *     at org.benf.cfr.reader.CfrDriverImpl.analyse(Unknown Source)
-                 *     at org.benf.cfr.reader.Main.main(Unknown Source)
-                 */
-                throw new IllegalStateException("Decompilation failed");
-            }
-
-            private static /* synthetic */ String _ytk(String string, int n2) {
-                if (string != null) {
-                    char[] cArray = string.toCharArray();
-                    int n3 = n2 ^ 0x17;
-                    int n4 = 0;
-                    while (n4 < cArray.length) {
-                        n3 = n3 * 1866052619 + 1084557557 & Integer.MAX_VALUE;
-                        int n5 = n4++;
-                        cArray[n5] = (char)(cArray[n5] ^ n3 & 0xFF);
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+                    switch (item) {
+                        case "Class":
+                            setStyle(util.a.b);
+                            break;
+                        case "META-INF":
+                            setStyle(util.a.d);
+                            break;
+                        case "Resource":
+                            setStyle(util.a.e);
+                            break;
+                        case "Directory":
+                            setStyle(util.a.f);
+                            break;
+                        default:
+                            setStyle("");
+                            break;
                     }
-                    return new String(cArray);
                 }
-                return null;
             }
         });
-        TableColumn tableColumn4 = new TableColumn(I18n.a("jar.col.size"));
+
+TableColumn tableColumn4 = new TableColumn(I18n.a("jar.col.size"));
         tableColumn4.setCellValueFactory(new PropertyValueFactory("size"));
         tableColumn4.setPrefWidth(90.0);
         tableColumn4.setComparator((string, string2) -> Long.compare(g((String)string), g((String)string2)));
