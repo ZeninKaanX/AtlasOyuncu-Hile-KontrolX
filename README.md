@@ -27,10 +27,13 @@ Minecraft için gelişmiş bir hile / zararlı yazılım tarama aracı. JavaFX t
 Bağımlılıklar Maven Central'dan otomatik indirilir.
 
 ```bash
-# Linux / macOS (Windows için: build.sh win)
-./build.sh          # varsayılan: linux
+# Yalnızca Windows için çalışır durumda çıktı üretir:
 ./build.sh win      # Windows çıktısı (Windows .dll yerel kütüphaneleriyle)
-./build.sh mac      # macOS çıktısı
+
+# Not: linux/mac bayrakları yalnızca JavaFX yerel kütüphanelerini değiştirir;
+# uygulama mantığı Windows'a özeldir (JNA win32, wevtutil/reg/wmic, Prefetch,
+# Çöp Kutusu, USBSTOR kayıt defteri). Bu yüzden Linux/macOS'ta ÇALIŞMAZ —
+# yalnızca Linux üzerinde Wine ile çalıştırılabilir.
 ```
 
 Çıktı: `AtlasHileKontrol.jar` (bağımlılıklarla birlikte tek jar).
