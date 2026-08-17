@@ -19,7 +19,7 @@ Minecraft için gelişmiş bir hile / zararlı yazılım tarama aracı. JavaFX t
 
 ## Gereksinimler
 
-- Java 17 veya üzeri (JDK 17+)
+- Java 21 veya üzeri (JDK 21+)
 - Windows (uygulama `wevtutil`, `reg`, `wmic` gibi Windows araçlarını kullanır)
 
 ## Derleme
@@ -60,9 +60,9 @@ Derlenmiş `AtlasHileKontrol.jar` ve `jre/` klasörü yan yana olmalıdır. `lau
 
 `AtlasOyuncuHileKontrol.bat` şu sırayla çalışır:
 
-1. `jre/` klasöründe gömülü Java 17 varsa onu kullanır
-2. Sistemde Java 17+ kuruluysa onu kullanır (`java -version` kontrolü)
-3. Hiçbiri yoksa otomatik kurar: önce `winget` (Windows paket yöneticisi), olmazsa Zulu JRE 17'yi indirir
+1. `jre/` klasöründe gömülü Java 21 varsa onu kullanır
+2. Sistemde Java 21+ kuruluysa onu kullanır (`java -version` kontrolü)
+3. Hiçbiri yoksa otomatik kurar: önce `winget` (Windows paket yöneticisi), olmazsa Zulu JRE 21'i indirir
 
 > **Not:** İnternetten indirilen `AtlasHileKontrol.jar` / `java.exe` için
 > Özellikler → "Engellemeyi Kaldır" (Unblock) işaretini kaldırın.

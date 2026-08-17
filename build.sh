@@ -41,7 +41,7 @@ echo "[2/4] Derleniyor..."
 rm -rf "$OUT"
 mkdir -p "$OUT"
 find src -name '*.java' | sort > "$DIR/sources.tmp"
-javac -encoding UTF-8 -cp "$CP" -d "$OUT" @"$DIR/sources.tmp"
+javac -encoding UTF-8 --release 21 -cp "$CP" -d "$OUT" @"$DIR/sources.tmp"
 
 echo "[3/4] Paketleniyor..."
 rm -rf "$STAGE"
