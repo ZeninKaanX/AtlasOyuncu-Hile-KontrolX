@@ -1,0 +1,49 @@
+/* Atlasoyuncu Hile Kontrol - custom theme tweaks */
+.root {
+    -fx-accent: #bd93f9;
+    -fx-focus-color: #bd93f9;
+}
+.accent {
+    -fx-background-color: #bd93f9;
+    -fx-text-fill: #282a36;
+    -fx-font-weight: bold;
+}
+.accent:hover {
+    -fx-background-color: #caa9fa;
+}
+.success {
+    -fx-background-color: #50fa7b;
+    -fx-text-fill: #282a36;
+    -fx-font-weight: bold;
+}
+.danger {
+    -fx-background-color: #ff5555;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.scroll-bar:vertical {
+    -fx-pref-width: 12;
+    -fx-min-width: 12;
+}
+.scroll-bar:vertical .thumb {
+    -fx-min-height: 30;
+    -fx-background-color: #44475a;
+}
+.scroll-bar:vertical .increment-button,
+.scroll-bar:vertical .decrement-button {
+    -fx-pref-width: 12;
+    -fx-min-width: 12;
+}
+.scroll-bar:horizontal {
+    -fx-pref-height: 12;
+    -fx-min-height: 12;
+}
+.scroll-bar:horizontal .thumb {
+    -fx-min-width: 30;
+    -fx-background-color: #44475a;
+}
+.scroll-bar:horizontal .increment-button,
+.scroll-bar:horizontal .decrement-button {
+    -fx-pref-height: 12;
+    -fx-min-height: 12;
+}

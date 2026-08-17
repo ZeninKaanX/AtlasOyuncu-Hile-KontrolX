@@ -1,0 +1,22 @@
+# Derleme çıktıları
+out/
+staging/
+*.jar
+!src/**/*.jar
+
+# Gömülü JRE / çalışma zamanı
+jre/
+lib/
+
+# Geçici dosyalar
+*.class
+*.log
+sources.tmp
+MANIFEST.MF
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
