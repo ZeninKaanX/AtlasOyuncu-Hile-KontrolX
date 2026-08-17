@@ -49,9 +49,17 @@ Bağımlılıklar Maven Central'dan otomatik indirilir.
 
 ## Kullanım
 
-1. `AtlasOyuncuHileKontrol.bat` dosyasını (yönetici olarak) çalıştırın
-2. UAC iznini onaylayın
-3. İstediğiniz sekmeyi seçip taramayı başlatın
+Derlenmiş `AtlasHileKontrol.jar` ve `jre/` klasörü yan yana olmalıdır. `launchers/` klasöründe hazır başlatıcılar bulunur:
+
+| Başlatıcı | Platform | Açıklama |
+|---|---|---|
+| `launchers/Windows-UAC.bat` | Windows | Yönetici olarak çalıştırır (UAC ister) |
+| `launchers/Baslat-Windows-Yoneticisiz.bat` | Windows | UAC'siz çalıştırır (Win 11'de UAC sorunu yaşarsanız bunu kullanın) |
+| `launchers/Baslat-Linux.sh` | Linux | Wine ile çalıştırır |
+
+> **Not:** Windows 11'de UAC'li başlatıcı bazen açılmıyorsa yöneticisiz başlatıcıyı kullanın.
+> Ayrıca internetten indirilen `AtlasHileKontrol.jar` / `java.exe` için
+> Özellikler → "Engellemeyi Kaldır" (Unblock) işaretini kaldırın.
 
 Bat dosyası, `jre/` klasöründe gömülü Java 17 yoksa otomatik olarak Zulu JRE 17 indirir.
 
@@ -66,6 +74,7 @@ src/
 ├── a/  b/  c/  d/  e/       # Arayüz ve analiz modülleri
 ├── scanner/                 # Tarama motorları
 └── util/                    # Yardımcı sınıflar
+launchers/                   # Hazır çalıştırma betikleri
 ```
 
 
