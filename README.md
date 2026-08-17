@@ -53,15 +53,19 @@ Derlenmiş `AtlasHileKontrol.jar` ve `jre/` klasörü yan yana olmalıdır. `lau
 
 | Başlatıcı | Platform | Açıklama |
 |---|---|---|
-| `launchers/Windows-UAC.bat` | Windows | Yönetici olarak çalıştırır (UAC ister) |
-| `launchers/Baslat-Windows-Yoneticisiz.bat` | Windows | UAC'siz çalıştırır (Win 11'de UAC sorunu yaşarsanız bunu kullanın) |
+| `launchers/AtlasOyuncuHileKontrol.bat` | Windows | Ana başlatıcı — Java sürümünü kontrol eder, gerekirse kurar |
 | `launchers/Baslat-Linux.sh` | Linux | Wine ile çalıştırır |
 
-> **Not:** Windows 11'de UAC'li başlatıcı bazen açılmıyorsa yöneticisiz başlatıcıyı kullanın.
-> Ayrıca internetten indirilen `AtlasHileKontrol.jar` / `java.exe` için
-> Özellikler → "Engellemeyi Kaldır" (Unblock) işaretini kaldırın.
+### Otomatik Java kurulumu
 
-Bat dosyası, `jre/` klasöründe gömülü Java 17 yoksa otomatik olarak Zulu JRE 17 indirir.
+`AtlasOyuncuHileKontrol.bat` şu sırayla çalışır:
+
+1. `jre/` klasöründe gömülü Java 17 varsa onu kullanır
+2. Sistemde Java 17+ kuruluysa onu kullanır (`java -version` kontrolü)
+3. Hiçbiri yoksa otomatik kurar: önce `winget` (Windows paket yöneticisi), olmazsa Zulu JRE 17'yi indirir
+
+> **Not:** İnternetten indirilen `AtlasHileKontrol.jar` / `java.exe` için
+> Özellikler → "Engellemeyi Kaldır" (Unblock) işaretini kaldırın.
 
 ## Yapı
 
