@@ -15,9 +15,12 @@ echo [OK] Yonetici hakkiyla calisiyor.
 echo.
 
 rem ===== Proje dizini =====
+rem %~dp0 zaten dogru calisir, sadece son \ temizle
 set "BASE=%~dp0"
-rem Son \ kaldir
 if "%BASE:~-1%"=="\" set "BASE=%BASE:~0,-1%"
+
+rem Yol parantez iceriyorsa PowerShell icin environment variable kullan
+set "BASE_DIR=%BASE%"
 
 rem ===== JRE kontrol =====
 set "JAVA="
@@ -90,46 +93,122 @@ exit /b
 rem ===== Java 21 kurulumu =====
 :installJava
 echo.
-echo 1. deneme: winget ile kurulum...
-winget install EclipseAdoptium.Temurin.21.JRE --silent --accept-package-agreements --accept-source-agreements >nul 2>&1
-if %errorlevel% equ 0 (
-    echo Java 21 kuruldu!
-    echo.
-    echo Yeniden baslatiliyor...
-    set "JAVA=%BASE%\jre\bin\java.exe"
-    if exist "!JAVA!" goto :checkVer
-    set "JAVA=java"
-    where java >nul 2>&1
-    if %errorlevel% equ 0 goto :checkVer
-    echo Java kuruldu ama bulunamadi. Pencereyi kapatip bat'i tekrar calistirin.
-    pause
-    exit /b 0
+echo Java 21+ bulunamadi, kuruluyor...
+echo.
+
+rem === Yontem 1: winget (Windows 10 1809+ / Windows 11) ===
+echo [1/3] winget deneniyor...
+where winget >nul 2>&1
+if !errorlevel! equ 0 (
+    echo   winget bulundu, Eclipse Temurin JRE 21 kuruluyor...
+    winget install EclipseAdoptium.Temurin.21.JRE --silent --accept-package-agreements --accept-source-agreements >nul 2>&1
+    if !errorlevel! equ 0 (
+        echo [OK] Java 21 winget ile kuruldu!
+        goto :verifyJava
+    )
+    echo   [!] winget kurulumu basarisiz
+) else (
+    echo   [!] winget bulunamadi (Windows 10 1809+ veya Windows 11 gerekli)
 )
 
-echo 2. deneme: Zulu JRE 21 indiriliyor...
+rem === Yontem 2: Zulu JRE 21 indir (ZIP) ===
+echo [2/3] Zulu JRE 21 indiriliyor (49 MB)...
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$ErrorActionPreference='Stop';" ^
+  "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;" ^
   "$ProgressPreference='SilentlyContinue';" ^
-  "$u='https://cdn.azul.com/zulu/bin/zulu21.52.15-ca-jre21.0.12-win_x64.zip';" ^
-  "$z=Join-Path $env:TEMP 'zulu21_jre.zip';" ^
-  "Invoke-WebRequest -Uri $u -OutFile $z -UseBasicParsing;" ^
-  "$d=Join-Path $env:TEMP 'zulu21_extract';" ^
-  "if(Test-Path $d){Remove-Item $d -Recurse -Force};" ^
-  "Expand-Archive -Path $z -DestinationPath $d -Force;" ^
-  "$s=(Get-ChildItem $d -Directory | Select-Object -First 1).FullName;" ^
-  "New-Item -ItemType Directory -Force '%BASE%\jre' | Out-Null;" ^
-  "Copy-Item (Join-Path $s '*') '%BASE%\jre' -Recurse -Force;" ^
-  "Remove-Item $d -Recurse -Force;" ^
-  "Remove-Item $z -Force;"
+  "$url='https://cdn.azul.com/zulu/bin/zulu21.52.203-ca-jre21.0.14-win_x64.zip';" ^
+  "$zip=Join-Path $env:TEMP 'zulu21_jre.zip';" ^
+  "Write-Host '  Indiriliyor...';" ^
+  "try {" ^
+  "  Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing -TimeoutSec 300;" ^
+  "  Write-Host '  Indirme tamamlandi.';" ^
+  "  $extract=Join-Path $env:TEMP 'zulu21_extract';" ^
+  "  if(Test-Path $extract){Remove-Item $extract -Recurse -Force};" ^
+  "  Write-Host '  Aciliyor...';" ^
+  "  Expand-Archive -Path $zip -DestinationPath $extract -Force;" ^
+  "  $src=(Get-ChildItem $extract -Directory | Select-Object -First 1).FullName;" ^
+  "  if(!$src){throw 'Klasor bulunamadi'};" ^
+  "  $dest=$env:BASE_DIR+'\jre';" ^
+  "  New-Item -ItemType Directory -Force $dest | Out-Null;" ^
+  "  Copy-Item (Join-Path $src '*') $dest -Recurse -Force;" ^
+  "  Remove-Item $extract -Recurse -Force -ErrorAction SilentlyContinue;" ^
+  "  Remove-Item $zip -Force -ErrorAction SilentlyContinue;" ^
+  "  Write-Host '  Kurulum tamamlandi.';" ^
+  "} catch {" ^
+  "  Write-Host '  HATA:' $_.Exception.Message;" ^
+  "  exit 1;" ^
+  "}"
 
 if exist "%BASE%\jre\bin\java.exe" (
+    echo [OK] Java 21 indirildi: %BASE%\jre
+    goto :verifyJava
+)
+
+rem === Yontem 3: Adoptium/Temurin 21 MSI indir ===
+echo [3/3] Adoptium/Temurin 21 indiriliyor...
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$ErrorActionPreference='Stop';" ^
+  "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;" ^
+  "$ProgressPreference='SilentlyContinue';" ^
+  "try {" ^
+  "  Write-Host '  Adoptium API sorgulanıyor...';" ^
+  "  $api='https://api.adoptium.net/v3/assets/latest/21/hotspot?architecture=x64^&image_type=jre^&os=windows^&page=0^&page_size=1^&vendor=eclipse';" ^
+  "  $resp=Invoke-RestMethod -Uri $api -UseBasicParsing -TimeoutSec 30;" ^
+  "  $msiUrl=$resp[0].binary.installer.link;" ^
+  "  if(!$msiUrl){$msiUrl=$resp[0].binary.package.link;};" ^
+  "  if(!$msiUrl){throw 'Download URL bulunamadi'};" ^
+  "  Write-Host '  MSI indiriliyor...';" ^
+  "  $msi=Join-Path $env:TEMP 'temurin21.msi';" ^
+  "  Invoke-WebRequest -Uri $msiUrl -OutFile $msi -UseBasicParsing -TimeoutSec 300;" ^
+  "  Write-Host '  MSI kuruluyor (sessiz, 1-2 dk)...';" ^
+  "  $p=Start-Process msiexec.exe -ArgumentList '/i',\"$msi\",'/quiet','/norestart','ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome' -Wait -PassThru;" ^
+  "  Remove-Item $msi -Force -ErrorAction SilentlyContinue;" ^
+  "  if($p.ExitCode -ne 0){throw 'MSI kurulumu basarisiz: '+$p.ExitCode};" ^
+  "  Write-Host '  Kurulum tamamlandi.';" ^
+  "} catch {" ^
+  "  Write-Host '  HATA:' $_.Exception.Message;" ^
+  "  exit 1;" ^
+  "}"
+
+goto :verifyJava
+
+:verifyJava
+echo.
+echo Java kuruldu, dogrulaniyor...
+
+rem Gomulu JRE varsa onu kullan
+if exist "%BASE%\jre\bin\java.exe" (
     set "JAVA=%BASE%\jre\bin\java.exe"
-    echo Java 21 indirildi: %BASE%\jre
     goto :checkVer
 )
 
+rem PATH'i yenile ve tekrar kontrol et
+set "PATH=%PATH%;%ProgramFiles%\Zulu\zulu-21-jre\bin;%ProgramFiles%\Eclipse Adoptium\jdk-21*"
+where java >nul 2>&1
+if !errorlevel! equ 0 (
+    set "JAVA=java"
+    goto :checkVer
+)
+
+rem JAVA_HOME kontrol
+if defined JAVA_HOME (
+    if exist "%JAVA_HOME%\bin\java.exe" (
+        set "JAVA=%JAVA_HOME%\bin\java.exe"
+        goto :checkVer
+    )
+)
+
 echo.
-echo [HATA] Java kurulamadi!
-echo Manuel olarak indirin: https://adoptium.net/temurin/releases/?version=21
+echo [HATA] Java kuruldu ama hala bulunamadi.
+echo.
+echo Manuel olarak indirin:
+echo   https://adoptium.net/temurin/releases/?version=21
+echo.
+echo Indirdikten sonra:
+echo   1. JRE klasorunu bu dizine `jre` olarak kopyalayin, VEYA
+echo   2. JAVA_HOME ortam degiskenini ayarlayin, VEYA
+echo   3. java.exe'nin bulundugu dizini PATH'e ekleyin
+echo.
 pause
 exit /b 1
