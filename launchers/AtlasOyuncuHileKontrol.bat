@@ -35,7 +35,7 @@ if not defined JAVA (
 
 :run
 echo Baslatiliyor...
-"%JAVA%" -jar "%~dp0AtlasHileKontrol.jar"
+"%JAVA%" --module-path "%~dp0mods" --add-modules javafx.controls,javafx.swing -cp "%~dp0AtlasHileKontrol.jar" AtlasLauncher
 if errorlevel 1 (
     echo.
     echo Uygulama hatayla kapandi.
