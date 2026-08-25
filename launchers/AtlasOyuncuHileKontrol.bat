@@ -3,6 +3,7 @@ setlocal EnableDelayedExpansion
 title Atlasoyuncu Hile Kontrol
 cd /d "%~dp0"
 
+rem ===== Yonetici hakki =====
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo Yonetici hakki gerekli, UAC aciliyor...
@@ -13,64 +14,122 @@ if %errorlevel% neq 0 (
 echo [OK] Yonetici hakkiyla calisiyor.
 echo.
 
-set "JAVA=%~dp0jre\bin\java.exe"
+rem ===== Proje dizini =====
+set "BASE=%~dp0"
+rem Son \ kaldir
+if "%BASE:~-1%"=="\" set "BASE=%BASE:~0,-1%"
 
-rem 1) Gomulu JRE (Java 21) hazir mi?
-if exist "%JAVA%" goto :run
+rem ===== JRE kontrol =====
+set "JAVA="
+set "JAVA_VER=0"
 
-rem 2) Sistemde Java 21+ var mi?
-call :findSystemJava
-if defined JAVA goto :run
+rem 1) Gomulu JRE
+if exist "%BASE%\jre\bin\java.exe" (
+    set "JAVA=%BASE%\jre\bin\java.exe"
+    goto :checkVer
+)
 
-rem 3) Java 21+ yok -> otomatik kur
-echo Java 21+ bulunamadi. Otomatik kuruluyor...
-call :installJava
-if not defined JAVA if exist "%~dp0jre\bin\java.exe" set "JAVA=%~dp0jre\bin\java.exe"
-if not defined JAVA (
-    echo.
-    echo Java kurulamadi. Lutfen https://adoptium.net adresinden Java 21 indirin.
+rem 2) Sistemdeki java
+where java >nul 2>&1
+if %errorlevel% equ 0 (
+    set "JAVA=java"
+    goto :checkVer
+)
+
+rem 3) Java kurulumu
+echo Java bulunamadi. Kuruluyor...
+goto :installJava
+
+:checkVer
+rem Java surumunu kontrol et
+for /f "tokens=3" %%v in ('"%JAVA%" -version 2^>^&1 ^| findstr /i "version"') do set "JAVA_VER_RAW=%%~v"
+set "JAVA_VER_RAW=!JAVA_VER_RAW:"=!"
+for /f "tokens=1 delims=." %%a in ("!JAVA_VER_RAW!") do set "JAVA_MAJOR=%%a"
+if "!JAVA_MAJOR!"=="1" (
+    for /f "tokens=2 delims=." %%b in ("!JAVA_VER_RAW!") do set "JAVA_MAJOR=%%b"
+)
+
+echo Bulunan Java surumu: !JAVA_VER_RAW! (major: !JAVA_MAJOR!)
+
+if !JAVA_MAJOR! GEQ 21 goto :run
+
+echo.
+echo [HATA] Java 21+ gerekli, !JAVA_MAJOR! bulundu.
+echo Java 21+ yukleniyor...
+goto :installJava
+
+rem ===== Uygulamayi calistir =====
+:run
+echo.
+echo Moduller: %BASE%\mods
+echo JAR: %BASE%\AtlasHileKontrol.jar
+echo.
+
+if not exist "%BASE%\mods\javafx-controls-win.jar" (
+    echo [HATA] mods\javafx-controls-win.jar bulunamadi!
+    echo Lutfen mods klasorunun oldugundan emin olun.
     pause
     exit /b 1
 )
 
-:run
+if not exist "%BASE%\AtlasHileKontrol.jar" (
+    echo [HATA] AtlasHileKontrol.jar bulunamadi!
+    pause
+    exit /b 1
+)
+
 echo Baslatiliyor...
-"%JAVA%" --module-path "%~dp0mods" --add-modules javafx.controls,javafx.swing -cp "%~dp0AtlasHileKontrol.jar" AtlasLauncher
+"%JAVA%" --module-path "%BASE%\mods" --add-modules javafx.controls,javafx.swing -cp "%BASE%\AtlasHileKontrol.jar" AtlasLauncher
 if errorlevel 1 (
     echo.
-    echo Uygulama hatayla kapandi.
+    echo Uygulama hatayla kapandi. (hata kodu: %errorlevel%)
 )
 pause
 exit /b
 
-rem ============ Sistemdeki Java surumunu kontrol et ============
-:findSystemJava
-set "JAVA="
-where java >nul 2>&1
-if errorlevel 1 exit /b 0
-
-set "VER="
-for /f "tokens=3" %%v in ('java -version 2^>^&1 ^| findstr /i "version"') do set "VER=%%~v"
-if not defined VER exit /b 0
-
-set "MAJOR="
-for /f "tokens=1 delims=." %%a in ("!VER!") do set "MAJOR=%%a"
-if "!MAJOR!"=="1" for /f "tokens=2 delims=." %%b in ("!VER!") do set "MAJOR=%%b"
-
-if !MAJOR! GEQ 21 set "JAVA=java"
-exit /b 0
-
-rem ============ Java 21 kur ============
+rem ===== Java 21 kurulumu =====
 :installJava
-rem 1) winget (Windows paket yoneticisi, Defender dostu)
+echo.
+echo 1. deneme: winget ile kurulum...
 winget install EclipseAdoptium.Temurin.21.JRE --silent --accept-package-agreements --accept-source-agreements >nul 2>&1
-if not errorlevel 1 (
-    echo Java kuruldu. Lutfen bu pencereyi kapatip bat'i tekrar calistirin.
+if %errorlevel% equ 0 (
+    echo Java 21 kuruldu!
+    echo.
+    echo Yeniden baslatiliyor...
+    set "JAVA=%BASE%\jre\bin\java.exe"
+    if exist "!JAVA!" goto :checkVer
+    set "JAVA=java"
+    where java >nul 2>&1
+    if %errorlevel% equ 0 goto :checkVer
+    echo Java kuruldu ama bulunamadi. Pencereyi kapatip bat'i tekrar calistirin.
     pause
     exit /b 0
 )
 
-rem 2) winget yoksa Zulu JRE 21'yi klasore indir (hemen kullanilabilir)
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; $u='https://cdn.azul.com/zulu/bin/zulu21.52.15-ca-jre21.0.12-win_x64.zip'; $z=Join-Path $env:TEMP 'zulu21_jre.zip'; Invoke-WebRequest -Uri $u -OutFile $z; $d=Join-Path $env:TEMP 'zulu21_extract'; if(Test-Path $d){Remove-Item $d -Recurse -Force}; Expand-Archive -Path $z -DestinationPath $d -Force; $s=(Get-ChildItem $d -Directory | Select-Object -First 1).FullName; New-Item -ItemType Directory -Force '%~dp0jre' | Out-Null; Copy-Item (Join-Path $s '*') '%~dp0jre' -Recurse -Force; Remove-Item $d -Recurse -Force; Remove-Item $z -Force;"
-if exist "%~dp0jre\bin\java.exe" set "JAVA=%~dp0jre\bin\java.exe"
-exit /b 0
+echo 2. deneme: Zulu JRE 21 indiriliyor...
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$ErrorActionPreference='Stop';" ^
+  "$ProgressPreference='SilentlyContinue';" ^
+  "$u='https://cdn.azul.com/zulu/bin/zulu21.52.15-ca-jre21.0.12-win_x64.zip';" ^
+  "$z=Join-Path $env:TEMP 'zulu21_jre.zip';" ^
+  "Invoke-WebRequest -Uri $u -OutFile $z -UseBasicParsing;" ^
+  "$d=Join-Path $env:TEMP 'zulu21_extract';" ^
+  "if(Test-Path $d){Remove-Item $d -Recurse -Force};" ^
+  "Expand-Archive -Path $z -DestinationPath $d -Force;" ^
+  "$s=(Get-ChildItem $d -Directory | Select-Object -First 1).FullName;" ^
+  "New-Item -ItemType Directory -Force '%BASE%\jre' | Out-Null;" ^
+  "Copy-Item (Join-Path $s '*') '%BASE%\jre' -Recurse -Force;" ^
+  "Remove-Item $d -Recurse -Force;" ^
+  "Remove-Item $z -Force;"
+
+if exist "%BASE%\jre\bin\java.exe" (
+    set "JAVA=%BASE%\jre\bin\java.exe"
+    echo Java 21 indirildi: %BASE%\jre
+    goto :checkVer
+)
+
+echo.
+echo [HATA] Java kurulamadi!
+echo Manuel olarak indirin: https://adoptium.net/temurin/releases/?version=21
+pause
+exit /b 1
