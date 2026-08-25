@@ -34,8 +34,9 @@ dl "$MAVEN/net/java/dev/jna/jna/$JNA_VER/jna-$JNA_VER.jar"                     "
 dl "$MAVEN/net/java/dev/jna/jna-platform/$JNA_VER/jna-platform-$JNA_VER.jar" "$LIBS/jna-platform.jar"
 dl "$MAVEN/org/benf/cfr/$CFR_VER/cfr-$CFR_VER.jar"                             "$LIBS/cfr.jar"
 dl "$MAVEN/io/github/mkpaz/atlantafx-base/$ATLANTAFX_VER/atlantafx-base-$ATLANTAFX_VER.jar" "$LIBS/atlantafx.jar"
+dl "$MAVEN/org/xerial/sqlite-jdbc/3.49.1.0/sqlite-jdbc-3.49.1.0.jar" "$LIBS/sqlite-jdbc.jar"
 
-CP="$LIBS/javafx-base.jar:$LIBS/javafx-controls.jar:$LIBS/javafx-graphics.jar:$LIBS/javafx-swing.jar:$LIBS/jna.jar:$LIBS/jna-platform.jar:$LIBS/cfr.jar"
+CP="$LIBS/javafx-base.jar:$LIBS/javafx-controls.jar:$LIBS/javafx-graphics.jar:$LIBS/javafx-swing.jar:$LIBS/jna.jar:$LIBS/jna-platform.jar:$LIBS/cfr.jar:$LIBS/sqlite-jdbc.jar"
 
 echo "[2/4] Derleniyor..."
 rm -rf "$OUT"

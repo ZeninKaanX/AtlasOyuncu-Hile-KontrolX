@@ -67,6 +67,8 @@ extends BorderPane {
     private e t;
     private o u;
     private a v;
+    private BrowserHistoryTab browserTab;
+    private DownloadHistoryTab downloadTab;
     private Button x;
 
     public c() {
@@ -159,6 +161,14 @@ extends BorderPane {
         this.a("tab.altchecker", () -> {
             this.v = new a();
             return this.v;
+        });
+        this.a("tab.browserHistory", () -> {
+            this.browserTab = new BrowserHistoryTab();
+            return this.browserTab;
+        });
+        this.a("tab.downloadHistory", () -> {
+            this.downloadTab = new DownloadHistoryTab();
+            return this.downloadTab;
         });
         this.b.getChildren().add(this.x);
         if (!this.c.getToggles().isEmpty()) {
@@ -280,9 +290,11 @@ extends BorderPane {
         this.t.a();
         this.u.a();
         this.v.b();
+        this.browserTab.a();
+        this.downloadTab.a();
         timelineArray[0] = new Timeline(new KeyFrame(Duration.millis(500.0), actionEvent -> {
             boolean bl;
-            boolean bl2 = bl = this.i.b() || this.j.b() || this.k.b() || this.m.b() || this.n.b() || this.o.b() || this.p.b() || this.q.b() || this.r.b() || this.s.b() || this.t.b() || this.u.b() || this.v.c();
+            boolean bl2 = bl = this.i.b() || this.j.b() || this.k.b() || this.m.b() || this.n.b() || this.o.b() || this.p.b() || this.q.b() || this.r.b() || this.s.b() || this.t.b() || this.u.b() || this.v.c() || this.browserTab.b() || this.downloadTab.b();
             if (!bl) {
                 this.x.setDisable(false);
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
