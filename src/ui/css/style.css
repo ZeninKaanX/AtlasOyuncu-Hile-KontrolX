@@ -1386,17 +1386,31 @@ body {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-height: 800px;
+  width: 100%;
+}
+
+.findings-display-panel .findings-cards-stream {
+  max-height: 720px;
   overflow-y: auto;
+}
+
+.tab-pane .findings-cards-stream {
+  padding: 0;
+  max-height: none;
+  overflow: visible;
 }
 
 /* Individual Finding Card (Ocean Style) */
 .finding-item-card {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-card);
   border: 1px solid var(--border-app);
   border-radius: var(--radius-md);
   overflow: hidden;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+  flex-shrink: 0;
+  min-height: fit-content;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .finding-item-card.crit {
