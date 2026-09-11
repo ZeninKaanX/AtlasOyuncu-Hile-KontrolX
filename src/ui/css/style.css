@@ -1854,3 +1854,97 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Toast Notification System */
+.atlas-toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.atlas-toast {
+  pointer-events: auto;
+  min-width: 320px;
+  max-width: 480px;
+  background: rgba(13, 19, 36, 0.96);
+  border: 1px solid rgba(0, 242, 254, 0.4);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 242, 254, 0.2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  color: #ffffff;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+}
+
+.atlas-toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.atlas-toast.hiding {
+  transform: translateX(120%);
+  opacity: 0;
+}
+
+.atlas-toast-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 242, 254, 0.15);
+  color: var(--color-info);
+  margin-top: 2px;
+}
+
+.atlas-toast.success .atlas-toast-icon {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--color-success);
+}
+
+.atlas-toast.error .atlas-toast-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-danger);
+}
+
+.atlas-toast-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.atlas-toast-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.atlas-toast-msg {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  word-break: break-all;
+}
+
+.spin-icon {
+  animation: atlas-spin 1s linear infinite;
+}
+
+@keyframes atlas-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

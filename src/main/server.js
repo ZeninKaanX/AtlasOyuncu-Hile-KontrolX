@@ -151,13 +151,39 @@ app.get('/api/report/download', (req, res) => {
     if (!html && scannerCore.lastScanResults) {
       html = reporter.generateHtmlReport(scannerCore.lastScanResults);
     }
+    if (!html) {
+      html = reporter.generateHtmlReport({
+        allFindings: scannerCore.findings || [],
+        scannedJars: 0,
+        scannedObjects: 0,
+        isScanning: false,
+        durationSeconds: 0,
+        timestamp: new Date().toISOString()
+      });
+    }
   }
   if (html) {
-    res.setHeader('Content-Disposition', `attachment; filename="AtlasAC_Report_${Date.now()}.html"`);
+    const filename = `AtlasAC_Report_${Date.now()}.html`;
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     return res.send(html);
   }
   res.status(404).send('Rapor bulunamadı.');
+});
+
+// Direct Report Export & Save Endpoint (JSON API)
+app.get('/api/export', (req, res) => {
+  try {
+    const savedPath = scannerCore.exportLastReport();
+    res.json({
+      success: true,
+      path: savedPath,
+      downloadUrl: '/api/report/download',
+      filename: path.basename(savedPath)
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // Fallback to standard express.static
@@ -220,7 +246,8 @@ wss.on('connection', (ws) => {
           ws.send(JSON.stringify({
             type: 'EXPORT_RESULT',
             path: savedPath,
-            url: '/api/report/latest'
+            url: '/api/report/download',
+            filename: path.basename(savedPath)
           }));
         } catch (e) {
           ws.send(JSON.stringify({

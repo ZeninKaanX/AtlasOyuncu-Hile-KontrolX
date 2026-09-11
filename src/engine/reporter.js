@@ -1364,38 +1364,72 @@ class ForensicReporter {
   }
 
   /**
-   * Saves the HTML report to disk with desktop priority.
+   * Resolves the user's Downloads / İndirilenler directory across Windows and Linux.
    */
-  exportReport(scanData, targetPath = null) {
-    const html = this.generateHtmlReport(scanData);
-    this.latestReportHtml = html;
+  getDownloadsDirectory() {
+    const home = os.homedir();
+    const candidates = [];
 
-    let chosenDir = null;
-    const candidates = [
-      path.join(os.homedir(), "Desktop"),
-      path.join(os.homedir(), "Masaüstü"),
-      os.homedir(),
-      process.cwd(),
-      os.tmpdir()
-    ];
+    // 1. Windows environment user profile
+    if (process.platform === 'win32' && process.env.USERPROFILE) {
+      candidates.push(path.join(process.env.USERPROFILE, 'Downloads'));
+      candidates.push(path.join(process.env.USERPROFILE, 'İndirilenler'));
+    }
+
+    // 2. Linux XDG Download Dir
+    if (process.env.XDG_DOWNLOAD_DIR) {
+      candidates.push(process.env.XDG_DOWNLOAD_DIR);
+    }
+
+    // Check ~/.config/user-dirs.dirs on Linux
+    if (process.platform === 'linux') {
+      try {
+        const userDirsPath = path.join(home, '.config', 'user-dirs.dirs');
+        if (fs.existsSync(userDirsPath)) {
+          const content = fs.readFileSync(userDirsPath, 'utf8');
+          const match = content.match(/XDG_DOWNLOAD_DIR="([^"]+)"/);
+          if (match && match[1]) {
+            let p = match[1].replace('$HOME', home);
+            candidates.push(p);
+          }
+        }
+      } catch (e) {}
+    }
+
+    // 3. Standard user home Downloads / İndirilenler
+    candidates.push(path.join(home, 'Downloads'));
+    candidates.push(path.join(home, 'İndirilenler'));
+
+    // 4. Safe fallback locations (NEVER Desktop/Masaüstü)
+    candidates.push(home);
+    candidates.push(process.cwd());
+    candidates.push(os.tmpdir());
 
     for (const cand of candidates) {
+      if (!cand) continue;
       try {
         if (!fs.existsSync(cand)) {
           fs.mkdirSync(cand, { recursive: true });
         }
         const testFile = path.join(cand, `.atlas_write_test_${Date.now()}`);
-        fs.writeFileSync(testFile, "ok");
+        fs.writeFileSync(testFile, 'ok');
         fs.unlinkSync(testFile);
-        chosenDir = cand;
-        break;
+        return cand;
       } catch (e) {
         continue;
       }
     }
+    return os.tmpdir();
+  }
 
-    if (!chosenDir) chosenDir = os.tmpdir();
+  /**
+   * Saves the HTML report to disk with Downloads (İndirilenler) priority.
+   */
+  exportReport(scanData, targetPath = null) {
+    const html = this.generateHtmlReport(scanData);
+    this.latestReportHtml = html;
 
+    const chosenDir = this.getDownloadsDirectory();
     const savePath = targetPath || path.join(chosenDir, `AtlasAC_Report_${Date.now()}.html`);
     try {
       const dirOfTarget = path.dirname(savePath);

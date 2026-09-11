@@ -717,8 +717,14 @@ function handleServerMessage(msg) {
   } else if (msg.type === 'UPDATE_RESULT') {
     logTerminal('INFO', msg.message);
   } else if (msg.type === 'EXPORT_RESULT') {
-    logTerminal('SUCCESS', `Report saved: ${msg.path}`);
-    alert(`${currentLang === 'tr' ? 'Rapor Başarıyla Kaydedildi:' : 'Report Saved Successfully:'}\n${msg.path}`);
+    const isTr = currentLang === 'tr';
+    logTerminal('SUCCESS', isTr ? `Rapor İndirilenler klasörüne kaydedildi: ${msg.path}` : `Report saved to Downloads: ${msg.path}`);
+    showToast(
+      isTr ? 'Rapor İndirilenlere Kaydedildi' : 'Report Saved to Downloads',
+      msg.path,
+      'success',
+      6000
+    );
   }
 }
 
@@ -1017,9 +1023,65 @@ function initActionButtons() {
 
   const btnExport = document.getElementById('btnExportReport');
   if (btnExport) {
-    btnExport.addEventListener('click', () => {
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ action: 'EXPORT_REPORT' }));
+    btnExport.addEventListener('click', async () => {
+      const isTr = currentLang === 'tr';
+      const originalHtml = btnExport.innerHTML;
+      btnExport.classList.add('btn-loading');
+      btnExport.innerHTML = `
+        <svg class="spin-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        <span>${isTr ? 'İndiriliyor...' : 'Exporting...'}</span>
+      `;
+
+      try {
+        // 1. Direct browser download trigger into user's Downloads folder
+        const timestamp = Date.now();
+        const dlLink = document.createElement('a');
+        dlLink.href = `/api/report/download?t=${timestamp}`;
+        dlLink.download = `AtlasAC_Report_${timestamp}.html`;
+        document.body.appendChild(dlLink);
+        dlLink.click();
+        document.body.removeChild(dlLink);
+
+        // 2. Also command server to save report into host machine's Downloads / İndirilenler folder
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ action: 'EXPORT_REPORT' }));
+        } else {
+          // Fallback via HTTP API
+          fetch('/api/export')
+            .then(res => res.json())
+            .then(data => {
+              if (data && data.path) {
+                logTerminal('SUCCESS', isTr ? `Rapor İndirilenler klasörüne kaydedildi: ${data.path}` : `Report saved to Downloads: ${data.path}`);
+                showToast(
+                  isTr ? 'Rapor İndirilenlere Kaydedildi' : 'Report Saved to Downloads',
+                  data.path,
+                  'success',
+                  6000
+                );
+              }
+            })
+            .catch(() => {});
+        }
+
+        showToast(
+          isTr ? 'Rapor Dışa Aktarıldı' : 'Report Exported',
+          isTr 
+            ? 'Rapor İndirilenler klasörünüze kaydedildi ve tarayıcınızdan indirildi.' 
+            : 'Report was downloaded and saved to your Downloads directory.',
+          'success',
+          5000
+        );
+      } catch (err) {
+        showToast(
+          isTr ? 'Dışa Aktarma Hatası' : 'Export Error',
+          err.message || 'Rapor dışa aktarılırken bir hata oluştu.',
+          'error'
+        );
+      } finally {
+        setTimeout(() => {
+          btnExport.classList.remove('btn-loading');
+          btnExport.innerHTML = originalHtml;
+        }, 1500);
       }
     });
   }
@@ -1676,4 +1738,55 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+function showToast(title, message, type = 'success', duration = 4500) {
+  let container = document.querySelector('.atlas-toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'atlas-toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `atlas-toast ${type}`;
+
+  const iconSvg = type === 'success'
+    ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`
+    : `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+
+  toast.innerHTML = `
+    <div class="atlas-toast-icon">${iconSvg}</div>
+    <div class="atlas-toast-body">
+      <div class="atlas-toast-title">${escapeHtml(title)}</div>
+      <div class="atlas-toast-msg">${escapeHtml(message)}</div>
+    </div>
+  `;
+
+  container.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.add('show');
+  });
+
+  const removeTimer = setTimeout(() => {
+    toast.classList.remove('show');
+    toast.classList.add('hiding');
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 400);
+  }, duration);
+
+  toast.addEventListener('click', () => {
+    clearTimeout(removeTimer);
+    toast.classList.remove('show');
+    toast.classList.add('hiding');
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 400);
+  });
 }
