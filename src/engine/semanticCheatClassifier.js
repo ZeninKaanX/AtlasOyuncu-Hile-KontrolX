@@ -352,7 +352,19 @@ class SemanticCheatClassifier {
       cpText.includes('method_7261') // getAttackCooldownProgress in Yarn
     );
 
-    if (hasTargetedEntity && hasCooldownCheck && (killauraSignals.attackDispatch || cpText.includes('attack') || cpText.includes('click'))) {
+    let hasAttackOrClickDispatch = (
+      killauraSignals.attackDispatch ||
+      cpText.includes('NativeClick') ||
+      cpText.includes('mouse_event') ||
+      cpText.includes('SendInput') ||
+      cpText.includes('robot/Robot') ||
+      cpText.includes('XTestFakeButtonEvent') ||
+      cpText.includes('clickMouse') ||
+      (cpText.includes('click') && (cpText.includes('lastClickTime') || cpText.includes('canHitTarget') || cpText.includes('CLICK_COOLDOWN'))) ||
+      (cpText.includes('doAttack') && !className.includes('class_329') && !className.includes('InGameHud'))
+    );
+
+    if (hasTargetedEntity && hasCooldownCheck && hasAttackOrClickDispatch) {
       threatScore += 40;
       detectedVectors.push({
         vector: 'TRIGGER_BOT_SEMANTICS',
@@ -391,6 +403,11 @@ class SemanticCheatClassifier {
   classifyJar(filePath, zipInstance, zipEntries, whitelistResult = null) {
     const findings = [];
     const fileName = path.basename(filePath);
+
+    // Official vanilla Minecraft libraries and remapped jars are 100% clean
+    if (/client-intermediary|server-intermediary|minecraft-merged/i.test(fileName)) {
+      return findings;
+    }
 
     if (!zipEntries || zipEntries.length === 0) return findings;
 

@@ -1072,21 +1072,12 @@ function initActionButtons() {
                   isTr ? 'Rapor İndirilenlere Kaydedildi' : 'Report Saved to Downloads',
                   data.path,
                   'success',
-                  6000
+                  7000
                 );
               }
             })
             .catch(() => {});
         }
-
-        showToast(
-          isTr ? 'Rapor Dışa Aktarıldı' : 'Report Exported',
-          isTr 
-            ? 'Rapor İndirilenler klasörünüze kaydedildi ve tarayıcınızdan indirildi.' 
-            : 'Report was downloaded and saved to your Downloads directory.',
-          'success',
-          5000
-        );
       } catch (err) {
         showToast(
           isTr ? 'Dışa Aktarma Hatası' : 'Export Error',

@@ -245,6 +245,8 @@ class ProcessHollowingDetector {
             .trim();
         } catch (_) {}
 
+        if (parseInt(pid, 10) === process.pid || /atlasac|farben/i.test(cmdline) || /atlasac|farben/i.test(realPath)) continue;
+
         const isMinecraftRelated = /minecraft|java|lwjgl|jvm|jre|jdk/.test(cmdline) ||
                                    /minecraft|java|lwjgl/.test(realPath.toLowerCase());
 

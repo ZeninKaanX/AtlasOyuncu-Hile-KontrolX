@@ -50,7 +50,10 @@ class ModrinthWhitelistEngine {
         'cofhcore', 'thermalexpansion', 'thermalfoundation', 'notenoughitems',
         'codechickencore', 'waila', 'dynamiclights', 'fastcraft', 'securitycraft',
         'grimoireofgaia', 'biomesoplenty', 'chisel', 'carpentersblocks',
-        'advancedsolarpanel'
+        'advancedsolarpanel', 'viabackwards', 'viaversion', 'viafabric',
+        'viafabricplus', 'viaforge', 'viarewind', 'vialoadingbase',
+        'client-intermediary', 'intermediary', 'paper', 'paper-api',
+        'purpur', 'spigot', 'bukkit', 'grimac'
       ];
       for (const id of builtInCleanMods) {
         this.cleanModIds.add(id.toLowerCase());
@@ -64,7 +67,10 @@ class ModrinthWhitelistEngine {
         'ic2', 'coro', 'net/teamhollow/bomd', 'berezka', 'theundeadrevamped',
         'appeng', 'cofh', 'codechicken', 'mcp/mobius/waila', 'atomicstryker/dynamiclights',
         'biomesoplenty', 'team/chisel', 'com/carpentersblocks', 'dan200/computercraft',
-        'slimeknights/tconstruct', 'vazkii/botania', 'vazkii/quark'
+        'slimeknights/tconstruct', 'vazkii/botania', 'vazkii/quark',
+        'com/viaversion', 'de/florianmichael/vialoadingbase', 'net/raphimc/viabackwards',
+        'net/raphimc/viarewind', 'com/github/creeper123123321/viafabric',
+        'io/papermc', 'ac/grim/grimac', 'net/minecraft'
       ];
       for (const ns of builtInNamespaces) {
         if (!this.cleanNamespaces.includes(ns)) {

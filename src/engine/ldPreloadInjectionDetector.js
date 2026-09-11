@@ -317,8 +317,10 @@ class LdPreloadInjectionDetector {
       const rawCmdline = this._readCmdline(pid);
       const cmdline = rawCmdline.toLowerCase();
 
-      // Whitelist legitimate desktop environment, display server, and system services
-      const isWhitelistedProc = /plasmashell|plasma-|kwin|gnome-|mutter|wayland|xorg|xwayland|pipewire|wireplumber|pulseaudio|systemd|dbus|firefox|chrome|electron/i.test(cmdline);
+      if (parseInt(pid, 10) === process.pid) return findings;
+
+      // Whitelist legitimate desktop environment, display server, and system services (and anti-cheat itself)
+      const isWhitelistedProc = /plasmashell|plasma-|kwin|gnome-|mutter|wayland|xorg|xwayland|pipewire|wireplumber|pulseaudio|systemd|dbus|firefox|chrome|electron|atlasac|farben/i.test(cmdline);
       if (isWhitelistedProc) return findings;
 
       const maps = fs.readFileSync(`/proc/${pid}/maps`, 'utf8');
@@ -336,7 +338,7 @@ class LdPreloadInjectionDetector {
 
         // Whitelist Linux kernel anonymous memory file descriptors and JIT maps
         // e.g. /memfd:JITCode:QtQml, /memfd:wayland-shm, /SYSV00000000, /dev/zero
-        if (/memfd:|SYSV|anon_inode|\[aio\]|\/dev\/zero/i.test(filePath)) continue;
+        if (/memfd:|SYSV|anon_inode|\[aio\]|\/dev\/zero|atlasac|farben/i.test(filePath)) continue;
 
         if (seen.has(filePath)) continue;
         seen.add(filePath);
