@@ -101,17 +101,15 @@ class SemanticCheatClassifier {
       attackDispatch: false
     };
 
-    // 1A. Entity Discovery
+    // 1A. Entity Discovery (actual entity querying, not general World class references)
     if (
       cpText.includes('getEntities') ||
       cpText.includes('getOtherEntities') ||
       cpText.includes('getEntitiesWithinAABB') ||
       cpText.includes('loadedEntityList') ||
-      cpText.includes('method_18112') || // World.getOtherEntities in Yarn
-      cpText.includes('world/World') ||
-      cpText.includes('world/ClientWorld') ||
-      cpText.includes('class_1937') || // World
-      cpText.includes('class_638')     // ClientWorld
+      cpText.includes('getEntitiesInRange') ||
+      cpText.includes('getEntitiesByClass') ||
+      cpText.includes('method_18112') // World.getOtherEntities in Yarn
     ) {
       killauraSignals.entityDiscovery = true;
     }
@@ -136,16 +134,15 @@ class SemanticCheatClassifier {
       killauraSignals.targetFilter = true;
     }
 
-    // 1D. Automated Attack Packet / Dispatch
+    // 1D. Automated Attack Packet / Dispatch (must be client attack loop, not standard server damage source)
     if (
       cpText.includes('PlayerInteractEntityC2SPacket') ||
       cpText.includes('C02PacketUseEntity') ||
       cpText.includes('class_2824') || // PlayerInteractEntityC2SPacket
-      cpText.includes('attackEntity') ||
+      (cpText.includes('attackEntity') && (cpText.includes('PlayerController') || cpText.includes('InteractionManager') || cpText.includes('sendPacket') || cpText.includes('swingHand'))) ||
       cpText.includes('method_2918') || // ClientPlayerInteractionManager.attackEntity
-      cpText.includes('swingHand') ||
-      cpText.includes('swingItem') ||
-      (cpText.includes('method_7261') && cpText.includes('attack')) // getAttackCooldownProgress + attack
+      (cpText.includes('swingHand') && (cpText.includes('attackEntity') || cpText.includes('PlayerInteractEntityC2SPacket'))) ||
+      (cpText.includes('method_7261') && cpText.includes('attackEntity'))
     ) {
       killauraSignals.attackDispatch = true;
     }
@@ -178,8 +175,7 @@ class SemanticCheatClassifier {
     if (
       cpText.includes('expandBox') ||
       cpText.includes('stretch') ||
-      (cpText.includes('Box') && cpText.includes('expand')) ||
-      (cpText.includes('AxisAlignedBB') && cpText.includes('expand')) ||
+      (cpText.includes('Box') && cpText.includes('expandBox')) ||
       cpText.includes('method_1009') || // Box.expand
       cpText.includes('method_1012')    // Box.stretch
     ) {
@@ -188,28 +184,24 @@ class SemanticCheatClassifier {
 
     if (
       cpText.includes('getExtendedReach') ||
-      cpText.includes('getBlockReachDistance') ||
-      cpText.includes('getReachDistance') ||
-      cpText.includes('getInteractionDistance') ||
-      cpText.includes('reachDistance') ||
       cpText.includes('hitboxExpansion') ||
-      cpText.includes('hitbox')
+      (cpText.includes('reachDistance') && (cpText.includes('hitbox') || cpText.includes('attack')))
     ) {
       reachSignals.reachMethod = true;
     }
 
-    // Check for constant double or float > 3.0 blocks in reach context (e.g. 3.2, 3.5, 4.0, 4.5, 5.0, 6.0)
-    // or string references indicating expanded reach
+    // Check for combat reach cheat specifically (e.g. reach > 3.0 or hitbox expansion for attacking)
+    // Avoid false flags on general bounding box math unless combined with explicit attack reach modification
     if (
-      /reach.*(?:[3-9]\.[0-9]|1[0-9]\.[0-9])/i.test(cpText) ||
+      cpText.includes('hitboxExpansion') ||
       /hitbox.*(?:0\.[1-9]|[1-9]\.[0-9])/i.test(cpText) ||
-      (reachSignals.reachMethod && (cpText.includes('attack') || cpText.includes('raycast') || cpText.includes('targetedEntity')))
+      (/reach.*(?:[3-9]\.[0-9]|1[0-9]\.[0-9])/i.test(cpText) && (cpText.includes('attack') || cpText.includes('targetedEntity') || cpText.includes('PlayerInteractEntityC2SPacket'))) ||
+      (reachSignals.reachMethod && (cpText.includes('expandBox') || cpText.includes('stretch')) && (cpText.includes('hitboxExpansion') || /reach.*(?:[3-9]\.[0-9]|1[0-9]\.[0-9])/i.test(cpText)))
     ) {
       reachSignals.distanceOver3 = true;
     }
 
-    if ((reachSignals.boxExpand && (reachSignals.reachMethod || reachSignals.distanceOver3)) ||
-        (reachSignals.reachMethod && reachSignals.distanceOver3 && (cpText.includes('attack') || cpText.includes('entity')))) {
+    if (reachSignals.distanceOver3 && (reachSignals.boxExpand || reachSignals.reachMethod)) {
       threatScore += 45;
       detectedVectors.push({
         vector: 'REACH_EXPANSION_SEMANTICS',
@@ -426,7 +418,7 @@ class SemanticCheatClassifier {
     }
 
     // Consolidate all detected vectors across classes
-    const allVectors = [];
+    let allVectors = [];
     const evidenceList = [];
     let totalScore = 0;
 
@@ -446,6 +438,21 @@ class SemanticCheatClassifier {
 
     // Determine whether this is a trojanized clean mod or an outright homemade cheat
     const isClaimingWhitelisted = whitelistResult && whitelistResult.isWhitelisted;
+
+    // Strict 0-False-Flag Whitelist Protection:
+    // If a mod is whitelisted, gameplay mechanics like extended interaction reach
+    // (ForgeMod.REACH_DISTANCE in Create, Supplementaries, ItemPhysic, etc.) must NEVER be treated as a trojan!
+    if (isClaimingWhitelisted) {
+      allVectors = allVectors.filter(v => v.vector !== 'REACH_EXPANSION_SEMANTICS');
+      if (allVectors.length === 0) {
+        return findings; // 100% Clean whitelisted mod!
+      }
+    }
+
+    if (allVectors.length === 0) {
+      return findings;
+    }
+
     const alertType = isClaimingWhitelisted
       ? 'TROJAN_WHITELIST_BYPASS_ATTEMPT'
       : 'CUSTOM_HOMEMADE_CHEAT_DETECTED';

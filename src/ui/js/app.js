@@ -54,7 +54,7 @@ const translations = {
     macro_desc: 'OP AutoClicker, Murgee, SpeedClicker, Logitech LUA scripts, Razer Synapse macros, Bloody AMC, and external Python cheat processes.',
     term_heading: 'Live Telemetry & Inspection Stream',
     export_heading: 'Inspection Verification Report',
-    export_desc: 'Exports all detected findings, SHA-256 file hashes, timestamps, and integrity evidence directly to your desktop as a self-contained HTML report.',
+    export_desc: 'Exports all detected findings, SHA-256 file hashes, timestamps, and integrity evidence directly to your Downloads folder as a self-contained HTML report.',
     btn_export: 'Export Report',
     hud_title: 'Atlas AC Inspection',
     hud_close: 'Close',
@@ -148,7 +148,7 @@ const translations = {
     macro_desc: 'OP AutoClicker, Murgee, SpeedClicker, Logitech LUA betikleri, Razer Synapse makroları, Bloody AMC ve harici Python hile süreçleri.',
     term_heading: 'Canlı Telemetri ve Denetim Akışı',
     export_heading: 'Denetim Doğrulama Raporu',
-    export_desc: 'Tespit edilen tüm bulguları, SHA-256 dosya özetlerini, zaman damgalarını ve bütünlük kanıtlarını doğrudan masaüstünüze HTML raporu olarak kaydeder.',
+    export_desc: 'Tespit edilen tüm bulguları, SHA-256 dosya özetlerini, zaman damgalarını ve bütünlük kanıtlarını doğrudan İndirilenler (Downloads) klasörünüze HTML raporu olarak kaydeder.',
     btn_export: 'Raporu Dışa Aktar',
     hud_title: 'Atlas AC Denetimi',
     hud_close: 'Kapat',
@@ -732,6 +732,7 @@ let animFrameId = null;
 let liveCriticalCount = 0;
 let liveHighCount = 0;
 const liveFindingKeys = new Set();
+const liveFindingsList = [];
 
 // Start Live Smooth Progress Animation Loop with requestAnimationFrame (Low CPU)
 function startProgressAnimation() {
@@ -742,6 +743,7 @@ function startProgressAnimation() {
   liveCriticalCount = 0;
   liveHighCount = 0;
   liveFindingKeys.clear();
+  liveFindingsList.length = 0;
   scanStartTime = Date.now();
 
   const heroVerdictCard = document.getElementById('heroVerdictCard');
@@ -756,6 +758,16 @@ function startProgressAnimation() {
 
   const riskScoreVal = document.getElementById('riskScoreVal');
   if (riskScoreVal) riskScoreVal.textContent = '0%';
+
+  const dashCrit = document.getElementById('dashCritical');
+  const dashHigh = document.getElementById('dashHigh');
+  const dashJars = document.getElementById('dashJars');
+  if (dashCrit) dashCrit.textContent = '0';
+  if (dashHigh) dashHigh.textContent = '0';
+  if (dashJars) dashJars.textContent = '0';
+
+  updatePolarRadar(0, 0, 0);
+  updateCountsDisplay(0, 0, 0, 0, 0);
 
   if (scanDurationTimer) clearInterval(scanDurationTimer);
   scanDurationTimer = setInterval(() => {
@@ -836,6 +848,10 @@ function handleProgressUpdate(msg) {
     if (objectsEl) {
       objectsEl.textContent = `${scannedObjectsCount.toLocaleString('en-US')} ${t.objects}`;
     }
+    const dashJars = document.getElementById('dashJars');
+    if (dashJars) {
+      dashJars.textContent = scannedObjectsCount;
+    }
   }
 
   if (msg.target && tickerText) {
@@ -902,68 +918,68 @@ function markStepFlagged(key, label) {
 function handleScanComplete(data) {
   currentScanData = data;
   targetPercent = 100;
+  currentPercent = 100;
+  isScanActive = false;
   const t = translations[currentLang] || translations.en;
 
   if (scanDurationTimer) {
     clearInterval(scanDurationTimer);
     scanDurationTimer = null;
   }
+  if (progressInterval) {
+    clearInterval(progressInterval);
+    progressInterval = null;
+  }
+  if (animFrameId) {
+    cancelAnimationFrame(animFrameId);
+    animFrameId = null;
+  }
 
-  const finishWait = setInterval(() => {
-    if (currentPercent >= 99) {
-      clearInterval(finishWait);
-      isScanActive = false;
-      if (progressInterval) clearInterval(progressInterval);
+  // 1. Instantly render full results and populate all findings, counts, and radar!
+  renderFullResults(data);
 
-      const percentEl = document.getElementById('hudProgressPercent');
-      const ringCircle = document.getElementById('hudProgressRingCircle');
-      const hudActiveLbl = document.getElementById('hudActiveStepLabel');
-      const tickerText = document.getElementById('hudTickerText');
-      const objectsEl = document.getElementById('hudObjectsCount');
+  // 2. Complete HUD graphics
+  const percentEl = document.getElementById('hudProgressPercent');
+  const ringCircle = document.getElementById('hudProgressRingCircle');
+  const hudActiveLbl = document.getElementById('hudActiveStepLabel');
+  const tickerText = document.getElementById('hudTickerText');
+  const objectsEl = document.getElementById('hudObjectsCount');
 
-      if (percentEl) percentEl.textContent = '100';
-      if (ringCircle) ringCircle.style.strokeDashoffset = '0';
-      if (hudActiveLbl) hudActiveLbl.textContent = t.hud_complete;
-      if (tickerText) tickerText.innerHTML = `<span style="color: var(--threat-clean); font-weight: 700;">${t.hud_finished_ticker}</span>`;
-      if (typeof data.scannedObjects === 'number' && objectsEl) {
-        objectsEl.textContent = `${data.scannedObjects.toLocaleString('en-US')} ${t.objects}`;
-      }
+  if (percentEl) percentEl.textContent = '100';
+  if (ringCircle) ringCircle.style.strokeDashoffset = '0';
+  if (hudActiveLbl) hudActiveLbl.textContent = t.hud_complete;
+  if (tickerText) tickerText.innerHTML = `<span style="color: var(--threat-clean); font-weight: 700;">${t.hud_finished_ticker}</span>`;
+  if (typeof data.scannedObjects === 'number' && objectsEl) {
+    objectsEl.textContent = `${data.scannedObjects.toLocaleString('en-US')} ${t.objects}`;
+  }
 
-      ALL_HUD_KEYS.forEach(key => {
-        if (!flaggedStages.has(key)) {
-          const card = document.getElementById(`stepCard-${key}`);
-          const state = document.getElementById(`stepState-${key}`);
-          if (card) card.className = 'step-card complete';
-          if (state) state.textContent = t.hud_clean;
-        }
-      });
-
-      const totalFindings = (data.allFindings || []).length;
-      logTerminal('SUCCESS', `Inspection complete. Analyzed findings count: ${totalFindings}.`);
-
-      if (data.autoReportPath) {
-        logTerminal('SUCCESS', `Report automatically generated: ${data.autoReportPath}`);
-      }
-
-      renderFullResults(data);
-
-      setTimeout(() => {
-        const hudModal = document.getElementById('scanModalHud');
-        if (hudModal) {
-          hudModal.classList.remove('active');
-        }
-        const btnShowHud = document.getElementById('btnShowHud');
-        if (btnShowHud) {
-          btnShowHud.classList.remove('scanning-active');
-        }
-        const btnScan = document.getElementById('btnStartScan');
-        if (btnScan) {
-          btnScan.disabled = false;
-          btnScan.textContent = currentLang === 'tr' ? 'Yeniden Tara' : 'Start Full Scan';
-        }
-      }, 1200);
+  ALL_HUD_KEYS.forEach(key => {
+    if (!flaggedStages.has(key)) {
+      const card = document.getElementById(`stepCard-${key}`);
+      const state = document.getElementById(`stepState-${key}`);
+      if (card) card.className = 'step-card complete';
+      if (state) state.textContent = t.hud_clean;
     }
-  }, 40);
+  });
+
+  const totalFindings = (data.allFindings || []).length;
+  logTerminal('SUCCESS', `Inspection complete. Analyzed findings count: ${totalFindings}.`);
+
+    setTimeout(() => {
+      const hudModal = document.getElementById('scanModalHud');
+      if (hudModal) {
+        hudModal.classList.remove('active');
+      }
+      const btnShowHud = document.getElementById('btnShowHud');
+      if (btnShowHud) {
+        btnShowHud.classList.remove('scanning-active');
+      }
+      const btnScan = document.getElementById('btnStartScan');
+      if (btnScan) {
+        btnScan.disabled = false;
+        btnScan.textContent = currentLang === 'tr' ? 'Yeniden Tara' : 'Start Full Scan';
+      }
+    }, 1200);
 }
 
 function openHud() {
@@ -1458,6 +1474,13 @@ function renderLiveFindingCard(f) {
   const findingId = `${f.type || ''}|${f.path || ''}|${f.name || ''}|${f.file || ''}`;
   if (liveFindingKeys.has(findingId)) return;
   liveFindingKeys.add(findingId);
+  liveFindingsList.push(f);
+
+  if (!currentScanData) {
+    currentScanData = { allFindings: liveFindingsList };
+  } else {
+    currentScanData.allFindings = liveFindingsList;
+  }
 
   const isThreat = f.level === 'CRITICAL' || f.severity === 'CRITICAL';
   const isSuspicious = f.level === 'HIGH' || f.severity === 'HIGH';
@@ -1466,6 +1489,7 @@ function renderLiveFindingCard(f) {
 
   const dashCrit = document.getElementById('dashCritical');
   const dashHigh = document.getElementById('dashHigh');
+  const dashJars = document.getElementById('dashJars');
   const dashVerdict = document.getElementById('dashVerdict');
   const heroVerdictCard = document.getElementById('heroVerdictCard');
   const riskScoreVal = document.getElementById('riskScoreVal');
@@ -1473,6 +1497,7 @@ function renderLiveFindingCard(f) {
 
   if (dashCrit) dashCrit.textContent = liveCriticalCount;
   if (dashHigh) dashHigh.textContent = liveHighCount;
+  if (dashJars) dashJars.textContent = scannedObjectsCount || liveFindingsList.length;
 
   if (heroVerdictCard && dashVerdict) {
     if (liveCriticalCount > 0) {
@@ -1486,7 +1511,14 @@ function renderLiveFindingCard(f) {
     }
   }
 
-  updatePolarRadar(liveCriticalCount, liveHighCount, 0);
+  updatePolarRadar(liveCriticalCount, liveHighCount, Math.max(1, scannedObjectsCount || liveFindingsList.length));
+
+  // Dynamically update category explorer badges in real time as findings arrive
+  const mcCount = liveFindingsList.filter(isMinecraftFinding).length;
+  const aiCount = liveFindingsList.filter(isAiFinding).length;
+  const intCount = liveFindingsList.filter(isIntegrityFinding).length;
+  const suspCount = liveFindingsList.filter(isSuspiciousFinding).length;
+  updateCountsDisplay(liveFindingsList.length, mcCount, aiCount, intCount, suspCount);
 
   const container = document.getElementById('dashFindingsList');
   if (container) {

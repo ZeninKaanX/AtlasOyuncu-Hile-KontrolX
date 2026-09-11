@@ -40,6 +40,37 @@ class ModrinthWhitelistEngine {
           this.cleanNamespaces = data.verifiedPackageNamespaces.map(ns => ns.replace(/\./g, '/').toLowerCase());
         }
       }
+
+      // Additional well-known legitimate community mod IDs & Forge/CurseForge classics
+      const builtInCleanMods = [
+        'fiskheroes', 'fisktag', 'fisksuperheroes', 'fisks-superheroes',
+        'create', 'supplementaries', 'tacz', 'itemphysic', 'irons_spellbooks',
+        'industrialcraft', 'industrialcraft-2', 'ic2', 'coroutil', 'zombieawareness',
+        'bomd', 'berezka_api', 'theundeadrevamped', 'appliedenergistics2',
+        'cofhcore', 'thermalexpansion', 'thermalfoundation', 'notenoughitems',
+        'codechickencore', 'waila', 'dynamiclights', 'fastcraft', 'securitycraft',
+        'grimoireofgaia', 'biomesoplenty', 'chisel', 'carpentersblocks',
+        'advancedsolarpanel'
+      ];
+      for (const id of builtInCleanMods) {
+        this.cleanModIds.add(id.toLowerCase());
+        this.cleanModIds.add(id.replace(/-/g, '_').toLowerCase());
+        this.cleanModIds.add(id.replace(/_/g, '-').toLowerCase());
+      }
+
+      const builtInNamespaces = [
+        'com/fiskmods', 'com/simibubi/create', 'net/mehvahdjukaar/supplementaries',
+        'com/tacz', 'com/tac', 'dev/tr7zw/itemphysic', 'io/redspace/ironsspellbooks',
+        'ic2', 'coro', 'net/teamhollow/bomd', 'berezka', 'theundeadrevamped',
+        'appeng', 'cofh', 'codechicken', 'mcp/mobius/waila', 'atomicstryker/dynamiclights',
+        'biomesoplenty', 'team/chisel', 'com/carpentersblocks', 'dan200/computercraft',
+        'slimeknights/tconstruct', 'vazkii/botania', 'vazkii/quark'
+      ];
+      for (const ns of builtInNamespaces) {
+        if (!this.cleanNamespaces.includes(ns)) {
+          this.cleanNamespaces.push(ns);
+        }
+      }
     } catch (e) {
       console.warn('[!] Could not load Modrinth clean whitelist database:', e.message);
     }

@@ -229,7 +229,7 @@ class MinecraftInspectorEngine {
       const rawEntries = zip.getEntries();
       const zipEntries = rawEntries.map(e => e.entryName);
 
-      // Extract mod metadata (fabric.mod.json, quilt.mod.json, mcmod.info)
+      // Extract mod metadata (fabric.mod.json, quilt.mod.json, mcmod.info, META-INF/mods.toml)
       let modMetadata = null;
       try {
         const metaEntry = rawEntries.find(e => e.entryName === 'fabric.mod.json' || e.entryName === 'quilt.mod.json' || e.entryName === 'mcmod.info');
@@ -237,6 +237,20 @@ class MinecraftInspectorEngine {
           const text = metaEntry.getData().toString('utf8');
           const parsed = JSON.parse(text);
           modMetadata = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : parsed;
+        } else {
+          const tomlEntry = rawEntries.find(e => e.entryName === 'META-INF/mods.toml' || e.entryName === 'mods.toml');
+          if (tomlEntry) {
+            const text = tomlEntry.getData().toString('utf8');
+            const modIdMatch = text.match(/modId\s*=\s*["']([^"']+)["']/i);
+            const nameMatch = text.match(/displayName\s*=\s*["']([^"']+)["']/i);
+            if (modIdMatch && modIdMatch[1]) {
+              modMetadata = {
+                id: modIdMatch[1],
+                modid: modIdMatch[1],
+                name: nameMatch && nameMatch[1] ? nameMatch[1] : modIdMatch[1]
+              };
+            }
+          }
         }
       } catch (e) {}
 
