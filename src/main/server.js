@@ -45,6 +45,9 @@ function serveStaticFile(req, res, filePath) {
       const ext = path.extname(filePath).toLowerCase();
       const mime = MIME_TYPES[ext] || 'application/octet-stream';
       res.setHeader('Content-Type', mime);
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       
       // For large video files like bg.mp4, support partial range requests if needed
       if (ext === '.mp4') {

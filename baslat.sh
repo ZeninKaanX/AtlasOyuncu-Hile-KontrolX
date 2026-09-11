@@ -10,6 +10,8 @@ echo "======================================================"
 
 # 1. Eski donmuş veya artık süreçleri temizle
 fuser -k 3317/tcp 2>/dev/null || true
+pkill -9 -f "AtlasAC" 2>/dev/null || true
+sleep 0.5
 
 # 2. İkili dosya veya Node.js ile başlat
 if [ -f "./dist/AtlasAC-Linux" ]; then
