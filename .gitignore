@@ -1,22 +1,39 @@
-# Derleme çıktıları
-out/
-staging/
-*.jar
-!src/**/*.jar
+# Dependencies
+node_modules/
+package-lock.json
 
-# Gömülü JRE / çalışma zamanı
-jre/
-lib/
+# Build outputs & standalone binaries
+dist/
+build/
+bin/
+*.exe
+*.run
+*.zip
+dist*.zip
 
-# Geçici dosyalar
-*.class
+# Benchmark & Media Artifacts
+*.mp4
+*.pdf
+edit_poster.jpg
+ocean_vs_atlas_benchmark.html
+Atlas_vs_Ocean_Adli_Bilisim_Karsilastirma_Raporu.pdf
+
+# Log files
 *.log
-sources.tmp
-MANIFEST.MF
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS and Editor metadata
 .DS_Store
 Thumbs.db
-
-# IDE
 .idea/
 .vscode/
-*.iml
+*.swp
+*.swo
+
+# Temporary directories
+temp/
+tmp/
+.temp/
+.cache/

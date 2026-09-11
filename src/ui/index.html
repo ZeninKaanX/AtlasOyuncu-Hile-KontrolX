@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atlas AC — Client Integrity &amp; Anti-Cheat Inspection</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Live Video Background Layer (Translucent Frosted Overlay) -->
+  <div class="video-bg-container">
+    <video class="bg-video" autoplay loop muted playsinline src="assets/bg.mp4"></video>
+  </div>
+  <div class="video-overlay"></div>
+
+  <!-- Top App Navigation (Clean Snow-White Glass) -->
+  <header class="app-header">
+    <div class="brand-wrapper">
+      <img src="assets/logo.svg" alt="Atlas AC" class="brand-logo">
+    </div>
+
+    <div class="header-right">
+      <div class="lang-picker-wrapper">
+        <span class="lang-lbl">LANG</span>
+        <select id="languageSelect" class="lang-selector" aria-label="Select Language">
+          <option value="tr" selected>Türkçe</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+      <button class="btn-view-scan-hud" id="btnShowHud" data-i18n="btn_hud_view">Scanning View</button>
+      <button class="btn-shutdown-app" id="btnShutdownApp" title="Atlas AC'yi Kapat ve Süreci Sonlandır" data-i18n="btn_shutdown">Çıkış / Kapat</button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="nav-item active" data-tab="dashboard">
+        <span class="nav-index">01</span> <span data-i18n="nav_overview">Overview</span>
+      </div>
+      <div class="nav-item" data-tab="bypass">
+        <span class="nav-index">02</span> <span data-i18n="nav_bypass">Bypass &amp; Injection</span>
+      </div>
+      <div class="nav-item" data-tab="usn">
+        <span class="nav-index">03</span> <span data-i18n="nav_usn">USN Journal</span>
+      </div>
+      <div class="nav-item" data-tab="prefetch">
+        <span class="nav-index">04</span> <span data-i18n="nav_prefetch">Prefetch &amp; BAM</span>
+      </div>
+      <div class="nav-item" data-tab="minecraft">
+        <span class="nav-index">05</span> <span data-i18n="nav_minecraft">Minecraft &amp; Mods</span>
+      </div>
+      <div class="nav-item" data-tab="browsers">
+        <span class="nav-index">06</span> <span data-i18n="nav_browsers">Browser Downloads</span>
+      </div>
+      <div class="nav-item" data-tab="usb">
+        <span class="nav-index">07</span> <span data-i18n="nav_usb">USB Storage</span>
+      </div>
+      <div class="nav-item" data-tab="macros">
+        <span class="nav-index">08</span> <span data-i18n="nav_macros">Clickers &amp; Macros</span>
+      </div>
+      <div class="nav-item" data-tab="terminal">
+        <span class="nav-index">09</span> <span data-i18n="nav_terminal">Live Telemetry</span>
+      </div>
+      <div class="nav-item" data-tab="export">
+        <span class="nav-index">10</span> <span data-i18n="nav_export">Export Report</span>
+      </div>
+    </aside>
+
+    <!-- Main Viewport -->
+    <main class="main-viewport">
+      <!-- 1. OVERVIEW DASHBOARD -->
+      <section class="tab-pane active" id="dashboard">
+        <div id="autoReportContainer"></div>
+
+        <div class="tactical-banner">
+          <div class="banner-desc">
+            <h2 data-i18n="hero_title">Atlas AC Integrity Inspection Engine</h2>
+            <p data-i18n="hero_desc">
+              High-performance client inspection covering 12 target cheat clients (Raven B+, Doomsday, Aristois, LiquidBounce, Wurst, Meteor, Impact, Inertia, ThunderHack, CatLean, Ares, BleachHack), Spotify SpotX DLL injection hooks, disguised trojan mods, and external Python background scripts with 0% false positives.
+            </p>
+          </div>
+          <button class="btn-scan-launch" id="btnStartScan" data-i18n="btn_start_scan">
+            Start Full Scan
+          </button>
+        </div>
+
+        <!-- Stat Row -->
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="stat-tag" data-i18n="stat_critical">Critical Threats</div>
+            <div class="stat-val crit" id="dashCritical">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-tag" data-i18n="stat_suspicious">Suspicious / Macros</div>
+            <div class="stat-val warn" id="dashHigh">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-tag" data-i18n="stat_scanned">Scanned Modules</div>
+            <div class="stat-val info" id="dashJars">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-tag" data-i18n="stat_verdict">System Verdict</div>
+            <div class="stat-val standby" id="dashVerdict" data-i18n="verdict_standby">BEKLEMEDE</div>
+          </div>
+        </div>
+
+        <!-- Live Findings Stream -->
+        <div class="findings-section-title" data-i18n="findings_title">
+          Detected Findings &amp; Evidence Log
+        </div>
+        <div class="findings-list" id="dashFindingsList">
+          <p class="empty-state-text" data-i18n="dash_empty">No scan running. Click 'Start Full Scan' above to launch complete client inspection.</p>
+        </div>
+      </section>
+
+      <!-- 2. BYPASS -->
+      <section class="tab-pane" id="bypass">
+        <h2 class="section-heading" data-i18n="bypass_heading">Bypass &amp; Injection Analysis</h2>
+        <p class="section-desc" data-i18n="bypass_desc">Spotify SpotX disguised DLL hijacking, kernel-level BYOVD drivers, DNS cache poisoning, and JVM -javaagent injection hooks.</p>
+        <div class="findings-list" id="bypassList"></div>
+      </section>
+
+      <!-- 3. USN JOURNAL -->
+      <section class="tab-pane" id="usn">
+        <h2 class="section-heading" data-i18n="usn_heading">NTFS USN &amp; Deletion Evidence</h2>
+        <p class="section-desc" data-i18n="usn_desc">Shift+Deleted cheat JARs/EXEs, .bplus Raven configurations, self-destruct scripts, and deleted file change journals.</p>
+        <div class="findings-list" id="usnList"></div>
+      </section>
+
+      <!-- 4. PREFETCH & BAM -->
+      <section class="tab-pane" id="prefetch">
+        <h2 class="section-heading" data-i18n="prefetch_heading">Prefetch &amp; BAM Execution History</h2>
+        <p class="section-desc" data-i18n="prefetch_desc">MAM decompressed JAVAW.EXE executed resources and BAM Windows Registry execution trails of deleted cheat binaries.</p>
+        <div class="findings-list" id="prefetchList"></div>
+      </section>
+
+      <!-- 5. MINECRAFT & MODS -->
+      <section class="tab-pane" id="minecraft">
+        <h2 class="section-heading" data-i18n="mc_heading">Minecraft Mods &amp; Trojan Heuristics</h2>
+        <p class="section-desc" data-i18n="mc_desc">PrismLauncher, .minecraft, and instance directory verification for disguised JARs, hidden triggers, and native input injection bytecode.</p>
+        <div class="findings-list" id="minecraftList"></div>
+      </section>
+
+      <!-- 6. BROWSERS -->
+      <section class="tab-pane" id="browsers">
+        <h2 class="section-heading" data-i18n="browser_heading">Browser History &amp; Downloads</h2>
+        <p class="section-desc" data-i18n="browser_desc">Downloaded cheat binaries and visited cheat provider domains across Chrome, Edge, Brave, Opera, and Firefox.</p>
+        <div class="findings-list" id="browsersList"></div>
+      </section>
+
+      <!-- 7. USB -->
+      <section class="tab-pane" id="usb">
+        <h2 class="section-heading" data-i18n="usb_heading">USB &amp; Removable Storage History</h2>
+        <p class="section-desc" data-i18n="usb_desc">Historical records of connected flash drives, hardware IDs, and binaries executed from external storage devices.</p>
+        <div class="findings-list" id="usbList"></div>
+      </section>
+
+      <!-- 8. MACROS -->
+      <section class="tab-pane" id="macros">
+        <h2 class="section-heading" data-i18n="macro_heading">AutoClickers, Hardware Macros &amp; External Python</h2>
+        <p class="section-desc" data-i18n="macro_desc">OP AutoClicker, Murgee, SpeedClicker, Logitech LUA scripts, Razer Synapse macros, Bloody AMC, and external Python cheat processes.</p>
+        <div class="findings-list" id="macrosList"></div>
+      </section>
+
+      <!-- 9. TERMINAL -->
+      <section class="tab-pane" id="terminal">
+        <h2 class="section-heading" data-i18n="term_heading">Live Telemetry &amp; Inspection Stream</h2>
+        <div id="terminalConsole">
+          <div><span class="term-time">[00:00:00]</span> Atlas AC Integrity Engine Ready.</div>
+        </div>
+      </section>
+
+      <!-- 10. EXPORT -->
+      <section class="tab-pane" id="export">
+        <div class="tactical-banner">
+          <div class="banner-desc">
+            <h2 data-i18n="export_heading">Inspection Verification Report</h2>
+            <p data-i18n="export_desc">Exports all detected findings, SHA-256 file hashes, timestamps, and integrity evidence directly to your desktop as a self-contained HTML report.</p>
+          </div>
+          <button class="btn-scan-launch" id="btnExportReport" data-i18n="btn_export">
+            Export Report
+          </button>
+        </div>
+        <div id="exportStatusMsg" class="export-status-box"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- =====================================================================
+       FULL-SCREEN SCANNING PORTAL (THE SCANNING MOMENT)
+       ===================================================================== -->
+  <div class="scan-screen-modal" id="scanModalHud">
+    <button class="hud-close-btn" id="btnCloseHud" title="Close" data-i18n="hud_close">Close</button>
+    <div class="hud-container">
+      <!-- Circular Progress Ring (Snow-White & Chromatic Beam) -->
+      <div class="ocean-radar-wrapper">
+        <div class="radar-glow-disc"></div>
+        <svg class="progress-svg" viewBox="0 0 220 220">
+          <defs>
+            <linearGradient id="snowSpectrumGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffffff" />
+              <stop offset="40%" stop-color="#e0f2fe" />
+              <stop offset="70%" stop-color="#00f0ff" />
+              <stop offset="100%" stop-color="#7000ff" />
+            </linearGradient>
+          </defs>
+          <circle class="progress-ring-track" cx="110" cy="110" r="95"></circle>
+          <circle class="progress-ring-circle" id="hudProgressRingCircle" cx="110" cy="110" r="95"></circle>
+        </svg>
+        <div class="radar-center-text">
+          <div class="radar-counter-val"><span id="hudProgressPercent">0</span><span class="radar-counter-unit">%</span></div>
+          <div class="radar-objects-lbl" id="hudObjectsCount">0 objects</div>
+        </div>
+      </div>
+
+      <div class="hud-header-title" data-i18n="hud_title">Atlas AC Inspection</div>
+      <div class="hud-active-step-lbl" id="hudActiveStepLabel">Initializing Inspection Engine...</div>
+
+      <!-- 9-Step Interactive Checklist Grid -->
+      <div class="checklist-grid">
+        <div class="step-card" id="stepCard-bypass">
+          <div class="step-dot-indicator"></div>
+          <div class="step-info-col">
+            <div class="step-name" data-i18n="step_bypass">Bypass &amp; Injection</div>
+            <div class="step-state" id="stepState-bypass">Standby</div>
+          </div>
+        </div>
+
+        <div class="step-card" id="stepCard-memory">
+          <div class="step-dot-indicator"></div>
+          <div class="step-info-col">
+            <div class="step-name" data-i18n="step_memory">Memory &amp; Processes</div>
+            <div class="step-state" id="stepState-memory">Standby</div>
+          </div>
+        </div>
+
+        <div class="step-card" id="stepCard-usn">
+          <div class="step-dot-indicator"></div>
+          <div class="step-info-col">
+            <div class="step-name" data-i18n="step_usn">USN Deletion Journal</div>
+            <div class="step-state" id="stepState-usn">Standby</div>
+          </div>
+        </div>
+
+        <div class="step-card" id="stepCard-prefetch">
+          <div class="step-dot-indicator"></div>
+          <div class="step-info-col">
+            <div class="step-name" data-i18n="step_prefetch">Prefetch &amp; BAM</div>
+            <div class="step-state" id="stepState-prefetch">Standby</div>
+          </div>
+        </div>
+
+        <div class="step-card" id="stepCard-mods">
+          <div class="step-dot-indicator"></div>
+          <div class="step-info-col">
+            <div class="step-name" data-i18n="step_mods">Minecraft &amp; Mods</div>
+            <div class="step-state" id="stepState-mods">Standby</div>
+          </div>
+        </div>
+
+        <div class="step-card" id="stepCard-browsers">
+          <div class="step-dot-indicator"></div>
+          <div class="step-info-col">
+            <div class="step-name" data-i18n="step_browsers">Browser Downloads</div>
+            <div class="step-state" id="stepState-browsers">Standby</div>
+          </div>
+        </div>
+
+        <div class="step-card" id="stepCard-usb">
+          <div class="step-dot-indicator"></div>
+          <div class="step-info-col">
+            <div class="step-name" data-i18n="step_usb">USB Storage History</div>
+            <div class="step-state" id="stepState-usb">Standby</div>
+          </div>
+        </div>
+
+        <div class="step-card" id="stepCard-macros">
+          <div class="step-dot-indicator"></div>
+          <div class="step-info-col">
+            <div class="step-name" data-i18n="step_macros">Clickers &amp; Macros</div>
+            <div class="step-state" id="stepState-macros">Standby</div>
+          </div>
+        </div>
+
+        <div class="step-card" id="stepCard-python">
+          <div class="step-dot-indicator"></div>
+          <div class="step-info-col">
+            <div class="step-name" data-i18n="step_python">External Python</div>
+            <div class="step-state" id="stepState-python">Standby</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Telemetry Ticker Bar -->
+      <div class="hud-ticker">
+        <span class="ticker-lead" data-i18n="hud_active_target">Active Target:</span>
+        <span id="hudTickerText">Calibrating inspection modules...</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

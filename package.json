@@ -1,0 +1,51 @@
+{
+  "name": "atlas-ac",
+  "version": "1.0.0",
+  "description": "Atlas AC Client Integrity & Anti-Cheat Forensics Engine",
+  "main": "src/main/index.js",
+  "bin": "src/main/index.js",
+  "scripts": {
+    "start": "node src/main/index.js",
+    "stop": "node src/main/index.js --stop",
+    "test": "node tests/testFarbenAC.js",
+    "build": "node scripts/build.js"
+  },
+  "pkg": {
+    "scripts": [
+      "src/**/*.js"
+    ],
+    "assets": [
+      "src/ui/**/*",
+      "src/signatures/**/*"
+    ],
+    "targets": [
+      "node18-linux-x64",
+      "node18-win-x64"
+    ],
+    "outputPath": "dist"
+  },
+  "keywords": [
+    "anticheat",
+    "forensics",
+    "minecraft",
+    "integrity"
+  ],
+  "author": "ZeninKaanX / Atlas AC Team",
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZeninKaanX/AtlasOyuncu-Hile-KontrolX.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ZeninKaanX/AtlasOyuncu-Hile-KontrolX/issues"
+  },
+  "homepage": "https://github.com/ZeninKaanX/AtlasOyuncu-Hile-KontrolX#readme",
+  "dependencies": {
+    "adm-zip": "^0.6.0",
+    "express": "^5.2.1",
+    "ws": "^8.21.3"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1"
+  }
+}

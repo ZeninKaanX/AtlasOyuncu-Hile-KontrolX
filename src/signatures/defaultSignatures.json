@@ -1,0 +1,1712 @@
+{
+  "version": "2026.9.9",
+  "lastUpdated": "2026-09-09T10:00:00Z",
+  "clientRules": [
+    {
+      "id": "raven_b_series",
+      "name": "Raven B Series (Raven B+, B3, bS, B++, Weep)",
+      "category": "Ghost Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9"],
+      "description": "Forge 1.8.9 Ghost Client designed to bypass screenshares by pretending to be keystrokesmod or OptiFine.",
+      "packages": [
+        "keystrokesmod.client.main",
+        "keystrokesmod.client.module.modules.combat",
+        "keystrokesmod.client.module.modules.movement",
+        "keystrokesmod.client.module.modules.player",
+        "keystrokesmod.client.module.modules.render",
+        "keystrokesmod.client.command.commands",
+        "keystrokesmod.raven",
+        "ravenbplus",
+        "raven.client"
+      ],
+      "combatClasses": [
+        "Reach.class",
+        "Velocity.class",
+        "AutoClicker.class",
+        "LeftClicker.class",
+        "RightClicker.class",
+        "BurstClicker.class",
+        "AimAssist.class",
+        "HitBox.class",
+        "DelayRemover.class",
+        "FastPlace.class",
+        "SafeWalk.class",
+        "BedAura.class"
+      ],
+      "configPaths": [
+        ".minecraft/keystrokes/configs",
+        ".minecraft/keystrokes/configs/*.bplus",
+        ".minecraft/keystrokes/keybinds.txt",
+        ".minecraft/keystrokes/config.txt"
+      ],
+      "memoryStrings": [
+        "keystrokesmod/client/main/Raven",
+        "keystrokesmod/client/module/modules/combat/Reach",
+        "keystrokesmod/client/module/modules/combat/Velocity",
+        "keystrokesmod/client/module/modules/combat/AutoClicker",
+        "Raven B+",
+        "Raven B3",
+        "Raven bS",
+        "Raven B++",
+        "Kopamed",
+        "Blowsy",
+        "decencies",
+        "chaotic"
+      ],
+      "usnPatterns": [
+        ".*raven.*\\.jar$",
+        ".*\\.bplus$",
+        ".*keystrokes.*configs.*",
+        ".*keystrokesmod.*\\.jar$"
+      ],
+      "falsePositiveGuards": {
+        "requireAnyCombatOrConfig": true,
+        "note": "Legitimate KeystrokesMod contains ONLY render/key classes. If combat package, Reach, Velocity, AutoClicker, or .bplus configs are present, it is 100% Raven B+."
+      }
+    },
+    {
+      "id": "doomsday_client",
+      "name": "Doomsday Client",
+      "category": "Ghost / Hybrid Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9", "1.12.2", "1.16.5", "1.20+"],
+      "description": "Ghost and utility client with cloud config loading, memory injection, and external loader.",
+      "modIds": [
+        "dd"
+      ],
+      "packages": [
+        "me.doomsday",
+        "com.doomsday",
+        "doomsday.client",
+        "doomsday.core",
+        "doomsday.loader"
+      ],
+      "classes": [
+        "DoomsdayClient.class",
+        "Doomsday.class",
+        "me.doomsday.Doomsday.class",
+        "me.doomsday.modules.combat.Aura.class",
+        "me.doomsday.modules.combat.Reach.class"
+      ],
+      "configPaths": [
+        ".minecraft/doomsday",
+        ".minecraft/doomsday.json",
+        ".minecraft/doomsday_config.json",
+        "AppData/Roaming/.minecraft/doomsday"
+      ],
+      "memoryStrings": [
+        "Doomsday Client",
+        "doomsdayclient.com",
+        "doomsdayclient.com/api",
+        "me/doomsday/Doomsday",
+        "doomsday_config.json",
+        "DoomsdayLoader"
+      ],
+      "prefetchPatterns": [
+        "DOOMSDAY.EXE",
+        "DOOMSDAY-LOADER.EXE",
+        "DOOMSDAYCLIENT.EXE"
+      ],
+      "usnPatterns": [
+        ".*doomsday.*\\.jar$",
+        ".*doomsday.*\\.exe$",
+        ".*doomsday_config\\.json$"
+      ],
+      "browserDomains": [
+        "doomsdayclient.com",
+        "api.doomsdayclient.com"
+      ]
+    },
+    {
+      "id": "aristois_client",
+      "name": "Aristois Client (EMC Framework)",
+      "category": "Hacked Client / Utility Mod",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9", "1.12.2", "1.14 - 1.21+"],
+      "description": "Multi-version client running on EMC (Event-driven Mod Container) framework across Fabric and Forge.",
+      "modIds": [
+        "aristois"
+      ],
+      "packages": [
+        "me.deam.aristois",
+        "me.aristois.client",
+        "me.aristois",
+        "me.deam.aristois.gui",
+        "me.deam.aristois.modules",
+        "me.deam.emc"
+      ],
+      "classes": [
+        "AristoisClient.class",
+        "AristoisMod.class",
+        "me/aristois/client/AristoisClient.class",
+        "me/deam/aristois/Aristois.class"
+      ],
+      "configPaths": [
+        ".minecraft/aristois",
+        ".minecraft/emc",
+        ".minecraft/libraries/me/deam/aristois",
+        ".minecraft/libraries/EMC"
+      ],
+      "filePatterns": [
+        "EMC-*.jar",
+        "Aristois.jar",
+        "Aristois-Installer.jar",
+        "*aristois*.json",
+        "1.*aristois*.json"
+      ],
+      "memoryStrings": [
+        "Aristois Client",
+        "aristois.net",
+        "me/deam/aristois/Aristois",
+        "me/aristois/client/AristoisClient",
+        "EMC-Framework",
+        "DeafCode"
+      ],
+      "browserDomains": [
+        "aristois.net",
+        "aristois.wiki"
+      ]
+    },
+    {
+      "id": "liquidbounce_client",
+      "name": "LiquidBounce (Forge & NextGen)",
+      "category": "Blatant / Hybrid Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9", "1.12.2", "1.20+ NextGen"],
+      "description": "Open source hacked client by CCBlueX with script engine, Forge integration, and Fabric Nextgen.",
+      "packages": [
+        "net.ccbluex.liquidbounce",
+        "net.ccbluex.liquidbounce.features.module.modules.combat",
+        "net.ccbluex.liquidbounce.injection",
+        "net.ccbluex.liquidbounce.script",
+        "net.ccbluex.liquidbounce.ui"
+      ],
+      "classes": [
+        "LiquidBounce.class",
+        "KillAura.class",
+        "Velocity.class",
+        "Criticals.class",
+        "Aimbot.class",
+        "LiquidBounceKt.class"
+      ],
+      "configPaths": [
+        ".minecraft/LiquidBounce",
+        ".minecraft/LiquidBounce/settings.json",
+        ".minecraft/LiquidBounce/values.json",
+        ".minecraft/LiquidBounce/scripts",
+        ".minecraft/LiquidBounce/clickgui.json"
+      ],
+      "memoryStrings": [
+        "net/ccbluex/liquidbounce/LiquidBounce",
+        "LiquidBounce",
+        "CCBlueX",
+        "LiquidCloud",
+        "liquidbounce.net",
+        "LiquidBounce.CLIENT_NAME"
+      ],
+      "browserDomains": [
+        "liquidbounce.net",
+        "cloud.liquidbounce.net"
+      ]
+    },
+    {
+      "id": "wurst_client",
+      "name": "Wurst Client",
+      "category": "Hacked Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.7 - 1.21+"],
+      "description": "Famous open source Fabric client by Alexander01998.",
+      "modIds": [
+        "wurst"
+      ],
+      "packages": [
+        "net.wurstclient.hacks",
+        "net.wurstclient.features",
+        "net.wurstclient.command",
+        "net.wurstclient.settings",
+        "net.wurstclient.altmanager"
+      ],
+      "classes": [
+        "WurstClient.class",
+        "KillauraHack.class",
+        "FlightHack.class",
+        "AutoMineHack.class",
+        "YesCheatSpamHack.class",
+        "BhopHack.class"
+      ],
+      "configPaths": [
+        ".minecraft/wurst",
+        ".minecraft/wurst/enabled-hacks.json",
+        ".minecraft/wurst/alt-manager.json",
+        ".minecraft/wurst/keybinds.json",
+        ".minecraft/wurst/friends.json"
+      ],
+      "memoryStrings": [
+        "net/wurstclient/WurstClient",
+        "Wurst Client",
+        "wurstclient.net",
+        "Alexander01998",
+        "WURST_CLIENT_INSTANCE"
+      ],
+      "browserDomains": [
+        "wurstclient.net"
+      ]
+    },
+    {
+      "id": "meteor_client",
+      "name": "Meteor Client",
+      "category": "Utility / Anarchy Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.16 - 1.21+"],
+      "description": "Modern Fabric utility client by Meteor Development.",
+      "modIds": [
+        "meteor-client"
+      ],
+      "packages": [
+        "meteordevelopment.meteorclient",
+        "meteordevelopment.meteorclient.systems.modules.combat"
+      ],
+      "classes": [
+        "MeteorClient.class",
+        "KillAura.class",
+        "CrystalAura.class",
+        "BedAura.class",
+        "AnchorAura.class"
+      ],
+      "configPaths": [
+        ".minecraft/meteor-client",
+        ".minecraft/meteor-client/config.nbt",
+        ".minecraft/meteor-client/macros.nbt",
+        ".minecraft/meteor-client/accounts.nbt"
+      ],
+      "memoryStrings": [
+        "meteordevelopment/meteorclient/MeteorClient",
+        "Meteor Client",
+        "meteorclient.com",
+        "Meteordevelopment"
+      ],
+      "browserDomains": [
+        "meteorclient.com"
+      ]
+    },
+    {
+      "id": "impact_client",
+      "name": "Impact Client",
+      "category": "Hacked Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.11.2 - 1.16.5"],
+      "description": "Anarchy and utility client by Brady3 / ImpactDevelopment.",
+      "packages": [
+        "net.impactclient",
+        "impactclient",
+        "me.impact"
+      ],
+      "classes": [
+        "ImpactClient.class",
+        "net.impactclient.Impact.class",
+        "net.impactclient.module.modules.combat.KillAura.class"
+      ],
+      "configPaths": [
+        ".minecraft/Impact",
+        ".minecraft/libraries/Impact"
+      ],
+      "memoryStrings": [
+        "Impact Client",
+        "ImpactDevelopment",
+        "net/impactclient/Impact",
+        "impactclient.net"
+      ],
+      "browserDomains": [
+        "impactclient.net"
+      ]
+    },
+    {
+      "id": "inertia_client",
+      "name": "Inertia Client (WWE)",
+      "category": "Hacked Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.12.2 - 1.16.5"],
+      "description": "Formerly WWE Client, developed by THEREALWWEFAN231.",
+      "packages": [
+        "me.rebirth.inertia",
+        "me.wwe",
+        "com.wwe",
+        "me.inertia"
+      ],
+      "classes": [
+        "Inertia.class",
+        "me/wwe/client/Inertia.class",
+        "me/rebirth/inertia/InertiaClient.class"
+      ],
+      "configPaths": [
+        ".minecraft/Inertia",
+        ".minecraft/WWE"
+      ],
+      "memoryStrings": [
+        "Inertia Client",
+        "wweclient",
+        "inertiaclient.com",
+        "THEREALWWEFAN231"
+      ],
+      "browserDomains": [
+        "inertiaclient.com"
+      ]
+    },
+    {
+      "id": "thunderhack_client",
+      "name": "ThunderHack / Thunder (Recode & Plus)",
+      "category": "Anarchy / Utility Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.12.2", "1.20+"],
+      "description": "Anarchy PvP client for 1.12.2 Forge and 1.20+ Fabric by Pan4ur / ThunderHack Team.",
+      "modIds": [
+        "thunderhack"
+      ],
+      "packages": [
+        "com.mrzombie.thunderhack",
+        "thunder.hack",
+        "me.thunderhack",
+        "thunder.hack.core",
+        "thunder.hack.modules.combat"
+      ],
+      "classes": [
+        "ThunderHack.class",
+        "ThunderHackRecode.class",
+        "Aura.class",
+        "AutoCrystal.class"
+      ],
+      "configPaths": [
+        ".minecraft/ThunderHack",
+        ".minecraft/ThunderHackRecode"
+      ],
+      "memoryStrings": [
+        "ThunderHack",
+        "thunder.hack.core",
+        "ThunderHack-Plus",
+        "ThunderHackRecode"
+      ]
+    },
+    {
+      "id": "catlean_client",
+      "name": "CatLean Client",
+      "category": "Fabric Hacked Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.20 - 1.21+"],
+      "description": "Kotlin-based Fabric hacked client derived from ThunderHack with Aimbot, ESP, and Triggerbot.",
+      "modIds": [
+        "catlean"
+      ],
+      "packages": [
+        "su.catlean",
+        "catlean.client",
+        "catlean.client.modules.combat",
+        "catlean"
+      ],
+      "classes": [
+        "CatLean.class",
+        "CatLeanKt.class",
+        "Aimbot.class",
+        "Triggerbot.class"
+      ],
+      "configPaths": [
+        ".minecraft/catlean",
+        ".minecraft/CatLean"
+      ],
+      "memoryStrings": [
+        "CatLean",
+        "catlean.client",
+        "CatLean Client"
+      ]
+    },
+    {
+      "id": "ares_client",
+      "name": "Ares Client",
+      "category": "Anarchy Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.12.2", "1.16 - 1.20"],
+      "description": "Anarchy utility mod created by Tigermouthbear.",
+      "modIds": [
+        "ares"
+      ],
+      "packages": [
+        "dev.tigr.ares",
+        "me.tigermouthbear.ares",
+        "com.aresclient",
+        "me.tigermouthbear.ares.module.modules.combat"
+      ],
+      "classes": [
+        "Ares.class",
+        "me/tigermouthbear/ares/Ares.class",
+        "CrystalAura.class"
+      ],
+      "configPaths": [
+        ".minecraft/ares"
+      ],
+      "memoryStrings": [
+        "Ares Client",
+        "tigermouthbear.ares",
+        "aresclient.org"
+      ],
+      "browserDomains": [
+        "aresclient.org"
+      ]
+    },
+    {
+      "id": "bleachhack_client",
+      "name": "BleachHack",
+      "category": "Fabric Utility Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.14 - 1.21+"],
+      "description": "Open source Fabric hacked client by BleachDev.",
+      "modIds": [
+        "bleachhack"
+      ],
+      "packages": [
+        "bleach.hack",
+        "bleachhack",
+        "org.bleachhack",
+        "bleach.hack.module.mods.combat"
+      ],
+      "classes": [
+        "BleachHack.class",
+        "bleach/hack/BleachHack.class",
+        "KillAura.class"
+      ],
+      "configPaths": [
+        ".minecraft/bleach",
+        ".minecraft/bleachhack"
+      ],
+      "memoryStrings": [
+        "BleachHack",
+        "bleach.hack.BleachHack",
+        "bleachhack.org"
+      ],
+      "browserDomains": [
+        "bleachhack.org"
+      ]
+    },
+    {
+      "id": "mathax_client",
+      "name": "MatHax / VacuumHax Client",
+      "category": "Anarchy / Combat Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.16 - 1.21+"],
+      "description": "Extended Fabric anarchy and utility hacked client based on Meteor framework.",
+      "modIds": [
+        "mathax",
+        "vacuumhax"
+      ],
+      "packages": [
+        "mathax.client"
+      ],
+      "classes": [
+        "MatHax.class"
+      ],
+      "memoryStrings": [
+        "mathax",
+        "VacuumHax"
+      ]
+    },
+    {
+      "id": "shieldbreaker_mod",
+      "name": "Shield Breaker Combat Mod",
+      "category": "Combat Cheat (Auto Shield Disabler)",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.20 - 1.21+"],
+      "description": "PvP combat cheat that automatically switches items and disables opponent shields.",
+      "modIds": [
+        "shieldbreaker"
+      ],
+      "packages": [
+        "com.ahmet.shieldbreaker"
+      ],
+      "classes": [
+        "ShieldBreakerClient.class"
+      ]
+    },
+    {
+      "id": "glazed_client",
+      "name": "Glazed (DonutSMP Meteor Addon)",
+      "category": "Combat / Meteor Addon Cheat",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.20 - 1.21+"],
+      "description": "DonutSMP PvP combat addon for Meteor Client with auto crystal, macro, and exploit modules.",
+      "modIds": [
+        "glazed"
+      ],
+      "packages": [
+        "com.nnpg.glazed"
+      ],
+      "classes": [
+        "GlazedAddon.class"
+      ],
+      "browserDomains": [
+        "glazedclient.com"
+      ]
+    },
+    {
+      "id": "instant_crystal_switch",
+      "name": "Instant Crystal Switch",
+      "category": "CPvP Combat Exploit",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.20 - 1.21+"],
+      "description": "Crystal PvP mod that bypasses item switch delays for instant end crystal placement.",
+      "modIds": [
+        "instantcrystalswitch"
+      ],
+      "packages": [
+        "com.instantcrystalswitch"
+      ],
+      "classes": [
+        "InstantCrystalSwitchClient.class"
+      ]
+    },
+    {
+      "id": "clickcrystals_client",
+      "name": "ClickCrystals Macro & Combat Mod",
+      "category": "PvP Macro / Combat Assistance",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.20 - 1.21+"],
+      "description": "Crystal PvP macro, auto anchor, totem replacer and combat assistance client.",
+      "modIds": [
+        "clickcrystals"
+      ],
+      "packages": [
+        "io.github.itzispyder.clickcrystals"
+      ],
+      "classes": [
+        "ClickCrystals.class",
+        "ClickCrystalsClient.class"
+      ]
+    },
+    {
+      "id": "auraclient_mod",
+      "name": "Aura Client (DonutSMP Utility Mod)",
+      "category": "Combat / Utility Cheat",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.20 - 1.21+"],
+      "description": "DonutSMP utility and combat client mod with automated PvP exploits.",
+      "modIds": [
+        "auraclient"
+      ],
+      "packages": [
+        "com.radium.fabric",
+        "me.aura.client"
+      ],
+      "classes": [
+        "AuraMod.class"
+      ],
+      "browserDomains": [
+        "auraclient.xyz"
+      ]
+    },
+    {
+      "id": "baritone_meteor",
+      "name": "Baritone for Meteor Client",
+      "category": "Anarchy Bot / Pathing Cheat",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.16 - 1.21+"],
+      "description": "Pathfinding bot and auto-mining integration for Meteor Client.",
+      "modIds": [
+        "baritone-meteor"
+      ]
+    },
+    {
+      "id": "autoanchor_mod",
+      "name": "Auto Anchor Combat Mod",
+      "category": "Combat Cheat (Auto Anchor Exploit)",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.20 - 1.21+"],
+      "description": "Automated Respawn Anchor placement, charge, and detonation combat exploit.",
+      "modIds": [
+        "autoanchor"
+      ],
+      "packages": [
+        "com.marek.autoanchor"
+      ],
+      "classes": [
+        "AutoAnchorClient.class"
+      ],
+      "usnPatterns": [
+        ".*autoanchor.*\\.jar$",
+        ".*autoanchor.*\\.exe$"
+      ]
+    },
+    {
+      "id": "autototem_mod",
+      "name": "Auto Totem Mod",
+      "category": "Combat Cheat (Auto Totem Pop / Replacer)",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.20 - 1.21+"],
+      "description": "Automated offhand Totem of Undying replacer on totem pop.",
+      "modIds": [
+        "autototem"
+      ],
+      "packages": [
+        "mike.autototem"
+      ],
+      "classes": [
+        "OnTotemPopMixin.class"
+      ],
+      "usnPatterns": [
+        ".*autototem.*\\.jar$",
+        ".*autototem.*\\.exe$"
+      ]
+    },
+    {
+      "id": "arvion_client",
+      "name": "Arvion Client",
+      "category": "Obfuscated Ghost / Blatant Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.20 - 1.21+"],
+      "description": "Obfuscated Minecraft cheat client protected with PenisGuard obfuscator.",
+      "modIds": [
+        "arvion"
+      ],
+      "packages": [
+        "penisguard"
+      ],
+      "usnPatterns": [
+        ".*arvion.*\\.jar$",
+        ".*arvion.*\\.exe$"
+      ],
+      "classes": [
+        "PenisGuard.class"
+      ]
+    },
+    {
+      "id": "prestige_loader",
+      "name": "Prestige Loader (Donki Remote Mixin Cheat Loader)",
+      "category": "Remote Cheat Loader / Bytecode Injector",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.20 - 1.21+"],
+      "description": "Remote mixin cheat loader disguised inside ToggleSprint or other mods connecting to dev.donki.",
+      "modIds": [
+        "github__mixin_loader"
+      ],
+      "packages": [
+        "dev.donki"
+      ],
+      "classes": [
+        "LoaderCL.class",
+        "dev.donki.LoaderCL"
+      ]
+    },
+    {
+      "id": "nightmare_cheat",
+      "name": "Nightmare Client / Loader",
+      "category": "External Cheat / Loader",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9 - 1.21+"],
+      "description": "External Minecraft cheat client and injection loader.",
+      "filePatterns": [
+        "Nightmare.exe",
+        "Nightmare.zip",
+        "nightmare*.exe"
+      ],
+      "memoryStrings": [
+        "Nightmare Loader",
+        "nightmare-cheats.vip"
+      ]
+    },
+    {
+      "id": "liquidlauncher_installer",
+      "name": "LiquidLauncher (LiquidBounce Installer)",
+      "category": "Cheat Client Launcher / Installer",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9 - 1.21+"],
+      "description": "Official CCBlueX launcher and Windows installer package for LiquidBounce hacked client.",
+      "filePatterns": [
+        "LiquidLauncher*.exe",
+        "LiquidLauncher*.msi"
+      ],
+      "memoryStrings": [
+        "net.ccbluex.liquidlauncher",
+        "LiquidLauncher",
+        "CCBlueX"
+      ]
+    },
+    {
+      "id": "vape_v4_lite",
+      "name": "Vape Client (V4 & Lite)",
+      "category": "Ghost Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.7.10 - 1.20+"],
+      "description": "Commercial ghost client by Manthe injected via native DLL/JNI or external loader.",
+      "memoryStrings": [
+        "vape.rip",
+        "vape4.exe",
+        "Vape V4",
+        "Vape Lite",
+        "kura.rip",
+        "kangarooclient",
+        "manthe.cc"
+      ],
+      "prefetchPatterns": [
+        "VAPE.EXE",
+        "VAPE4.EXE",
+        "VAPELITE.EXE",
+        "KANGAL.EXE"
+      ],
+      "configPaths": [
+        "AppData/Roaming/vape",
+        "AppData/Local/Temp/vape"
+      ],
+      "usnPatterns": [
+        ".*vape.*\\.exe$",
+        ".*vape.*\\.dll$",
+        ".*AppData.*Roaming.*vape.*"
+      ],
+      "browserDomains": [
+        "vape.rip",
+        "manthe.cc"
+      ]
+    },
+    {
+      "id": "drip_lite",
+      "name": "Drip Client (Drip Lite)",
+      "category": "Ghost Client (Kernel / Driver Injected)",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.7.10 - 1.20+"],
+      "description": "Kernel-injected or native JNI ghost client with local web-GUI server.",
+      "memoryStrings": [
+        "drip.gg",
+        "Drip Lite",
+        "127.0.0.1:1337",
+        "drip_loader",
+        "Drip64.dll"
+      ],
+      "prefetchPatterns": [
+        "DRIP.EXE",
+        "DRIPLITE.EXE",
+        "DRIPLOADER.EXE"
+      ],
+      "browserDomains": [
+        "drip.gg"
+      ]
+    },
+    {
+      "id": "slinky_client",
+      "name": "Slinky Client",
+      "category": "Ghost Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9 - 1.20+"],
+      "description": "High-end kernel / mapped ghost client.",
+      "memoryStrings": [
+        "slinky.gg",
+        "Slinky Client",
+        "slinky_injector"
+      ],
+      "browserDomains": [
+        "slinky.gg"
+      ]
+    },
+    {
+      "id": "future_client",
+      "name": "Future Client",
+      "category": "Anarchy / Utility Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9 - 1.20+"],
+      "description": "Commercial Minecraft anarchy client with advanced combat, travel, and packet manipulation modules.",
+      "packages": [
+        "net.futureclient.client",
+        "futureclient"
+      ],
+      "modIds": ["future"],
+      "classes": [
+        "net/futureclient/client/FutureClient.class",
+        "net/futureclient/client/modules/combat/KillAura.class",
+        "net/futureclient/client/modules/combat/AutoCrystal.class"
+      ],
+      "memoryStrings": [
+        "futureclient.net",
+        "Future Client",
+        "net/futureclient/client"
+      ],
+      "browserDomains": [
+        "futureclient.net"
+      ]
+    },
+    {
+      "id": "rusherhack_client",
+      "name": "RusherHack",
+      "category": "Anarchy / Combat Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.12.2 - 1.20+"],
+      "description": "High-performance utility mod for anarchy servers featuring advanced automation and combat.",
+      "packages": [
+        "org.rusherhack.client",
+        "rusherhack"
+      ],
+      "modIds": ["rusherhack"],
+      "classes": [
+        "org/rusherhack/client/RusherHack.class",
+        "org/rusherhack/core/module/combat/KillAura.class"
+      ],
+      "memoryStrings": [
+        "rusherhack.org",
+        "RusherHack",
+        "org/rusherhack/client"
+      ],
+      "browserDomains": [
+        "rusherhack.org"
+      ]
+    },
+    {
+      "id": "boze_client",
+      "name": "Boze Client",
+      "category": "Combat / Ghost Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.16.5 - 1.21+"],
+      "description": "Modern client mod featuring Crystal PvP automation, bypasses, and combat heuristics.",
+      "packages": [
+        "me.boze.client",
+        "boze.client"
+      ],
+      "modIds": ["boze"],
+      "memoryStrings": [
+        "boze.dev",
+        "Boze Client"
+      ],
+      "browserDomains": [
+        "boze.dev"
+      ]
+    },
+    {
+      "id": "whiteout_client",
+      "name": "Whiteout Ghost Client",
+      "category": "Ghost Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.7.10 - 1.8.9"],
+      "description": "External screenshare-proof ghost client with ring-3 memory injection and clean ejection.",
+      "prefetch": [
+        "WHITEOUT.EXE",
+        "WHITEOUTLOADER.EXE"
+      ],
+      "memoryStrings": [
+        "whiteout.gg",
+        "whiteout_client",
+        "Whiteout"
+      ],
+      "browserDomains": [
+        "whiteout.gg"
+      ]
+    },
+    {
+      "id": "skilled_client",
+      "name": "Skilled Client (v2 / v3)",
+      "category": "Ghost Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9"],
+      "description": "Free and open-source ghost client mod for Forge with reach, autoclicker, and velocity.",
+      "packages": [
+        "skilled.client",
+        "skilled_v3",
+        "skilled.modules"
+      ],
+      "classes": [
+        "skilled/client/modules/Reach.class",
+        "skilled/client/modules/Velocity.class",
+        "skilled/client/modules/AutoClicker.class"
+      ],
+      "memoryStrings": [
+        "Skilled Client",
+        "skilledclient"
+      ]
+    },
+    {
+      "id": "entropy_client",
+      "name": "Entropy Ghost Client",
+      "category": "Ghost Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9 - 1.16.5"],
+      "description": "External client with zero trace memory injection and self-destruct capabilities.",
+      "prefetch": [
+        "ENTROPY.EXE"
+      ],
+      "memoryStrings": [
+        "entropy.club",
+        "Entropy Client"
+      ],
+      "browserDomains": [
+        "entropy.club"
+      ]
+    },
+    {
+      "id": "kura_client",
+      "name": "Kura Ghost Client",
+      "category": "Ghost Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9"],
+      "description": "Screenshare bypass ghost client with stealth injection routines.",
+      "prefetch": [
+        "KURA.EXE"
+      ],
+      "memoryStrings": [
+        "kura.gg",
+        "kura_client",
+        "Kura Ghost"
+      ],
+      "browserDomains": [
+        "kura.gg"
+      ]
+    },
+    {
+      "id": "itami_client",
+      "name": "Itami Ghost Client",
+      "category": "Ghost Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9"],
+      "description": "Free lightweight external ghost client using Win32 API memory patching.",
+      "prefetch": [
+        "ITAMI.EXE"
+      ],
+      "memoryStrings": [
+        "itami.top",
+        "Itami Client",
+        "Itami"
+      ],
+      "browserDomains": [
+        "itami.top"
+      ]
+    },
+    {
+      "id": "rise_client",
+      "name": "Rise Client (Rise 6.x)",
+      "category": "Hacked Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9 - 1.20+"],
+      "description": "Multi-server bypass client with advanced disablers, target strafe, and aura.",
+      "packages": [
+        "rip.rise",
+        "net.vialoadingbase"
+      ],
+      "modIds": ["rise"],
+      "memoryStrings": [
+        "riseclient.com",
+        "Rise 6",
+        "rip/rise"
+      ],
+      "browserDomains": [
+        "riseclient.com"
+      ]
+    },
+    {
+      "id": "augustus_client",
+      "name": "Augustus Client",
+      "category": "Hacked Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9"],
+      "description": "Competitive bypass client designed for strict anti-cheat servers.",
+      "packages": [
+        "net.augustus"
+      ],
+      "classes": [
+        "net/augustus/Augustus.class",
+        "net/augustus/modules/combat/KillAura.class"
+      ],
+      "memoryStrings": [
+        "augustus.lol",
+        "Augustus"
+      ],
+      "browserDomains": [
+        "augustus.lol"
+      ]
+    },
+    {
+      "id": "fdp_client",
+      "name": "FDP Client",
+      "category": "Hacked Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9"],
+      "description": "Open-source LiquidBounce fork with enhanced bypasses and script engine.",
+      "packages": [
+        "net.ccbluex.liquidbounce.injection.forge.mixins",
+        "org.lwjgl.opengl.FDP"
+      ],
+      "modIds": ["fdpclient"],
+      "memoryStrings": [
+        "fdpclient.club",
+        "FDPClient"
+      ],
+      "browserDomains": [
+        "fdpclient.club"
+      ]
+    },
+    {
+      "id": "tenacity_client",
+      "name": "Tenacity Client",
+      "category": "Hacked Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9"],
+      "description": "Modern multi-server client with sleek aesthetic and advanced movement bypasses.",
+      "packages": [
+        "dev.tenacity"
+      ],
+      "classes": [
+        "dev/tenacity/Tenacity.class",
+        "dev/tenacity/module/impl/combat/KillAura.class"
+      ],
+      "memoryStrings": [
+        "tenacity.dev",
+        "Tenacity"
+      ],
+      "browserDomains": [
+        "tenacity.dev"
+      ]
+    },
+    {
+      "id": "phantom_client",
+      "name": "Phantom Client",
+      "category": "Ghost Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9 - 1.20+"],
+      "description": "Stealth ghost client with external JVM hook injection.",
+      "packages": [
+        "com.phantom.client"
+      ],
+      "prefetch": [
+        "PHANTOM.EXE",
+        "PHANTOMLOADER.EXE"
+      ],
+      "memoryStrings": [
+        "phantomclient.com",
+        "Phantom Client"
+      ],
+      "browserDomains": [
+        "phantomclient.com"
+      ]
+    },
+    {
+      "id": "zortax_runtime_injector",
+      "name": "Zortax Minecraft Runtime Injector & McAgent",
+      "category": "JVM Bytecode Runtime Injector",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9 - 1.20+"],
+      "description": "JVM Attach API ve JavaAgent kancası kullanarak Minecraft sürecine bellek üzerinden çalışma zamanında dinamik baytkod enjekte eden bypass aracı.",
+      "packages": [
+        "de.zortax.injection",
+        "de.zortax.injection.injector",
+        "de.zortax.injection.mcp"
+      ],
+      "classes": [
+        "McAgent.class",
+        "RuntimeInjector.class",
+        "McClassTransformer.class",
+        "FunctionHook.class",
+        "MinecraftInstance.class",
+        "McpManager.class",
+        "InjectPosition.class"
+      ],
+      "memoryStrings": [
+        "de.zortax.injection.injector.RuntimeInjector",
+        "de.zortax.injection.injector.McAgent",
+        "McClassTransformer"
+      ]
+    }
+  ],
+  "autoclickers": [
+    {
+      "id": "op_autoclicker",
+      "name": "OP Auto Clicker",
+      "category": "AutoClicker",
+      "severity": "HIGH",
+      "prefetch": ["OPAUTOCLICKER.EXE", "AUTOCLICKER.EXE"],
+      "processNames": ["OP Auto Clicker.exe", "AutoClicker.exe"],
+      "windowTitles": ["OP Auto Clicker 3.0", "OP Auto Clicker 2.1"]
+    },
+    {
+      "id": "murgee_clicker",
+      "name": "Murgee Auto Clicker",
+      "category": "AutoClicker",
+      "severity": "HIGH",
+      "prefetch": ["MURGEE.EXE", "AUTOCLICKER.EXE"],
+      "memoryStrings": ["murgee.com", "MurGeeAutoClicker"]
+    },
+    {
+      "id": "speed_autoclicker",
+      "name": "Speed AutoClicker",
+      "category": "AutoClicker",
+      "severity": "HIGH",
+      "prefetch": ["SPEEDAUTOCLICKER.EXE"]
+    },
+    {
+      "id": "gs_autoclicker",
+      "name": "Goldensoft GS Auto Clicker",
+      "category": "AutoClicker",
+      "severity": "HIGH",
+      "prefetch": ["GSAUTOCLICKER.EXE"]
+    },
+    {
+      "id": "mango_clicker",
+      "name": "Mango Clicker",
+      "category": "AutoClicker (Ghost)",
+      "severity": "HIGH",
+      "memoryStrings": ["MangoClicker", "mango.exe"]
+    },
+    {
+      "id": "viper_clicker",
+      "name": "Viper Clicker",
+      "category": "AutoClicker (Ghost)",
+      "severity": "HIGH",
+      "prefetch": ["VIPER.EXE", "VIPERCLICKER.EXE"],
+      "processNames": ["viper.exe", "ViperClicker.exe"],
+      "memoryStrings": ["ViperClicker", "viper.clicker"]
+    },
+    {
+      "id": "traker_clicker",
+      "name": "Traker Clicker",
+      "category": "AutoClicker (Ghost)",
+      "severity": "HIGH",
+      "prefetch": ["TRAKER.EXE"],
+      "processNames": ["traker.exe"],
+      "memoryStrings": ["TrakerClicker"]
+    },
+    {
+      "id": "ghost_clicker",
+      "name": "GhostClicker",
+      "category": "AutoClicker (Ghost)",
+      "severity": "HIGH",
+      "prefetch": ["GHOSTCLICKER.EXE"],
+      "processNames": ["GhostClicker.exe"],
+      "memoryStrings": ["GhostClicker", "autoclicker.cps"]
+    },
+    {
+      "id": "novoline_client",
+      "name": "Novoline Client",
+      "category": "Hacked Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9"],
+      "description": "Premium Hypixel bypass client distributed via Intent store.",
+      "packages": [
+        "novoline",
+        "novoline.impl",
+        "novoline.api",
+        "novoline.commands"
+      ],
+      "combatClasses": [
+        "KillAura.class",
+        "TargetStrafe.class",
+        "Reach.class",
+        "Velocity.class",
+        "Speed.class"
+      ],
+      "memoryStrings": [
+        "novoline/impl/modules/combat",
+        "Novoline",
+        "intent.store"
+      ],
+      "usnPatterns": [
+        ".*novoline.*\\.jar$",
+        ".*novoline.*\\.json$"
+      ]
+    },
+    {
+      "id": "astolfo_client",
+      "name": "Astolfo Client",
+      "category": "Hacked Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9"],
+      "description": "Private invite-only Hypixel bypass client.",
+      "packages": [
+        "astolfo",
+        "astolfo.client",
+        "astolfo.module"
+      ],
+      "combatClasses": [
+        "KillAura.class",
+        "Velocity.class",
+        "Speed.class",
+        "Fly.class"
+      ],
+      "memoryStrings": [
+        "Astolfo Client",
+        "astolfo/module/combat",
+        "astolfo.module"
+      ],
+      "usnPatterns": [
+        ".*astolfo.*\\.jar$"
+      ]
+    },
+    {
+      "id": "sigma5_client",
+      "name": "Sigma 5.0 (Jello)",
+      "category": "Hacked Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9", "1.16.5"],
+      "description": "Multi-version hacked client with Jello Portal and premium modules.",
+      "packages": [
+        "info.sigmaclient",
+        "info.sigmaclient.sigma",
+        "info.sigmaclient.jelloportal"
+      ],
+      "combatClasses": [
+        "KillAura.class",
+        "Velocity.class",
+        "Criticals.class"
+      ],
+      "memoryStrings": [
+        "info/sigmaclient",
+        "Sigma5",
+        "JelloPortal"
+      ],
+      "usnPatterns": [
+        ".*sigma5.*\\.jar$",
+        ".*sigma.*\\.jar$"
+      ]
+    },
+    {
+      "id": "lambda_client",
+      "name": "Lambda Client",
+      "category": "Utility/Anarchy Cheat",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.12.2"],
+      "description": "Fork of Kami Blue designed for 2b2t and anarchy servers.",
+      "packages": [
+        "com.lambda.client",
+        "com.lambda.client.module.modules.combat"
+      ],
+      "combatClasses": [
+        "CrystalAura.class",
+        "KillAura.class",
+        "AutoTotem.class"
+      ],
+      "memoryStrings": [
+        "com/lambda/client",
+        "Lambda Client"
+      ],
+      "usnPatterns": [
+        ".*lambda.*\\.jar$"
+      ]
+    },
+    {
+      "id": "raven_xd",
+      "name": "Raven XD",
+      "category": "Ghost Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9"],
+      "description": "Modern continuation of Raven B+ with advanced bypasses and external socket GUI.",
+      "packages": [
+        "ravenxd",
+        "raven.weep",
+        "keystrokesmod.ravenxd"
+      ],
+      "combatClasses": [
+        "Reach.class",
+        "Velocity.class",
+        "AutoClicker.class"
+      ],
+      "memoryStrings": [
+        "Raven XD",
+        "ravenxd/client",
+        "Raven Weep"
+      ],
+      "usnPatterns": [
+        ".*ravenxd.*\\.jar$"
+      ]
+    },
+    {
+      "id": "monsoon_client",
+      "name": "Monsoon Client",
+      "category": "Hacked Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9"],
+      "description": "Modern competitive PvP bypass client with advanced Aura and TargetStrafe modules.",
+      "packages": [
+        "xyz.monsoon",
+        "xyz.monsoon.client",
+        "xyz.monsoon.client.modules"
+      ],
+      "combatClasses": [
+        "Aura.class",
+        "TargetStrafe.class",
+        "Velocity.class",
+        "Speed.class"
+      ],
+      "memoryStrings": [
+        "Monsoon Client",
+        "xyz/monsoon",
+        "monsoon.rip"
+      ],
+      "usnPatterns": [
+        ".*monsoon.*\\.jar$"
+      ]
+    },
+    {
+      "id": "zeroday_client",
+      "name": "ZeroDay Client",
+      "category": "Hacked Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9"],
+      "description": "Multi-server bypass client with custom rendering and movement exploits.",
+      "packages": [
+        "net.zeroday",
+        "zeroday.client",
+        "zeroday.module"
+      ],
+      "combatClasses": [
+        "KillAura.class",
+        "Velocity.class",
+        "Speed.class"
+      ],
+      "memoryStrings": [
+        "ZeroDay",
+        "zerodayclient.com"
+      ],
+      "usnPatterns": [
+        ".*zeroday.*\\.jar$"
+      ]
+    },
+    {
+      "id": "coffee_client",
+      "name": "Coffee Client",
+      "category": "Ghost / Utility Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.8.9", "1.12.2"],
+      "description": "Ghost client designed for competitive PvP and screenshare evasion.",
+      "packages": [
+        "me.coffee.client",
+        "coffee.client.module",
+        "coffee.client.module.combat"
+      ],
+      "combatClasses": [
+        "KillAura.class",
+        "Velocity.class",
+        "Reach.class",
+        "AutoClicker.class"
+      ],
+      "memoryStrings": [
+        "Coffee Client",
+        "coffeeclient.com"
+      ],
+      "usnPatterns": [
+        ".*coffee.*\\.jar$"
+      ]
+    },
+    {
+      "id": "seppuku_client",
+      "name": "Seppuku Client",
+      "category": "Anarchy / Combat Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.12.2"],
+      "description": "Anarchy and combat client for Minecraft 1.12.2 with AutoCrystal and packet manipulation.",
+      "packages": [
+        "me.rigamortis.seppuku",
+        "seppuku.client",
+        "seppuku.client.module"
+      ],
+      "combatClasses": [
+        "AutoCrystal.class",
+        "KillAura.class",
+        "Surround.class"
+      ],
+      "memoryStrings": [
+        "me/rigamortis/seppuku",
+        "Seppuku",
+        "seppuku.pw"
+      ],
+      "usnPatterns": [
+        ".*seppuku.*\\.jar$"
+      ]
+    },
+    {
+      "id": "konas_client",
+      "name": "Konas Client",
+      "category": "Anarchy / Combat Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.12.2"],
+      "description": "Advanced CPvP client with fast crystal calculation and packet rotation.",
+      "packages": [
+        "konas.client",
+        "konas.module.combat",
+        "konas.module.movement"
+      ],
+      "combatClasses": [
+        "AutoCrystal.class",
+        "KillAura.class",
+        "PacketFly.class"
+      ],
+      "memoryStrings": [
+        "konas/client",
+        "Konas Client",
+        "konasclient.com"
+      ],
+      "usnPatterns": [
+        ".*konas.*\\.jar$"
+      ]
+    },
+    {
+      "id": "phobos_client",
+      "name": "Phobos Client",
+      "category": "Anarchy / Combat Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.12.2"],
+      "description": "CPvP client by 3arthqu4ke with multi-threaded crystal calculation.",
+      "packages": [
+        "me.earth.phobos",
+        "phobos.client",
+        "phobos.modules.combat"
+      ],
+      "combatClasses": [
+        "AutoCrystal.class",
+        "KillAura.class",
+        "Offhand.class"
+      ],
+      "memoryStrings": [
+        "me/earth/phobos",
+        "Phobos",
+        "3arthqu4ke"
+      ],
+      "usnPatterns": [
+        ".*phobos.*\\.jar$"
+      ]
+    },
+    {
+      "id": "oyvey_client",
+      "name": "OyVey Client",
+      "category": "Anarchy / Combat Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.12.2"],
+      "description": "Lightweight 1.12.2 CPvP client with auto totem and crystal placements.",
+      "packages": [
+        "me.alpha432.oyvey",
+        "oyvey.client",
+        "oyvey.features.modules.combat"
+      ],
+      "combatClasses": [
+        "AutoCrystal.class",
+        "KillAura.class",
+        "Offhand.class"
+      ],
+      "memoryStrings": [
+        "me/alpha432/oyvey",
+        "OyVey"
+      ],
+      "usnPatterns": [
+        ".*oyvey.*\\.jar$"
+      ]
+    },
+    {
+      "id": "abyss_client",
+      "name": "Abyss Client",
+      "category": "Anarchy / Combat Client",
+      "severity": "CRITICAL",
+      "targetVersions": ["1.12.2"],
+      "description": "CPvP client with packet desync exploitation and surround anchor routines.",
+      "packages": [
+        "me.derp.abyss",
+        "abyss.client",
+        "abyss.module.combat"
+      ],
+      "combatClasses": [
+        "AutoCrystal.class",
+        "KillAura.class",
+        "PistonAura.class"
+      ],
+      "memoryStrings": [
+        "me/derp/abyss",
+        "Abyss Client"
+      ],
+      "usnPatterns": [
+        ".*abyss.*\\.jar$"
+      ]
+    }
+  ],
+  "knownMacroPatterns": [
+    {
+      "type": "Logitech G-Hub",
+      "extensions": [".lua"],
+      "suspiciousKeywords": ["PressMouseButton(1)", "Sleep(", "math.random", "jitter", "autoclick", "recoil"]
+    },
+    {
+      "type": "Razer Synapse",
+      "extensions": [".xml", ".macro"],
+      "suspiciousKeywords": ["MouseAction", "Delay", "LeftClick", "Repeat"]
+    },
+    {
+      "type": "Bloody Oscar Macro",
+      "extensions": [".amc", ".bmg", ".amc2"],
+      "suspiciousKeywords": ["LeftDown", "LeftUp", "Delay"]
+    },
+    {
+      "type": "Glorious Core Macro",
+      "extensions": [".mcf"],
+      "suspiciousKeywords": ["MouseLeft", "Delay", "Repeat", "Click", "Press"]
+    },
+    {
+      "type": "Corsair iCUE Macro",
+      "extensions": [".gmac", ".cueactions"],
+      "suspiciousKeywords": ["mouse_click", "left", "repeat", "delay"]
+    },
+    {
+      "type": "AutoHotkey Script",
+      "extensions": [".ahk"],
+      "suspiciousKeywords": ["Click down", "Click up", "mouse_event", "Random,", "Sleep,"]
+    },
+    {
+      "type": "AutoIt Script",
+      "extensions": [".au3"],
+      "suspiciousKeywords": ["_MouseClickPlus", "MouseDown", "MouseUp", "Sleep"]
+    }
+  ],
+  "kernelVulnerableDrivers": [
+    "gdrv.sys",
+    "mhyprot2.sys",
+    "capcom.sys",
+    "echo.sys",
+    "procexp152.sys",
+    "iqvw64e.sys",
+    "dbutil_2_3.sys",
+    "enjarify.sys",
+    "rtcore64.sys",
+    "speedfan.sys",
+    "kprocesshacker.sys",
+    "zam64.sys",
+    "zamguard64.sys",
+    "procexp.sys",
+    "asusio.sys",
+    "asupio.sys",
+    "directio64.sys",
+    "eneio64.sys",
+    "winring0x64.sys",
+    "inpoutx64.sys",
+    "glckio2.sys",
+    "ntiolib_x64.sys",
+    "atillk64.sys",
+    "afd.sys.bak",
+    "nsiproxy_evil.sys",
+    "bsflash64.sys",
+    "hwos.sys",
+    "otipcibus.sys",
+    "echodrv.sys",
+    "winio.sys",
+    "msio64.sys",
+    "lgdcatcher.sys",
+    "lenovodiag.sys",
+    "semav6msr64.sys",
+    "phymemx64.sys",
+    "agentdrv.sys",
+    "viragt64.sys",
+    "cpuz_x64.sys",
+    "gpuz.sys",
+    "mapmem.sys",
+    "intelnetme2.sys",
+    "vmdrv.sys",
+    "kdmapper.sys"
+  ],
+  "cheatDomains": [
+    "vape.gg",
+    "vape.rip",
+    "manthe.cc",
+    "vapeclient.com",
+    "drip.gg",
+    "drip.rip",
+    "drip.to",
+    "dripclient.com",
+    "slinky.gg",
+    "slinkyclient.com",
+    "slinky.rip",
+    "futureclient.net",
+    "rusherhack.org",
+    "boze.dev",
+    "whiteout.gg",
+    "skilledclient.com",
+    "entropy.club",
+    "kura.gg",
+    "itami.top",
+    "riseclient.com",
+    "riseclient.net",
+    "augustus.lol",
+    "fdpclient.club",
+    "tenacity.dev",
+    "phantomclient.com",
+    "nightmare-cheats.com",
+    "prestigeclient.net",
+    "auraclient.net",
+    "clickcrystals.xyz",
+    "thunderhack.net",
+    "novaclient.net",
+    "meteorclient.com",
+    "aristois.net",
+    "liquidbounce.net",
+    "wurstclient.net",
+    "impactclient.net",
+    "inertiaclient.com",
+    "aresclient.org",
+    "bleachhack.org",
+    "exloader.net",
+    "cheatbreaker.com",
+    "alshain.ac",
+    "alshain.cc",
+    "spek.gg",
+    "intent.store",
+    "monsoon.rip",
+    "sigma-client.com",
+    "sigmaclient.info",
+    "zerodayclient.com",
+    "horion.download",
+    "prax.rip",
+    "glitch-client.com",
+    "doomsdayclient.com",
+    "ravenclient.net",
+    "ravenbplus.com",
+    "bplusclient.net",
+    "novoline.lol",
+    "astolfo.lgbt",
+    "lambdaclient.com",
+    "seppuku.pw",
+    "coffeeclient.com",
+    "konasclient.com",
+    "phobos.cat",
+    "abyssclient.com",
+    "lunarclient.top",
+    "polar.rip",
+    "vanishcleaner.com",
+    "bumblebeecleaner.cc",
+    "nulled.to",
+    "gamesense.pub",
+    "gamesense.menu",
+    "angrykiller.dev",
+    "liquidfr.com",
+    "optifog.net",
+    "zirulclient.ru",
+    "zeroclient.ru",
+    "ravenb.xyz",
+    "ravenbplus.xyz",
+    "vapelite.net",
+    "dripv4.net",
+    "driplite.com",
+    "slinkymc.com",
+    "slinkyv2.com",
+    "infernalplus.com",
+    "eliteclient.cc",
+    "celestialclient.com",
+    "nexusclient.net",
+    "ghostclient.io",
+    "ariseclient.com",
+    "strikeclient.com",
+    "elitepvpers-cheat.de",
+    "loader.cc",
+    "loader.gg",
+    "injecteur-mc.fr",
+    "minecraftcheat.ru",
+    "minecraft-cheats.pro",
+    "mc-client.net",
+    "mcleaks-cheats.com",
+    "blackspigot.com",
+    "sbhackforums.com",
+    "nullpt.rs",
+    "hydracheat.net",
+    "neoncheat.com",
+    "nebulaclient.cc",
+    "pulseclient.net",
+    "solarflare.gg",
+    "darkcheat.net",
+    "prism.gg",
+    "prismclient.net",
+    "sentry.gg",
+    "hackedclient.net",
+    "hackedclients.ru"
+  ]
+}
