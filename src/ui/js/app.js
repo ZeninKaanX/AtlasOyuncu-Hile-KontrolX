@@ -100,7 +100,33 @@ const translations = {
     why_flagged_allowed: 'WHY MARKED AS ALLOWED / WHITELISTED?',
     guide_tactic_title: 'HOW CHEATERS USE THIS TECHNIQUE (MECHANISM)',
     guide_action_title: 'STAFF / ADMIN INSPECTION & BAN GUIDANCE',
-    guide_concrete_title: 'CONCRETE EVIDENCE & 0 FALSE-FLAG PROOF'
+    guide_concrete_title: 'CONCRETE EVIDENCE & 0 FALSE-FLAG PROOF',
+    explorer_title: 'Detection Results',
+    explorer_sub: 'logs found across categories',
+    cat_all: 'Overview',
+    cat_minecraft: 'Minecraft & Mods',
+    cat_ai: 'AI Bytecode Engine',
+    cat_integrity: 'Integrity Logs',
+    cat_suspicious: 'Suspicious Logs',
+    title_all_findings: 'All Findings',
+    btn_copy_log: 'Copy Log',
+    subfilter_all: 'All',
+    subfilter_critical: 'Critical',
+    subfilter_warning: 'Warning',
+    subfilter_allowed: 'Allowed',
+    dash_empty_title: 'No scan running',
+    risk_score_lbl: 'Player Risk History',
+    panel_pc_info: 'PC Information',
+    panel_pc_desc: "Information about the user's PC",
+    btn_view_stats: 'View Stats →',
+    pc_boot_time: 'Boot Time',
+    pc_vpn: 'VPN',
+    pc_recycle: 'Recycle',
+    pc_system: 'System',
+    pc_install_date: 'Install Date',
+    pc_country: 'Country',
+    pc_server: 'Connected Server',
+    pc_window: 'Window Text'
   },
   tr: {
     nav_overview: 'Genel Bakış',
@@ -194,7 +220,33 @@ const translations = {
     why_flagged_allowed: 'NEDEN İZİNLİ / SERBEST SAYILDI?',
     guide_tactic_title: 'HİLECİLER NEDEN VE NASIL KULLANIR? (ÇALIŞMA YÖNTEMİ)',
     guide_action_title: 'YETKİLİ / ADMİN İNCELEME VE CEZA REHBERİ',
-    guide_concrete_title: 'SOMUT KANIT NİTELİĞİ VE 0 YANLIŞ ALARM GÜVENCESİ'
+    guide_concrete_title: 'SOMUT KANIT NİTELİĞİ VE 0 YANLIŞ ALARM GÜVENCESİ',
+    explorer_title: 'Tespit Sonuçları',
+    explorer_sub: 'kategoriler genelinde kayıt listeleniyor',
+    cat_all: 'Genel Bakış',
+    cat_minecraft: 'Minecraft ve Modlar',
+    cat_ai: 'YZ Baytkod Motoru',
+    cat_integrity: 'Bütünlük Günlükleri',
+    cat_suspicious: 'Şüpheli Kayıtlar',
+    title_all_findings: 'Tüm Bulgular',
+    btn_copy_log: 'Günlüğü Kopyala',
+    subfilter_all: 'Tümü',
+    subfilter_critical: 'Kritik',
+    subfilter_warning: 'Uyarı',
+    subfilter_allowed: 'İzinli',
+    dash_empty_title: 'Tarama Çalışmıyor',
+    risk_score_lbl: 'Oyuncu Risk Geçmişi',
+    panel_pc_info: 'Sistem Bilgileri',
+    panel_pc_desc: 'Kullanıcı bilgisayarı hakkında adli bilgiler',
+    btn_view_stats: 'İstatistikleri Gör →',
+    pc_boot_time: 'Açılış Zamanı',
+    pc_vpn: 'VPN',
+    pc_recycle: 'Geri Dönüşüm',
+    pc_system: 'İşletim Sistemi',
+    pc_install_date: 'Yükleme Tarihi',
+    pc_country: 'Ülke',
+    pc_server: 'Bağlı Sunucu',
+    pc_window: 'Pencere Başlığı'
   }
 };
 
@@ -413,6 +465,28 @@ function applyLanguage(lang) {
   if (dashList && !currentScanData && !isScanActive) {
     const empty = dashList.querySelector('.empty-state-card p');
     if (empty) empty.textContent = dict.dash_empty;
+    const emptyTitle = dashList.querySelector('.empty-state-card h4');
+    if (emptyTitle) emptyTitle.textContent = dict.dash_empty_title || (lang === 'tr' ? 'Tarama Çalışmıyor' : 'No scan running');
+  }
+
+  const radarCrit = document.getElementById('radarTextCrit');
+  const radarWarn = document.getElementById('radarTextWarn');
+  const radarClean = document.getElementById('radarTextClean');
+  if (radarCrit) radarCrit.textContent = dict.stat_critical;
+  if (radarWarn) radarWarn.textContent = dict.stat_suspicious;
+  if (radarClean) radarClean.textContent = dict.stat_scanned;
+
+  const titleEl = document.getElementById('activeCategoryTitle');
+  if (titleEl) {
+    const isTr = lang === 'tr';
+    const titles = {
+      'all': isTr ? 'Tüm Bulgular' : 'All Findings',
+      'minecraft': isTr ? 'Minecraft ve Modlar' : 'Minecraft & Mods',
+      'ai': isTr ? 'YZ Baytkod Motoru' : 'AI Bytecode Engine',
+      'integrity': isTr ? 'Bütünlük Günlükleri' : 'Integrity Logs',
+      'suspicious': isTr ? 'Şüpheli Kayıtlar' : 'Suspicious Logs'
+    };
+    titleEl.textContent = titles[currentCategoryFilter] || (isTr ? 'Bulgular' : 'Findings');
   }
 }
 
@@ -497,10 +571,10 @@ function setCategoryFilter(filter) {
     const isTr = currentLang === 'tr';
     const titles = {
       'all': isTr ? 'Tüm Bulgular' : 'All Findings',
-      'minecraft': isTr ? 'Minecraft & Mod Bulguları' : 'Minecraft & Mod Findings',
-      'ai': isTr ? 'Yapay Zeka & Baytkod Analizi' : 'AI & Bytecode Opinions',
-      'integrity': isTr ? 'Sistem Bütünlüğü & Bypass' : 'Integrity & Bypass Logs',
-      'suspicious': isTr ? 'Şüpheli & Makro İzleri' : 'Suspicious & Macro Logs'
+      'minecraft': isTr ? 'Minecraft ve Modlar' : 'Minecraft & Mods',
+      'ai': isTr ? 'YZ Baytkod Motoru' : 'AI Bytecode Engine',
+      'integrity': isTr ? 'Bütünlük Günlükleri' : 'Integrity Logs',
+      'suspicious': isTr ? 'Şüpheli Kayıtlar' : 'Suspicious Logs'
     };
     titleEl.textContent = titles[filter] || (isTr ? 'Bulgular' : 'Findings');
   }

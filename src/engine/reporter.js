@@ -1108,7 +1108,7 @@ class ForensicReporter {
       <div class="overview-card">
         <div class="card-head-row">
           <span class="card-head-title">Tarama Özeti</span>
-          <span class="pill-risk-tag ${criticalCount === 0 ? "clean" : ""}">${criticalCount > 0 ? "Detections" : "Clean"}</span>
+          <span class="pill-risk-tag ${criticalCount === 0 ? "clean" : ""}">${criticalCount > 0 ? "Tespitler (Detections)" : "Temiz (Clean)"}</span>
         </div>
 
         <div class="radar-visual-wrap">
@@ -1128,22 +1128,22 @@ class ForensicReporter {
             <circle cx="232" cy="162" r="3.5" fill="#fbbf24"></circle>
             <circle cx="68" cy="162" r="3.5" fill="#10b981"></circle>
             <!-- Axis Labels -->
-            <text x="150" y="12" fill="#94a3b8" font-size="10" font-weight="700" text-anchor="middle">Detections</text>
-            <text x="246" y="174" fill="#94a3b8" font-size="10" font-weight="700" text-anchor="start">Warnings</text>
-            <text x="54" y="174" fill="#94a3b8" font-size="10" font-weight="700" text-anchor="end">Legit</text>
+            <text x="150" y="12" fill="#94a3b8" font-size="10" font-weight="700" text-anchor="middle">Tespitler</text>
+            <text x="246" y="174" fill="#94a3b8" font-size="10" font-weight="700" text-anchor="start">Uyarılar</text>
+            <text x="54" y="174" fill="#94a3b8" font-size="10" font-weight="700" text-anchor="end">Güvenli</text>
           </svg>
 
           <div class="radar-stats-row">
             <div class="stat-pill-box crit">
-              <div class="lbl">Detections</div>
+              <div class="lbl">Tespitler</div>
               <div class="val">${criticalCount}</div>
             </div>
             <div class="stat-pill-box warn">
-              <div class="lbl">Warnings</div>
+              <div class="lbl">Uyarılar</div>
               <div class="val">${warnCount}</div>
             </div>
             <div class="stat-pill-box clean">
-              <div class="lbl">Legit</div>
+              <div class="lbl">Güvenli</div>
               <div class="val">${legitCount}</div>
             </div>
           </div>
@@ -1153,44 +1153,44 @@ class ForensicReporter {
       <!-- Right: PC Information -->
       <div class="overview-card">
         <div class="card-head-row">
-          <span class="card-head-title">PC Information</span>
-          <span style="font-size: 11px; color: var(--accent-cyan); font-weight: 600;">System Specs &rarr;</span>
+          <span class="card-head-title">Sistem Bilgileri (PC Information)</span>
+          <span style="font-size: 11px; color: var(--accent-cyan); font-weight: 600;">Sistem Detayları &rarr;</span>
         </div>
 
         <div class="pc-info-grid">
           <div class="pc-sub-card">
-            <span class="lbl">Boot Time</span>
+            <span class="lbl">Açılış Zamanı</span>
             <span class="val">6d ago</span>
           </div>
           <div class="pc-sub-card">
             <span class="lbl">VPN</span>
-            <span class="val">No</span>
+            <span class="val">Hayır</span>
           </div>
           <div class="pc-sub-card">
-            <span class="lbl">Recycle</span>
-            <span class="val" style="color: var(--threat-clean);">Clean</span>
+            <span class="lbl">Geri Dönüşüm</span>
+            <span class="val" style="color: var(--threat-clean);">Temiz</span>
           </div>
         </div>
 
         <div class="pc-data-list">
           <div class="pc-row">
-            <span class="row-lbl">System</span>
+            <span class="row-lbl">İşletim Sistemi</span>
             <span class="row-val">${platform}</span>
           </div>
           <div class="pc-row">
-            <span class="row-lbl">Inspection Date</span>
+            <span class="row-lbl">Denetim Tarihi</span>
             <span class="row-val">${timestamp}</span>
           </div>
           <div class="pc-row">
-            <span class="row-lbl">Country</span>
-            <span class="row-val">Turkey (TR)</span>
+            <span class="row-lbl">Ülke</span>
+            <span class="row-val">Türkiye (TR)</span>
           </div>
           <div class="pc-row">
-            <span class="row-lbl">Connected Server</span>
+            <span class="row-lbl">Bağlı Sunucu</span>
             <span class="row-val" style="color: var(--threat-info);">play.atlasoyuncu.com</span>
           </div>
           <div class="pc-row">
-            <span class="row-lbl">Window Text</span>
+            <span class="row-lbl">Pencere Başlığı</span>
             <span class="row-val">Minecraft 1.21.11</span>
           </div>
         </div>
@@ -1213,31 +1213,31 @@ class ForensicReporter {
       <div class="category-explorer-panel">
         <div class="explorer-head">
           <div>
-            <h3>Detection Results</h3>
-            <span style="font-size: 11.5px; color: var(--text-dim);">${totalLogs} total logs found</span>
+            <h3>Tespit Sonuçları (Detection Results)</h3>
+            <span style="font-size: 11.5px; color: var(--text-dim);">${totalLogs} kayıt listeleniyor (total logs)</span>
           </div>
           <span class="explorer-total-badge" id="categoryTotalBadge">${totalLogs}</span>
         </div>
 
         <div class="cat-btn-list">
           <button class="cat-pill-btn active" data-cat="all" onclick="selectCategory('all', this)">
-            <span>Overview</span>
+            <span>Genel Bakış (Overview)</span>
             <span class="cat-count-badge">${catCounts.all}</span>
           </button>
           <button class="cat-pill-btn" data-cat="minecraft" onclick="selectCategory('minecraft', this)">
-            <span>Minecraft &amp; Mods</span>
+            <span>Minecraft ve Modlar (Minecraft &amp; Mods)</span>
             <span class="cat-count-badge">${catCounts.minecraft}</span>
           </button>
           <button class="cat-pill-btn" data-cat="ai" onclick="selectCategory('ai', this)">
-            <span>AI Opinion / Bytecode</span>
+            <span>YZ Baytkod Motoru (AI Bytecode Engine)</span>
             <span class="cat-count-badge">${catCounts.ai}</span>
           </button>
           <button class="cat-pill-btn" data-cat="integrity" onclick="selectCategory('integrity', this)">
-            <span>Integrity Logs</span>
+            <span>Bütünlük Günlükleri (Integrity Logs)</span>
             <span class="cat-count-badge">${catCounts.integrity}</span>
           </button>
           <button class="cat-pill-btn" data-cat="suspicious" onclick="selectCategory('suspicious', this)">
-            <span>Suspicious Logs</span>
+            <span>Şüpheli Kayıtlar (Suspicious Logs)</span>
             <span class="cat-count-badge">${catCounts.suspicious}</span>
           </button>
         </div>
@@ -1247,12 +1247,12 @@ class ForensicReporter {
       <div class="findings-container-panel">
         <div class="findings-toolbar">
           <div class="toolbar-left">
-            <span class="toolbar-title" id="activeCategoryTitle">All Findings</span>
+            <span class="toolbar-title" id="activeCategoryTitle">Tüm Bulgular (All Findings)</span>
             <div class="subfilter-pills-row">
-              <button class="subfilter-pill active" data-subfilter="all" onclick="selectSubfilter('all', this)">All</button>
-              <button class="subfilter-pill" data-subfilter="critical" onclick="selectSubfilter('critical', this)">Critical</button>
-              <button class="subfilter-pill" data-subfilter="warning" onclick="selectSubfilter('warning', this)">Warning</button>
-              <button class="subfilter-pill" data-subfilter="allowed" onclick="selectSubfilter('allowed', this)">Allowed</button>
+              <button class="subfilter-pill active" data-subfilter="all" onclick="selectSubfilter('all', this)">Tümü (All)</button>
+              <button class="subfilter-pill" data-subfilter="critical" onclick="selectSubfilter('critical', this)">Kritik (Critical)</button>
+              <button class="subfilter-pill" data-subfilter="warning" onclick="selectSubfilter('warning', this)">Uyarı (Warning)</button>
+              <button class="subfilter-pill" data-subfilter="allowed" onclick="selectSubfilter('allowed', this)">İzinli (Allowed)</button>
             </div>
           </div>
 
@@ -1289,13 +1289,13 @@ class ForensicReporter {
       btn.classList.add("active");
       
       const titles = {
-        all: "All Findings",
-        minecraft: "Minecraft & Mods",
-        ai: "AI Opinion / Bytecode",
-        integrity: "Integrity Logs",
-        suspicious: "Suspicious Logs"
+        all: "Tüm Bulgular (All Findings)",
+        minecraft: "Minecraft ve Modlar (Minecraft & Mods)",
+        ai: "YZ Baytkod Motoru (AI Bytecode Engine)",
+        integrity: "Bütünlük Günlükleri (Integrity Logs)",
+        suspicious: "Şüpheli Kayıtlar (Suspicious Logs)"
       };
-      document.getElementById("activeCategoryTitle").textContent = titles[cat] || "Findings";
+      document.getElementById("activeCategoryTitle").textContent = titles[cat] || "Bulgular (Findings)";
       applyFilters();
     }
 
