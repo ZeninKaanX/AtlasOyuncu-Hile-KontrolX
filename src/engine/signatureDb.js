@@ -201,6 +201,32 @@ class SignatureDatabase {
         }
       }
 
+      // 2C. Hydrogen Cheat Client vs CaffeineMC Hydrogen (Legitimate chunk memory optimizer)
+      if (rule.id === 'hydrogen_cheat_client') {
+        const isLegitCaffeineHydrogen =
+          joinedText.includes('me/jellysquid/mods/hydrogen') ||
+          (modMetadata && modMetadata.name && modMetadata.name.toLowerCase().includes('caffeinemc'));
+        const hasCheatCombat = lowerEntries.some(e =>
+          e.includes('killaura') || e.includes('autocrystal') || e.includes('reach') || e.includes('velocity')
+        );
+        if (isLegitCaffeineHydrogen && !hasCheatCombat) {
+          continue; // 100% Clean CaffeineMC Hydrogen mod!
+        }
+      }
+
+      // 2D. Lithium Ghost Client vs CaffeineMC Lithium (Legitimate server/physics optimizer)
+      if (rule.id === 'lithium_cheat_client') {
+        const isLegitCaffeineLithium =
+          joinedText.includes('me/jellysquid/mods/lithium') ||
+          (modMetadata && modMetadata.name && modMetadata.name.toLowerCase().includes('caffeinemc'));
+        const hasCheatCombat = lowerEntries.some(e =>
+          e.includes('reach') || e.includes('velocity') || e.includes('aimassist') || e.includes('autoclicker')
+        );
+        if (isLegitCaffeineLithium && !hasCheatCombat) {
+          continue; // 100% Clean CaffeineMC Lithium mod!
+        }
+      }
+
       // 3. For all other clients:
       // Matched via verified Mod ID, file pattern, JavaAgent premain, OR bytecode structure
       if (matchedByModId || hasFilePatternMatch || matchedJavaAgent || (hasPackageAffinity && (uniqueMainClassMatched || packageMatches >= 1))) {

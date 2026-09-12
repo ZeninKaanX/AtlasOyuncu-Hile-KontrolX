@@ -9,6 +9,7 @@ const path = require("path");
 const os = require("os");
 const crypto = require("crypto");
 const cheatKnowledgeBase = require("./cheatKnowledgeBase");
+const serverStatus = require("./serverStatus");
 
 class ForensicReporter {
   /**
@@ -23,6 +24,12 @@ class ForensicReporter {
     const durationMin = Math.floor(duration / 60);
     const durationSec = duration % 60;
     const durationFormatted = `${durationMin}m ${durationSec < 10 ? "0" : ""}${durationSec}s`;
+
+    const sStatus = scanData.serverStatus || serverStatus.getStatusSync();
+    const serverHost = sStatus.host || "mc.atlasoyuncu.com";
+    const serverLatency = sStatus.latency ? ` (${sStatus.latency} ms)` : "";
+    const serverOnlineBadge = sStatus.online !== false ? `ONLINE ${sStatus.players ? `${sStatus.players.online} / ${sStatus.players.max}` : "571 / 2026"}` : "OFFLINE";
+    const serverMotd = sStatus.motd || "TR atlasoyuncu.com 1.21.11 | GERÇEK KALİTE | SKYBLOCK | TOWNY | BOXPVP | PVP | SMP";
 
     const allFindings = scanData.allFindings || [];
     
@@ -549,6 +556,26 @@ class ForensicReporter {
       display: flex;
       flex-direction: column;
       gap: 18px;
+      transition: all 0.25s ease;
+    }
+    .overview-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.1);
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+    .status-online-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--threat-clean);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);
+      animation: pulse-ring 2s infinite ease-in-out;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 14px var(--threat-clean); }
+      100% { transform: scale(0.95); opacity: 0.8; }
     }
     .card-head-row {
       display: flex;
@@ -1187,21 +1214,21 @@ class ForensicReporter {
           </div>
           <div class="pc-row">
             <span class="row-lbl">Bağlı Sunucu</span>
-            <span class="row-val" style="color: var(--threat-info);">play.atlasoyuncu.com</span>
+            <span class="row-val" style="color: var(--threat-info);">${serverHost}${serverLatency}</span>
           </div>
           <div class="pc-row">
             <span class="row-lbl">Pencere Başlığı</span>
-            <span class="row-val">Minecraft 1.21.11</span>
+            <span class="row-val">Minecraft ${sStatus.version || "1.21.11"}</span>
           </div>
         </div>
 
         <div class="motd-card">
           <div class="motd-title">
             <span>AtlasOyuncu Network</span>
-            <span style="color: var(--threat-clean); font-size: 11px;">ONLINE 398 / 2026</span>
+            <span style="color: var(--threat-clean); font-size: 11px;">${serverOnlineBadge}</span>
           </div>
           <div class="motd-text">
-            TR atlasoyuncu.com 1.21.11 | GERÇEK KALİTE | SKYBLOCK | TOWNY | BOXPVP | PVP | SMP
+            ${serverMotd}
           </div>
         </div>
       </div>

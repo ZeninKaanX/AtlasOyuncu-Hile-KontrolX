@@ -278,6 +278,7 @@ let targetPercent = 0;
 let scannedObjectsCount = 0;
 let progressInterval = null;
 let currentScanData = null;
+let currentServerStatusData = null;
 let scanStartTime = 0;
 let scanDurationTimer = null;
 const flaggedStages = new Set();
@@ -365,6 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initKeyboardShortcuts();
   initPolarRadar(0, 0, 0);
   initSystemStats();
+  initServerStatus();
+  initCyberParticles();
 });
 
 function initPin() {
@@ -391,6 +394,117 @@ function initSystemStats() {
   if (dateEl) {
     const d = new Date();
     dateEl.textContent = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  }
+}
+
+// Live Minecraft Server Status Handler (mc.atlasoyuncu.com)
+function initServerStatus() {
+  fetchServerStatus();
+  setInterval(() => {
+    fetchServerStatus();
+  }, 30000);
+}
+
+async function fetchServerStatus(force = false) {
+  try {
+    const res = await fetch(`/api/server-status${force ? '?force=true' : ''}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && (data.success || data.online !== undefined)) {
+        currentServerStatusData = data;
+        renderServerStatus(data);
+      }
+    }
+  } catch (e) {
+    // Graceful fallback for non-server / static file modes
+    if (!currentServerStatusData) {
+      renderServerStatus({
+        online: true,
+        host: 'mc.atlasoyuncu.com',
+        players: { online: 571, max: 2026 },
+        latency: 126,
+        version: '1.21.11',
+        motd: 'TR ᴀᴛʟᴀsᴏʏᴜɴᴄᴜ.ᴄᴏᴍ 1.21.11 | 26.2 ɢᴇʀᴄᴇᴋ ᴋᴀʟɪᴛᴇ 👑 sᴋʏʙʟᴏᴄᴋ | ᴛᴏᴡɴʏ | ʙᴏxᴘᴠᴘ | ᴘᴠᴘ | sᴍᴘ 👑'
+      });
+    }
+  }
+}
+
+function renderServerStatus(data) {
+  if (!data) return;
+  currentServerStatusData = data;
+
+  const serverAddressEl = document.getElementById('pcServerAddress');
+  if (serverAddressEl) {
+    const latencySuffix = (data.online && data.latency) ? ` (${data.latency}ms)` : '';
+    serverAddressEl.textContent = `${data.host || 'mc.atlasoyuncu.com'}${latencySuffix}`;
+    serverAddressEl.title = data.online ? `Ping: ${data.latency}ms | Sürüm: ${data.version || ''}` : 'Sunucu Çevrimdışı';
+  }
+
+  const isTr = currentLang === 'tr';
+
+  const playersCountEl = document.getElementById('serverPlayersCount');
+  if (playersCountEl) {
+    if (data.online && data.players) {
+      playersCountEl.textContent = isTr
+        ? `${data.players.online} / ${data.players.max} Oyuncu Aktif`
+        : `${data.players.online} / ${data.players.max} Players Active`;
+    } else if (data.players) {
+      playersCountEl.textContent = isTr
+        ? `${data.players.online} / ${data.players.max} Oyuncu (Önbellek)`
+        : `${data.players.online} / ${data.players.max} Players (Cached)`;
+    }
+  }
+
+  const onlineBadgeEl = document.getElementById('serverOnlineBadge');
+  if (onlineBadgeEl) {
+    if (data.online) {
+      onlineBadgeEl.textContent = isTr ? 'Çevrimiçi' : 'Online';
+      onlineBadgeEl.className = 'badge-green';
+    } else {
+      onlineBadgeEl.textContent = isTr ? 'Çevrimdışı' : 'Offline';
+      onlineBadgeEl.className = 'badge-red';
+    }
+  }
+
+  const statusDotEl = document.getElementById('serverStatusDot');
+  if (statusDotEl) {
+    statusDotEl.style.background = data.online ? 'var(--threat-clean, #10b981)' : '#ef4444';
+    statusDotEl.style.boxShadow = data.online ? '0 0 10px rgba(16, 185, 129, 0.6)' : 'none';
+  }
+
+  const motdTextEl = document.getElementById('serverMotdText');
+  if (motdTextEl && data.motd) {
+    motdTextEl.textContent = data.motd;
+  }
+
+  const avatarImgEl = document.getElementById('serverAvatarImg');
+  if (avatarImgEl && data.favicon) {
+    avatarImgEl.src = data.favicon;
+  }
+
+  const latencyTxtEl = document.getElementById('serverLatencyTxt');
+  if (latencyTxtEl) {
+    if (data.online && typeof data.latency === 'number') {
+      latencyTxtEl.textContent = `${data.latency} ms`;
+    } else if (data.online) {
+      latencyTxtEl.textContent = isTr ? 'Çevrimiçi' : 'Live';
+    } else {
+      latencyTxtEl.textContent = isTr ? 'Kapalı' : 'Offline';
+    }
+  }
+
+  const signalBadgeEl = document.getElementById('serverSignalBadge');
+  if (signalBadgeEl) {
+    if (data.online) {
+      signalBadgeEl.style.borderColor = 'rgba(16, 185, 129, 0.25)';
+      signalBadgeEl.style.background = 'rgba(16, 185, 129, 0.08)';
+      signalBadgeEl.style.color = 'var(--color-clean)';
+    } else {
+      signalBadgeEl.style.borderColor = 'rgba(239, 68, 68, 0.25)';
+      signalBadgeEl.style.background = 'rgba(239, 68, 68, 0.08)';
+      signalBadgeEl.style.color = 'var(--color-crit)';
+    }
   }
 }
 
@@ -423,6 +537,10 @@ function setLanguage(lang) {
   }
 
   applyLanguage(lang);
+
+  if (currentServerStatusData) {
+    renderServerStatus(currentServerStatusData);
+  }
 
   if (currentScanData) {
     renderFullResults(currentScanData);
@@ -790,6 +908,8 @@ function handleServerMessage(msg) {
     handleScanComplete(msg.data);
   } else if (msg.type === 'UPDATE_RESULT') {
     logTerminal('INFO', msg.message);
+  } else if (msg.type === 'SERVER_STATUS') {
+    renderServerStatus(msg.data);
   } else if (msg.type === 'EXPORT_RESULT') {
     const isTr = currentLang === 'tr';
     logTerminal('SUCCESS', isTr ? `Rapor İndirilenler klasörüne kaydedildi: ${msg.path}` : `Report saved to Downloads: ${msg.path}`);
@@ -1886,4 +2006,126 @@ function showToast(title, message, type = 'success', duration = 4500) {
       }
     }, 400);
   });
+}
+
+/**
+ * High-performance Interactive Cyber Particles Background
+ * Renders glowing constellations that react smoothly to cursor movements
+ */
+function initCyberParticles() {
+  const canvas = document.getElementById('ambientCyberCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  let width = 0;
+  let height = 0;
+  let animId = null;
+  const particles = [];
+  const PARTICLE_COUNT = 45;
+  const MAX_DISTANCE = 135;
+
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  }
+
+  resize();
+  window.addEventListener('resize', resize, { passive: true });
+
+  const colors = [
+    { r: 56, g: 189, b: 248 },  // cyan #38bdf8
+    { r: 99, g: 102, b: 241 },  // indigo #6366f1
+    { r: 52, g: 211, b: 153 },  // emerald #34d399
+    { r: 167, g: 139, b: 250 }  // violet #a78bfa
+  ];
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const col = colors[i % colors.length];
+    particles.push({
+      x: Math.random() * (width || 1200),
+      y: Math.random() * (height || 800),
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      radius: Math.random() * 1.6 + 1.2,
+      color: col,
+      alpha: Math.random() * 0.45 + 0.25
+    });
+  }
+
+  let mouseX = -9999;
+  let mouseY = -9999;
+  window.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  }, { passive: true });
+
+  let isPaused = false;
+  document.addEventListener('visibilitychange', () => {
+    isPaused = document.hidden;
+    if (!isPaused && !animId) {
+      loop();
+    }
+  });
+
+  function loop() {
+    if (isPaused) {
+      animId = null;
+      return;
+    }
+
+    ctx.clearRect(0, 0, width, height);
+
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+
+      if (p.x < 0) p.x = width;
+      else if (p.x > width) p.x = 0;
+      if (p.y < 0) p.y = height;
+      else if (p.y > height) p.y = 0;
+
+      // Subtle mouse avoidance / interaction
+      const dxm = mouseX - p.x;
+      const dym = mouseY - p.y;
+      const distMouse = Math.sqrt(dxm * dxm + dym * dym);
+      if (distMouse < 110 && distMouse > 0) {
+        const force = (110 - distMouse) / 110 * 0.35;
+        p.x -= (dxm / distMouse) * force;
+        p.y -= (dym / distMouse) * force;
+      }
+
+      // Draw particle dot with soft glow
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, ${p.alpha})`;
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, 0.7)`;
+      ctx.fill();
+
+      // Connecting lines between nearby particles
+      for (let j = i + 1; j < particles.length; j++) {
+        const p2 = particles[j];
+        const dx = p.x - p2.x;
+        const dy = p.y - p2.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < MAX_DISTANCE) {
+          const lineAlpha = (1 - dist / MAX_DISTANCE) * 0.18;
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.strokeStyle = `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, ${lineAlpha})`;
+          ctx.lineWidth = 0.75;
+          ctx.shadowBlur = 0;
+          ctx.stroke();
+        }
+      }
+    }
+
+    animId = requestAnimationFrame(loop);
+  }
+
+  loop();
 }

@@ -99,18 +99,30 @@ class DeepArchiveScanner {
       add('/dev/shm');
     }
 
-    // 5. Minecraft & Launcher Locations
+    // 5. Minecraft, Weave & Launcher Locations
     if (isWindows) {
       const appData = process.env.APPDATA || path.join(home, 'AppData', 'Roaming');
       const localAppData = process.env.LOCALAPPDATA || path.join(home, 'AppData', 'Local');
       add(path.join(appData, '.minecraft'));
       add(path.join(appData, '.minecraft', 'mods'));
+      add(path.join(appData, '.weave'));
+      add(path.join(appData, '.weave', 'mods'));
+      add(path.join(home, '.weave'));
+      add(path.join(home, '.weave', 'mods'));
+      add(path.join(appData, '.lunarclient'));
+      add(path.join(appData, '.feather'));
+      add(path.join(appData, '.badlion'));
       add(path.join(appData, '.sonoyuncu'));
       add(path.join(appData, '.craftrise'));
       add(path.join(appData, '.roan'));
     } else {
       add(path.join(home, '.minecraft'));
       add(path.join(home, '.minecraft', 'mods'));
+      add(path.join(home, '.weave'));
+      add(path.join(home, '.weave', 'mods'));
+      add(path.join(home, '.lunarclient'));
+      add(path.join(home, '.feather'));
+      add(path.join(home, '.badlion'));
       add(path.join(home, '.sonoyuncu'));
       add(path.join(home, '.craftrise'));
     }

@@ -57,9 +57,17 @@ class PeBinaryInspector {
       'drip_client', 'drip_lite', 'drip.gg',
       'doomsdayclient', 'doomsday_core',
       'kura_ghost', 'whiteout_client', 'whiteout.gg',
-      'raven_bplus', 'ravenbplus',
+      'raven_bplus', 'ravenbplus', 'raven_b_series',
       'liquidlauncher', 'liquidbounce',
-      'nightmare-cheats', 'nightmareloader'
+      'nightmare-cheats', 'nightmareloader',
+      'ripterms', 'riptermsghost', 'riptermsinjector', 'classpatcherjar',
+      'horionbeta', 'horioninjector', 'horion.dll', 'horion.download',
+      'borioninjector', 'borion.dll',
+      'fusioninternal', 'fusionclient',
+      'breezeclient', 'cryptclient', 'koidclient',
+      'lunaraccountmanager', 'offlinelunar', 'badlionoffline', 'feathercracked',
+      'weaveloader', 'weavemanager', 'net.weavemc',
+      'exodusaimassist'
     ];
 
     // Generic combat cheat tokens (only evaluated when JVM targeting is present)

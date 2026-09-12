@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/main/index.js",
     "stop": "node src/main/index.js --stop",
-    "test": "node tests/testFarbenAC.js",
+    "test": "node tests/testFarbenAC.js && node tests/test_all_clients.js && node tests/test_meteor_liquid_wurst_doomsday.js && node tests/test_server_status.js",
+    "benchmark": "node scripts/benchmark.js",
     "build": "node scripts/build.js"
   },
   "pkg": {

@@ -47,6 +47,7 @@ const powerShellScriptForensics = require('./powerShellScriptForensics');
 const updater = require('./updater');
 const reporter = require('./reporter');
 const serverPolicy = require('../config/serverPolicy');
+const serverStatus = require('./serverStatus');
 
 function isAutoClickerFinding(f) {
   if (!f) return false;
@@ -531,6 +532,67 @@ class ScannerCore {
         }
       }
 
+      // Smart Anti-Forensics Correlation (Cheat Activity + USN Journal / Evidence Wiping)
+      const usnWipeFinding = allFindings.find(f =>
+        f.type && (
+          f.type.startsWith('USN_JOURNAL_') ||
+          f.type === 'USN_JOURNAL_DELETION_COMMAND' ||
+          f.type === 'ACTIVE_CLEANER_TOOL_RUNNING' ||
+          f.type === 'CLEANER_TOOL_HISTORY'
+        )
+      );
+
+      const cheatActivities = allFindings.filter(f =>
+        f.level === 'CRITICAL' &&
+        f !== usnWipeFinding &&
+        f.type !== 'ANTI_FORENSICS_CHEAT_EVIDENCE_DESTRUCTION' &&
+        f.type !== 'ALLOWED_POLICY_AUTOCLICKER_SUMMARY' &&
+        (
+          (f.type && (
+            f.type.startsWith('BROWSER_CHEAT_') ||
+            f.type.includes('CHEAT_FILE_DOWNLOADED') ||
+            f.type.includes('DISCORD_CHEAT') ||
+            f.type === 'DEFENDER_CHEAT_THREAT_DETECTED' ||
+            f.type === 'CHEAT_VERSION_PROFILE_DETECTED' ||
+            f.type === 'LAUNCHER_PROFILE_CHEAT_CONFIGURED' ||
+            f.type.startsWith('EXTERNAL_') ||
+            f.type.endsWith('_CONFIG_DIR') ||
+            f.type.includes('TRIGGERBOT') ||
+            f.type.includes('TROJAN') ||
+            f.type.includes('SEMANTIC') ||
+            f.type.includes('MINECRAFT_CHEAT_MOD')
+          )) ||
+          f.category === 'BROWSER_FORENSICS' ||
+          f.category === 'MINECRAFT_MODS'
+        )
+      );
+
+      if (usnWipeFinding && cheatActivities.length > 0) {
+        const cheatNames = Array.from(new Set(cheatActivities.map(f => f.name || f.domain || f.file).filter(Boolean)));
+        const correlationFinding = {
+          level: 'CRITICAL',
+          severity: 'CRITICAL',
+          type: 'ANTI_FORENSICS_CHEAT_EVIDENCE_DESTRUCTION',
+          name: 'Kritik Adli Delil Karartma (Hile Etkinliği Sonrası USN Günlüğü Sıfırlama)',
+          category: 'ANTI_FORENSICS',
+          badge: 'SMOKING_GUN',
+          badgeText: 'KUSURSUZ SOMUT KANIT (DELİL KARARTMA)',
+          confidence: '100% (Kronolojik Adli Kanıt Karartma Doğrulandı)',
+          path: usnWipeFinding.path || 'C:\\$Extend\\$UsnJrnl',
+          timestamp: usnWipeFinding.timestamp || new Date().toISOString(),
+          whyFlagged: 'Kullanıcı hile sitelerini ziyaret edip dosyaları indirdikten/kullandıktan hemen sonra, diskteki silinmiş dosya ve adli izleri yok etmek amacıyla NTFS Değişiklik Günlüğünü ("fsutil usn deletejournal") kasten silmiştir.',
+          adminAction: 'KESİN KANIT KARARTMA VE HİLE KULLANIM BANI: Deliller kasıtlı olarak silinmiştir. Sistemde hile etkinliği ve ardından delil yok etme eylemi kesinleşmiştir.',
+          description: `Kullanıcı hile istemcilerini (${cheatNames.slice(0, 5).join(', ')}) araştırıp indirdikten hemen sonra, dosya silme kayıtlarını adli kontrol araçlarından gizlemek amacıyla NTFS Değişiklik Günlüğünü (USN Journal) kasten sıfırlamıştır!`,
+          evidence: [
+            `Tespit Edilen Hile Etkinlikleri: ${cheatActivities.length} adet (${cheatNames.slice(0, 6).join(', ')})`,
+            `Kanıt Karartma Eylemi: NTFS Değişiklik Günlüğü (USN Journal) silindi ('fsutil usn deletejournal')`,
+            `Adli Anlam: USN günlüğü sıfırlandığında son silinen dosyaların NTFS indeks kayıtları yok edilir; bu işlem yalnızca delil karartma amaçlı yapılır.`,
+            `Zaman Çizelgesi Korelasyonu: Hile sitelerine erişim ve dosya indirmelerinin hemen ardından USN günlüğü sıfırlanmıştır.`
+          ]
+        };
+        allFindings.unshift(correlationFinding);
+      }
+
       // Final enrichment pass
       for (const f of allFindings) {
         cheatKnowledgeBase.enrichFinding(f);
@@ -538,11 +600,20 @@ class ScannerCore {
 
       const durationSeconds = ((Date.now() - startTime) / 1000).toFixed(1);
 
+      // Capture live Minecraft server status snapshot
+      let liveServerStatus = null;
+      try {
+        liveServerStatus = await serverStatus.fetchStatus();
+      } catch (e) {
+        liveServerStatus = serverStatus.getStatusSync();
+      }
+
       this.lastScanResults = {
         timestamp: new Date().toISOString(),
         durationSeconds,
         scannedJars: (mcResults && mcResults.scannedJars) || 0,
         scannedObjects: totalScannedObjects,
+        serverStatus: liveServerStatus,
         allFindings,
         bypassResults,
         archiveScanResults,

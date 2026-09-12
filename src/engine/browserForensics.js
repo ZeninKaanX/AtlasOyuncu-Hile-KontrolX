@@ -322,10 +322,13 @@ class BrowserForensicsEngine {
           ]
         });
       } else {
-        const isStreamMatch = visit.visitType === 'İkili Veri İzi (Stream Match)';
+        const isStreamMatch = visit.visitType && (visit.visitType.includes('Stream') || visit.visitType.includes('Binary'));
         findings.push({
-          level: isStreamMatch ? 'INFO' : 'CRITICAL',
-          type: isStreamMatch ? 'BROWSER_STREAM_MATCH_UNCONFIRMED' : 'BROWSER_CHEAT_DOMAIN_VISITED',
+          level: 'INFO',
+          severity: 'INFO',
+          badge: 'INFO',
+          badgeText: 'BİLGİ',
+          type: 'BROWSER_CHEAT_DOMAIN_VISITED',
           category: 'BROWSER_FORENSICS',
           name: visit.domain,
           domain: visit.domain,
@@ -334,22 +337,16 @@ class BrowserForensicsEngine {
           timestamp: visit.timestamp,
           browser: dbBrowser,
           visitType: visit.visitType || 'Bilinmiyor',
-          whyFlagged: isStreamMatch
-            ? `Tarayıcı veri dosyasında "${visit.domain}" metin izi görüldü ancak doğrudan indirme veya onaylı gezinme kaydı teyit edilemedi.`
-            : `Tarayıcı geçmişi kayıtlarında bilinen hile/enjeksiyon sağlayıcısı veya kimlik doğrulama sunucusu (${visit.domain}) ziyareti tespit edilmiştir.`,
-          adminAction: isStreamMatch
-            ? 'BİLGİ NOTU: Doğrudan dosya indirmesi bulunmadığı ve veri arama/önbellek kaynaklı olabileceği için ceza uygulanmaz.'
-            : 'Yetkili İnceleme Rehberi: Kullanıcının siteyi ziyaret amacını ve sistemde ilişkili bir hile modülünün bulunup bulunmadığını değerlendiriniz.',
-          confidence: isStreamMatch ? 'Düşük (Ham İkili Veri İzi)' : '90% (Tarayıcı Geçmişi Doğrulandı)',
-          description: isStreamMatch
-            ? `Tarayıcı önbelleğinde "${visit.domain}" metin izi bulundu ancak doğrudan indirme kaydı eşleşmedi.`
-            : `Kullanıcı (${dbBrowser}) tarayıcısında hile dağıtım sitesini ziyaret etmiş [${visit.visitType}]: ${visit.domain}`,
+          whyFlagged: `Tarayıcı geçmişi kayıtlarında bilinen hile/enjeksiyon sağlayıcısı veya kimlik doğrulama sunucusu (${visit.domain}) ziyareti tespit edilmiş olup doğrudan dosya indirmesi teyit edilmemiştir.`,
+          adminAction: 'BİLGİ NOTU (CEZA UYGULANMAZ): Yalnızca web sitesi ziyareti tespit edilmiştir. Doğrudan dosya indirmesi veya sistemde hile modülü bulunmadığı sürece yalnızca gezinme sebebiyle ban cezası uygulanmaz.',
+          confidence: isStreamMatch ? '85% (Tarayıcı Veritabanında Doğrulandı)' : '95% (Tarayıcı Geçmişi Doğrulandı)',
+          description: `Kullanıcı (${dbBrowser}) tarayıcısında bilinen hile dağıtım sitesini ziyaret etmiş [${visit.visitType}]: ${visit.url || visit.domain} (Doğrudan indirme kaydı bulunamadı)`,
           evidence: [
             `Ziyaret Türü (Visit Type): ${visit.visitType}`,
             `Tam URL: ${visit.url}`,
             `Sayfa Başlığı: ${visit.title || 'Bilinmiyor'}`,
             `Ziyaret Tarihi: ${visit.timestamp}`,
-            `İndirme Durumu: Bu ziyarette doğrudan dosya indirmesi tespit edilmedi`
+            `İndirme Durumu: Bu ziyarette doğrudan dosya indirmesi eşleşmedi`
           ]
         });
       }
@@ -556,16 +553,43 @@ class BrowserForensicsEngine {
 
         for (const domain of this.knownCheatDomains) {
           if (content.includes(domain)) {
+            let bestUrl = `https://${domain}`;
+            try {
+              const domainEscaped = domain.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const urlRegex = new RegExp(`https?:\\/\\/[a-zA-Z0-9.-]*?${domainEscaped}[^\\s\\0"'<>]{0,250}`, 'gi');
+              const match = urlRegex.exec(content);
+              if (match && match[0]) {
+                bestUrl = match[0];
+              }
+            } catch (e) {}
+
             visitedCheats.push({
               domain,
-              url: `https://${domain}`,
+              url: bestUrl,
               title: `${domain} Portal`,
               timestamp: dbMtime,
-              visitType: 'İkili Veri İzi (Stream Match)',
+              visitType: 'Tarayıcı Geçmiş Kaydı (Binary Forensics)',
               browser: dbInfo.browser
             });
           }
         }
+
+        // Search for downloaded files recorded in SQLite binary stream
+        try {
+          const dlPathRegex = /(?:[A-Za-z]:[\\/]|(?:\/home\/[^/\s]+\/|\/root\/))[^\s\0"'<>|?*]{1,250}\.(?:jar|exe|zip|msi)/gi;
+          let pathMatch;
+          const seenDlPaths = new Set();
+          while ((pathMatch = dlPathRegex.exec(content)) !== null) {
+            const matchedPath = pathMatch[0];
+            if (seenDlPaths.has(matchedPath)) continue;
+            seenDlPaths.add(matchedPath);
+            const evalItem = this.evaluateDownloadItem(matchedPath, '', dbMtime, dbInfo.browser);
+            if (evalItem) {
+              downloadedCheats.push(evalItem);
+              rawDownloads.push({ name: evalItem.fileName, browser: dbInfo.browser, path: evalItem.targetPath, timestamp: dbMtime });
+            }
+          }
+        } catch (e) {}
 
         const discordRegex = /https:\/\/cdn\.discordapp\.com\/attachments\/[^\s\0"']+\.(jar|exe|zip|rar)/gi;
         let discordMatch;
@@ -624,7 +648,7 @@ class BrowserForensicsEngine {
     if (knownWindowsSystemDlls.has(lowerName)) return null;
 
     const isKnownCheatDomain = this.knownCheatDomains.some(d => (tabUrl || '').toLowerCase().includes(d.toLowerCase()));
-    const isCheatFileName = /(?:^|[\\/._-])(vape(?:[-_ ]?v?[0-9]|lite)?|slinky|drip(?:client|-lite|_client)?|doomsday|meteorclient|liquidbounce|wurstclient|wurst|autoclicker|murgee|ravenbplus|novoline)(?:[-_.]|$)/i.test(lowerName);
+    const isCheatFileName = /(?:^|[\\/._-])(vape(?:[-_ ]?v?[0-9]|lite)?|slinky|drip(?:client|-lite|_client)?|doomsday(?:client|-client|_client)?|meteor(?:client|-client|_client)?|liquidbounce|liquidlauncher|wurst(?:client|-client|_client)?|autoclicker|murgee|raven(?:bplus|b|\+|xd|n\+)?|novoline|aristois|rise(?:client)?|tenacity|sigma(?:client|5)?|astolfo|future(?:client)?|rusherhack|boze|kura|inertia(?:client)?|impact(?:client)?|augustus|fdpclient|bleachhack|catlean|thunderhack)(?:[-_.]|$)/i.test(lowerName);
 
     let isCheat = isCheatFileName || isKnownCheatDomain;
     if (!isCheat && targetPath && fs.existsSync(targetPath)) {

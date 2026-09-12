@@ -12,6 +12,7 @@ const path = require('path');
 const { exec, execSync } = require('child_process');
 const scannerCore = require('../engine/scannerCore');
 const updater = require('../engine/updater');
+const serverStatus = require('../engine/serverStatus');
 
 const app = express();
 const server = http.createServer(app);
@@ -186,6 +187,17 @@ app.get('/api/export', (req, res) => {
   }
 });
 
+// Live Minecraft Server Status Endpoint
+app.get('/api/server-status', async (req, res) => {
+  try {
+    const force = req.query.force === 'true';
+    const status = await serverStatus.fetchStatus(force);
+    res.json({ success: true, ...status });
+  } catch (err) {
+    res.json({ success: false, ...serverStatus.getStatusSync(), error: err.message });
+  }
+});
+
 // Fallback to standard express.static
 app.use(express.static(uiPath));
 
@@ -204,11 +216,27 @@ app.post('/api/shutdown', (req, res) => {
 wss.on('connection', (ws) => {
   console.log('[Atlas AC] UI client connected.');
 
+  // Push initial live server status
+  serverStatus.fetchStatus().then(status => {
+    try {
+      ws.send(JSON.stringify({
+        type: 'SERVER_STATUS',
+        data: status
+      }));
+    } catch (e) {}
+  }).catch(() => {});
+
   ws.on('message', async (message) => {
     try {
       const data = JSON.parse(message);
 
-      if (data.action === 'START_SCAN') {
+      if (data.action === 'GET_SERVER_STATUS') {
+        const status = await serverStatus.fetchStatus(Boolean(data.force));
+        ws.send(JSON.stringify({
+          type: 'SERVER_STATUS',
+          data: status
+        }));
+      } else if (data.action === 'START_SCAN') {
         try {
           const results = await scannerCore.runFullScan((stage, percent, log, finding, target, objectsCount) => {
             ws.send(JSON.stringify({

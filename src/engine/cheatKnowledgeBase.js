@@ -985,6 +985,156 @@ class CheatKnowledgeBase {
           adminAction: 'PERMANENT CHEAT BAN.',
           whyConcrete: 'Confirmed automated slot 45 packet dispatch triggered by health reduction.'
         }
+      },
+
+      WEAVE_INJECTION_FRAMEWORK: {
+        tr: {
+          tacticName: 'Weave Enjeksiyon ve Mod Kancalama Altyapısı (Weave Loader)',
+          howItWorks: 'Weave, Lunar Client veya Forge dosyalarını diskte değiştirmeden çalıştırmak için JavaAgent veya JNI üzerinden belleğe kancalanır. Hileciler .weave/mods dizini altına Raven B+, Ripterms veya gizli ghost modları koyarak standart dosya kontrollerini atlatırlar.',
+          adminAction: 'KESİN HİLE BAN: .weave/mods veya Weave süreci içindeki hile modüllerini inceleyiniz.',
+          whyConcrete: 'Doğrudan Weave paket yapıları (net.weavemc), loader imzaları veya .weave/mods dizininde hile modülü tespit edilmiştir.'
+        },
+        en: {
+          tacticName: 'Weave Injection and Hooking Framework (Weave Loader)',
+          howItWorks: 'Hooks into Lunar Client or Forge via JavaAgent/JNI to load stealth modules from .weave/mods without modifying game jars on disk.',
+          adminAction: 'PERMANENT CHEAT BAN.',
+          whyConcrete: 'Verified Weave package structures, loader signatures, and cheat modules in .weave/mods.'
+        }
+      },
+
+      BEDROCK_DLL_INJECTION: {
+        tr: {
+          tacticName: 'Minecraft Bedrock DLL Enjeksiyonu (Horion / Borion)',
+          howItWorks: 'Minecraft Windows 10/11 (Bedrock) C++ ile yazılmış olduğundan, hileciler standart Java modları yerine doğrudan oyuna DLL enjekte ederler (Horion.dll, Borion.dll). Bu DLL, bellek adreslerini yamalayarak uçma, reach ve killaura sağlar.',
+          adminAction: 'KESİN HİLE BAN: Bedrock DLL enjektör kalıntısı veya süreci doğrulanmıştır.',
+          whyConcrete: 'Horion/Borion ikili başlıkları, dışa aktarılan işlevler ve prefetch/USN kayıtları somuttur.'
+        },
+        en: {
+          tacticName: 'Minecraft Bedrock DLL Injection (Horion / Borion)',
+          howItWorks: 'Injects native C++ DLLs into Minecraft.Windows.exe process to patch runtime memory for flight, reach, and killaura.',
+          adminAction: 'PERMANENT CHEAT BAN.',
+          whyConcrete: 'Confirmed Horion/Borion PE headers, exported functions, and prefetch records.'
+        }
+      },
+
+      ACCOUNT_TOKEN_SWAPPER_BYPASS: {
+        tr: {
+          tacticName: 'Hesap / Oturum Belirteci Çalma ve Değiştirme (Lunar Account Manager GO)',
+          howItWorks: 'Lunar Client veya Minecraft oturum belirteçlerini (token) bellekten veya yerel ayarlardan ayıklar, yetkisiz hesap geçişi ve sunucu banlarını atlatmak için korsan hesap enjekte eder.',
+          adminAction: 'KESİN YETKİSİZ ERİŞİM & BAN: Oturum belirteci hırsızlığı ve hesap baypası.',
+          whyConcrete: 'Lunar Account Manager GO ikili kodları ve yapılandırma kancaları somuttur.'
+        },
+        en: {
+          tacticName: 'Account Token Swapper & Auth Bypass (Lunar Account Manager GO)',
+          howItWorks: 'Extracts session tokens from memory or configs to bypass authentication and evade server account bans.',
+          adminAction: 'PERMANENT BAN: Session token theft and unauthorized account tampering.',
+          whyConcrete: 'Confirmed Lunar Account Manager binaries and account hook parameters.'
+        }
+      },
+
+      CRACKED_LAUNCHER_TELEMETRY_BYPASS: {
+        tr: {
+          tacticName: 'Korsan İstemci ve Anti-Cheat Telemetri Baypası (Badlion/Feather Offline)',
+          howItWorks: 'Badlion veya Feather istemcilerinin resmi anti-cheat (BAC) ve telemetri sunucuları ile olan iletişimini keser, istemciyi korsan (offline) modda başlatarak sunucu kontrollerini atlatır.',
+          adminAction: 'KESİN BYPASS BAN: Anti-cheat telemetrisini devre dışı bırakma girişimi.',
+          whyConcrete: 'Korsan istemci ikili dosyaları, offline yama kütüphaneleri ve prefetch kayıtları somuttur.'
+        },
+        en: {
+          tacticName: 'Cracked Client & Anti-Cheat Telemetry Bypass (Badlion/Feather Offline)',
+          howItWorks: 'Severes official launcher telemetry and anti-cheat (BAC) connection to run unauthorized offline game instances.',
+          adminAction: 'PERMANENT BAN: Deliberate anti-cheat tampering and telemetry bypass.',
+          whyConcrete: 'Confirmed cracked launcher binaries, patch libraries, and execution logs.'
+        }
+      },
+
+      CHEAT_VERSION_PROFILE_DETECTED: {
+        tr: {
+          tacticName: 'Minecraft Hile Sürüm Profili (Version JSON Profile)',
+          howItWorks: 'Wurst, LiquidBounce, Doomsday, Meteor gibi hile istemcileri Minecraft sürümler (.minecraft/versions) klasörüne kendi özel JSON yapılandırmalarını ve kütüphanelerini kurarlar. Oyuncu JAR dosyasını silse dahi bu sürüm profili JSON dosyası diskte kalır.',
+          adminAction: 'KESİN HİLE BAN: Oyuncu hile sürümünü istemci olarak kurmuştur. Sürüm profili somut kanıttır.',
+          whyConcrete: '100% Somut Kanıt: Minecraft resmi versions dizininde doğrulanmış hile sürüm profili bulundu.'
+        },
+        en: {
+          tacticName: 'Minecraft Cheat Version Profile',
+          howItWorks: 'Clients like Wurst, LiquidBounce, Doomsday, and Meteor install custom version JSON profiles in .minecraft/versions. Even if the JAR is deleted, the version JSON profile persists.',
+          adminAction: 'DEFINITE BAN: Player installed cheat version profile as client.',
+          whyConcrete: '100% Concrete Forensic Proof: Verified cheat version profile in versions directory.'
+        }
+      },
+
+      LAUNCHER_PROFILE_CHEAT_CONFIGURED: {
+        tr: {
+          tacticName: 'Minecraft Başlatıcı Hile Profili Yapılandırması',
+          howItWorks: 'Kullanıcı resmi veya harici Minecraft Launcher (launcher_profiles.json) üzerinde Wurst, LiquidBounce, Meteor, Doomsday, Vape vb. hile istemcisini özel profil olarak kaydetmiştir. Bu profil oyunun hileli sürümle başlatıldığını kanıtlar.',
+          adminAction: 'KESİN HİLE BAN: Başlatıcı profili somut kullanım kanıtıdır.',
+          whyConcrete: '100% Somut Kanıt: launcher_profiles.json içinde hile profili kayıtlı.'
+        },
+        en: {
+          tacticName: 'Launcher Profile Cheat Configuration',
+          howItWorks: 'The user configured a cheat client profile (Wurst, LiquidBounce, Meteor, Doomsday, Vape) inside the launcher_profiles.json.',
+          adminAction: 'DEFINITE BAN: Launcher profile configuration is concrete evidence of cheat installation.',
+          whyConcrete: '100% Concrete Proof: Cheat profile stored in launcher_profiles.json.'
+        }
+      },
+
+      ANTI_FORENSICS_CHEAT_EVIDENCE_DESTRUCTION: {
+        tr: {
+          tacticName: 'Kritik Delil Karartma (Hile Etkinliği Sonrası USN Günlüğü Sıfırlama)',
+          howItWorks: 'Kullanıcı hile sitelerini ziyaret edip dosyaları indirdikten veya çalıştırdıktan hemen sonra (1-2 dakika içinde), sistemdeki silinen dosya ve çalıştırma izlerini yok etmek amacıyla Windows NTFS Değişiklik Günlüğünü ("fsutil usn deletejournal") kasten silmiştir.',
+          adminAction: 'KESİN KANIT KARARTMA VE HİLE KULLANIM BANI: Deliller kasıtlı olarak silinmiştir. Sistemde hile etkinliği ve ardından delil yok etme eylemi kesinleşmiştir.',
+          whyConcrete: '100% Somut Kanıt: Hile indirme/ziyaret adli izleri ile USN günlüğünün silinmesi kronolojik olarak eşleşmiştir.'
+        },
+        en: {
+          tacticName: 'Critical Evidence Destruction (USN Wipe After Cheat Activity)',
+          howItWorks: 'The user downloaded/used cheats and immediately executed "fsutil usn deletejournal" to wipe NTFS change journal deletion traces right before the screenshare check.',
+          adminAction: 'DEFINITE BAN: Intentional evidence destruction combined with verified cheat downloads.',
+          whyConcrete: '100% Concrete Forensic Proof: Chronological correlation of cheat acquisition and USN journal wiping.'
+        }
+      },
+
+      EXTERNAL_CHEAT_DIR: {
+        tr: {
+          tacticName: 'Bağımsız Harici Hile Veri Dizini',
+          howItWorks: 'Wurst, LiquidBounce (CCBlueX), Meteor, Doomsday, Vape, Drip gibi istemciler kullanıcı AppData veya Profil klasöründe (.wurst, CCBlueX, meteor-client, doomsday vb.) bağımsız yapılandırma klasörleri oluşturur.',
+          adminAction: 'KESİN HİLE BAN: Bağımsız hile yapılandırma klasörü ve dosyaları somut kanıttır.',
+          whyConcrete: '100% Somut Kanıt: Sistemde hile istemcisinin ayar ve veri klasörü bulundu.'
+        },
+        en: {
+          tacticName: 'Standalone External Cheat Directory',
+          howItWorks: 'Standalone cheat clients create directories in AppData or user home (.wurst, CCBlueX, meteor-client, doomsday) to store configs and caches.',
+          adminAction: 'DEFINITE BAN: Standalone cheat configuration folder is concrete evidence.',
+          whyConcrete: '100% Concrete Forensic Proof: Cheat directory found on system.'
+        }
+      },
+
+      BROWSER_CHEAT_DOMAIN_VISITED: {
+        tr: {
+          tacticName: 'Tarayıcı Hile Sitesi Ziyareti (Yalnızca Gezinme / Bilgi)',
+          howItWorks: 'Kullanıcı tarayıcıda bilinen bir hile dağıtım veya kimlik doğrulama sitesini ziyaret etmiştir ancak bu ziyarete bağlı doğrudan bir dosya indirme veya istemci kurulumu tespit edilmemiştir.',
+          adminAction: 'BİLGİ NOTU (CEZA UYGULANMAZ): Yalnızca web sitesi ziyareti tespit edilmiştir. Doğrudan dosya indirmesi veya sistemde hile modülü bulunmadığı sürece yalnızca gezinme sebebiyle ban cezası uygulanmaz.',
+          whyConcrete: 'Tarayıcı geçmişi ve veritabanı kayıtları somuttur; yalnızca bilgilendirme amaçlıdır.'
+        },
+        en: {
+          tacticName: 'Browser Cheat Domain Visited (Browsing Only / Informational)',
+          howItWorks: 'The user browsed a known cheat distribution or authentication portal in their browser, but no direct file download or client installation was confirmed from this visit.',
+          adminAction: 'INFORMATIONAL ONLY (NO PENALTY): Browsing history alone does not warrant a penalty unless accompanied by a verified download or cheat module.',
+          whyConcrete: 'Concrete browser database history trace; presented for administrative awareness.'
+        }
+      },
+
+      BROWSER_CHEAT_FILE_DOWNLOADED: {
+        tr: {
+          tacticName: 'Tarayıcı Üzerinden Hile Dosyası İndirme (Doğrulanmış Tehdit)',
+          howItWorks: 'Kullanıcı tarayıcı üzerinden doğrudan hile (.jar, .exe) dosyasını bilgisayarına indirmiştir. İndirme geçmişinde dosya adı, indirme yolu ve zaman damgası sabittir.',
+          adminAction: 'KESİN HİLE BAN: Tarayıcı indirme geçmişinde doğrulanmış hile dosyası mevcuttur. Dosyanın diskteki durumunu ve çalıştırma geçmişini adli loglarla doğrulayınız.',
+          whyConcrete: '100% Somut Kanıt: Tarayıcı indirme veritabanında dosya yolu, adı ve indirme zaman damgası sabittir.'
+        },
+        en: {
+          tacticName: 'Browser Cheat File Downloaded (Verified Threat)',
+          howItWorks: 'The user directly downloaded a cheat payload (.jar, .exe) via browser. Download history preserves full target path and timestamp.',
+          adminAction: 'DEFINITE BAN: Confirmed cheat download in browser database records.',
+          whyConcrete: '100% Concrete Forensic Proof: Target path and download timestamp verified.'
+        }
       }
     };
   }
@@ -1048,6 +1198,25 @@ class CheatKnowledgeBase {
       return this.knowledge.TROJAN_WHITELIST_BYPASS_ATTEMPT[lang] || this.knowledge.TROJAN_WHITELIST_BYPASS_ATTEMPT.tr;
     }
 
+    if (type.includes('VERSION_PROFILE')) {
+      return this.knowledge.CHEAT_VERSION_PROFILE_DETECTED[lang] || this.knowledge.CHEAT_VERSION_PROFILE_DETECTED.tr;
+    }
+    if (type.includes('LAUNCHER_PROFILE')) {
+      return this.knowledge.LAUNCHER_PROFILE_CHEAT_CONFIGURED[lang] || this.knowledge.LAUNCHER_PROFILE_CHEAT_CONFIGURED.tr;
+    }
+    if (type.includes('ANTI_FORENSICS_CHEAT')) {
+      return this.knowledge.ANTI_FORENSICS_CHEAT_EVIDENCE_DESTRUCTION[lang] || this.knowledge.ANTI_FORENSICS_CHEAT_EVIDENCE_DESTRUCTION.tr;
+    }
+    if (type.startsWith('EXTERNAL_') || type.includes('STANDALONE')) {
+      return this.knowledge.EXTERNAL_CHEAT_DIR[lang] || this.knowledge.EXTERNAL_CHEAT_DIR.tr;
+    }
+    if (type === 'BROWSER_CHEAT_DOMAIN_VISITED') {
+      return this.knowledge.BROWSER_CHEAT_DOMAIN_VISITED[lang] || this.knowledge.BROWSER_CHEAT_DOMAIN_VISITED.tr;
+    }
+    if (type.includes('BROWSER_CHEAT') || type.includes('DOWNLOADED')) {
+      return this.knowledge.BROWSER_CHEAT_FILE_DOWNLOADED[lang] || this.knowledge.BROWSER_CHEAT_FILE_DOWNLOADED.tr;
+    }
+
     if (type.includes('LINUX_JOURNAL')) {
       return this.knowledge.LINUX_JOURNAL_WIPED[lang] || this.knowledge.LINUX_JOURNAL_WIPED.tr;
     }
@@ -1069,6 +1238,18 @@ class CheatKnowledgeBase {
     }
     if (type.includes('RAVEN') || type.includes('KEYSTROKES')) {
       return this.knowledge.RAVEN_B_SERIES[lang] || this.knowledge.RAVEN_B_SERIES.tr;
+    }
+    if (type.includes('WEAVE') || name.includes('WEAVE')) {
+      return this.knowledge.WEAVE_INJECTION_FRAMEWORK[lang] || this.knowledge.WEAVE_INJECTION_FRAMEWORK.tr;
+    }
+    if (type.includes('BEDROCK') || type.includes('HORION') || type.includes('BORION') || name.includes('HORION') || name.includes('BORION')) {
+      return this.knowledge.BEDROCK_DLL_INJECTION[lang] || this.knowledge.BEDROCK_DLL_INJECTION.tr;
+    }
+    if (type.includes('TOKEN') || type.includes('ACCOUNT') || name.includes('ACCOUNT MANAGER')) {
+      return this.knowledge.ACCOUNT_TOKEN_SWAPPER_BYPASS[lang] || this.knowledge.ACCOUNT_TOKEN_SWAPPER_BYPASS.tr;
+    }
+    if (type.includes('OFFLINE') || type.includes('CRACKED') || name.includes('OFFLINE') || name.includes('CRACKED')) {
+      return this.knowledge.CRACKED_LAUNCHER_TELEMETRY_BYPASS[lang] || this.knowledge.CRACKED_LAUNCHER_TELEMETRY_BYPASS.tr;
     }
 
     // Default explanatory guidance

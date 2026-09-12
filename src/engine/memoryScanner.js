@@ -55,8 +55,8 @@ class MemoryScannerEngine {
               continue;
             }
 
-            const isCheatProc = /vape|drip|slinky|doomsday|meteor|liquidbounce|wurst|autoclicker|murgee|kprocesshacker|processhacker|cheatengine/i.test(apName) ||
-                                /vape|drip|slinky|doomsday|cheatengine/i.test(apPath);
+            const isCheatProc = /vape|drip|slinky|doomsday|meteor|liquidbounce|wurst|autoclicker|murgee|kprocesshacker|processhacker|cheatengine|horion|borion|ripterms|breezeclient|cryptclient|koid|exodus|lunar.*account.*manager|lam\.exe|badlionoffline|feathercracked|offlinelunar|weave.*manager/i.test(apName) ||
+                                /vape|drip|slinky|doomsday|cheatengine|horion|borion|ripterms|breeze|crypt|koid|exodus|lunaraccountmanager|badlionoffline|feathercracked|weave/i.test(apPath);
 
             if (isCheatProc) {
               findings.push({
@@ -241,7 +241,7 @@ class MemoryScannerEngine {
             if (parentProc) {
               const pName = (parentProc.ProcessName || '').toLowerCase();
               const pPath = (parentProc.Path || '').toLowerCase();
-              const isCheatParent = /vape|drip|slinky|doomsday|cheat|inject|meteor|liquidbounce|wurst/i.test(pName) || /vape|drip|slinky|doomsday/i.test(pPath);
+              const isCheatParent = /vape|drip|slinky|doomsday|cheat|inject|meteor|liquidbounce|wurst|horion|borion|ripterms|breeze|crypt|koid|lunar.*account|badlionoffline|feathercracked|weave/i.test(pName) || /vape|drip|slinky|doomsday|horion|borion|ripterms|breeze|crypt|weave/i.test(pPath);
               if (isCheatParent) {
                 findings.push({
                   level: 'CRITICAL',

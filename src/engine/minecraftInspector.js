@@ -621,7 +621,154 @@ class MinecraftInspectorEngine {
     }
 
     return findings;
+  }
 
+  /**
+   * Inspects a version profile JSON file in .minecraft/versions/ for cheat signatures.
+   */
+  inspectVersionJson(filePath) {
+    const findings = [];
+    try {
+      const raw = fs.readFileSync(filePath, 'utf8');
+      const parsed = JSON.parse(raw);
+      const fileName = path.basename(filePath);
+      const parentDir = path.basename(path.dirname(filePath));
+      const combinedText = `${fileName} ${parentDir} ${parsed.id || ''} ${parsed.mainClass || ''} ${parsed.inheritsFrom || ''}`.toLowerCase();
+
+      let cheatLibFound = '';
+      if (Array.isArray(parsed.libraries)) {
+        for (const lib of parsed.libraries) {
+          const libName = (lib.name || '').toLowerCase();
+          if (libName.includes('ccbluex') || libName.includes('liquidbounce')) {
+            cheatLibFound = 'LiquidBounce (net.ccbluex)';
+            break;
+          }
+          if (libName.includes('doomsday')) {
+            cheatLibFound = 'Doomsday Client';
+            break;
+          }
+          if (libName.includes('wurstclient')) {
+            cheatLibFound = 'Wurst Client';
+            break;
+          }
+          if (libName.includes('meteor-client') || libName.includes('meteordevelopment')) {
+            cheatLibFound = 'Meteor Client';
+            break;
+          }
+          if (libName.includes('aristois') || libName.includes('me.deftware')) {
+            cheatLibFound = 'Aristois Client (EMC)';
+            break;
+          }
+        }
+      }
+
+      const cheatSignatures = [
+        { id: 'wurst', name: 'Wurst Client', pattern: /(?:wurst|net\.wurstclient)/i },
+        { id: 'liquidbounce', name: 'LiquidBounce', pattern: /(?:liquidbounce|ccbluex)/i },
+        { id: 'meteor', name: 'Meteor Client', pattern: /(?:meteorclient|meteor-client|\bmeteor\b|meteordevelopment)/i },
+        { id: 'doomsday', name: 'Doomsday Client', pattern: /(?:doomsday|me\.doomsday)/i },
+        { id: 'aristois', name: 'Aristois Client', pattern: /(?:aristois|deftware)/i },
+        { id: 'rise', name: 'Rise Client', pattern: /(?:riseclient|rise\.client|vantage)/i },
+        { id: 'tenacity', name: 'Tenacity Client', pattern: /(?:tenacity|intent\.store)/i },
+        { id: 'sigma', name: 'Sigma Client', pattern: /(?:sigmaclient|sigma5)/i },
+        { id: 'novoline', name: 'Novoline Client', pattern: /(?:novoline)/i },
+        { id: 'bleachhack', name: 'BleachHack', pattern: /(?:bleachhack)/i },
+        { id: 'inertia', name: 'Inertia Client', pattern: /(?:inertiaclient)/i },
+        { id: 'impact', name: 'Impact Client', pattern: /(?:impactclient)/i }
+      ];
+
+      for (const sig of cheatSignatures) {
+        if (sig.pattern.test(combinedText) || (cheatLibFound && cheatLibFound.toLowerCase().includes(sig.id))) {
+          findings.push({
+            level: 'CRITICAL',
+            type: 'CHEAT_VERSION_PROFILE_DETECTED',
+            name: `${sig.name} (Sürüm Profili: ${parsed.id || parentDir})`,
+            path: filePath,
+            file: fileName,
+            description: `Minecraft sürümler dizininde ${sig.name} hile sürüm profili bulundu: ${parsed.id || parentDir}`,
+            whyFlagged: `Oyuncunun Minecraft sürümlerinde (${filePath}) ${sig.name} istemcisine ait resmi veya özel sürüm profili kayıtlıdır.`,
+            adminAction: 'KESİN HİLE BAN: Oyuncu hile sürümünü istemci olarak kurmuştur.',
+            confidence: '100% (Doğrulanmış Sürüm Profili)',
+            evidence: [
+              `Sürüm ID (id): ${parsed.id || 'Tanımsız'}`,
+              `Ana Sınıf (mainClass): ${parsed.mainClass || 'Varsayılan'}`,
+              `Miras Alınan Sürüm (inheritsFrom): ${parsed.inheritsFrom || 'Yok'}`,
+              `Konum: ${filePath}`,
+              cheatLibFound ? `Tespit Edilen Hile Kütüphanesi: ${cheatLibFound}` : `Profil Tanımlayıcısı: ${sig.name}`
+            ]
+          });
+          break;
+        }
+      }
+    } catch (e) {}
+    return findings;
+  }
+
+  /**
+   * Inspects launcher_profiles.json & launcher_profiles_microsoft_store.json for configured cheat profiles.
+   */
+  inspectLauncherProfiles(mcDir) {
+    const findings = [];
+    const profileFiles = [
+      path.join(mcDir, 'launcher_profiles.json'),
+      path.join(mcDir, 'launcher_profiles_microsoft_store.json')
+    ];
+
+    for (const pf of profileFiles) {
+      if (!fs.existsSync(pf)) continue;
+      try {
+        const data = JSON.parse(fs.readFileSync(pf, 'utf8'));
+        if (!data || !data.profiles) continue;
+
+        for (const [key, profile] of Object.entries(data.profiles)) {
+          if (!profile) continue;
+          const name = (profile.name || '').toLowerCase();
+          const lastVer = (profile.lastVersionId || '').toLowerCase();
+          const javaArgs = (profile.javaArgs || '').toLowerCase();
+          const combined = `${key} ${name} ${lastVer} ${javaArgs}`.toLowerCase();
+
+          const cheatSignatures = [
+            { id: 'wurst', name: 'Wurst Client', pattern: /(?:wurst|net\.wurstclient)/i },
+            { id: 'liquidbounce', name: 'LiquidBounce', pattern: /(?:liquidbounce|ccbluex)/i },
+            { id: 'meteor', name: 'Meteor Client', pattern: /(?:meteorclient|meteor-client|\bmeteor\b)/i },
+            { id: 'doomsday', name: 'Doomsday Client', pattern: /(?:doomsday)/i },
+            { id: 'aristois', name: 'Aristois Client', pattern: /(?:aristois)/i },
+            { id: 'vape', name: 'Vape Client', pattern: /(?:vape)/i },
+            { id: 'raven', name: 'Raven B+', pattern: /(?:ravenbplus|raven\s*b\+)/i },
+            { id: 'rise', name: 'Rise Client', pattern: /(?:riseclient|rise\s*client)/i },
+            { id: 'tenacity', name: 'Tenacity Client', pattern: /(?:tenacity)/i },
+            { id: 'sigma', name: 'Sigma Client', pattern: /(?:sigmaclient|sigma\s*client|sigma5)/i },
+            { id: 'novoline', name: 'Novoline Client', pattern: /(?:novoline)/i }
+          ];
+
+          for (const sig of cheatSignatures) {
+            if (sig.pattern.test(combined)) {
+              findings.push({
+                level: 'CRITICAL',
+                type: 'LAUNCHER_PROFILE_CHEAT_CONFIGURED',
+                name: `${sig.name} (Başlatıcı Profili: ${profile.name || key})`,
+                path: pf,
+                file: path.basename(pf),
+                description: `Resmi Minecraft Başlatıcı profilinde ${sig.name} hile yapılandırması bulundu: Profil="${profile.name || key}", Sürüm="${profile.lastVersionId || 'Bilinmiyor'}"`,
+                whyFlagged: `Oyuncu Minecraft Launcher üzerinde ${sig.name} istemcisini özel profil olarak kaydetmiştir.`,
+                adminAction: 'KESİN HİLE BAN: Başlatıcı profilinde kayıtlı hile yapılandırması somut kanıttır.',
+                confidence: '100% (Doğrulanmış Başlatıcı Profili)',
+                evidence: [
+                  `Profil Adı: ${profile.name || key}`,
+                  `Hedef Sürüm (lastVersionId): ${profile.lastVersionId || 'Yok'}`,
+                  `Oluşturulma Tarihi: ${profile.created || 'Bilinmiyor'}`,
+                  `Son Kullanım Tarihi: ${profile.lastUsed || 'Bilinmiyor'}`,
+                  `Özel Java Parametreleri: ${profile.javaArgs || 'Varsayılan'}`,
+                  `Ayar Dosyası: ${pf}`
+                ]
+              });
+              break;
+            }
+          }
+        }
+      } catch (e) {}
+    }
+    return findings;
   }
 
   /**
@@ -631,33 +778,66 @@ class MinecraftInspectorEngine {
     const findings = [];
     const home = os.homedir();
     const appData = process.env.APPDATA || path.join(home, 'AppData', 'Roaming');
+    const localAppData = process.env.LOCALAPPDATA || path.join(home, 'AppData', 'Local');
     const userProfile = process.env.USERPROFILE || home;
 
     const externalRoots = [
       { path: path.join(home, '.vape'), name: 'Vape Client (.vape)', type: 'EXTERNAL_VAPE_DIR' },
       { path: path.join(appData, '.vape'), name: 'Vape Client (AppData\\.vape)', type: 'EXTERNAL_VAPE_DIR' },
+      { path: path.join(appData, 'vape'), name: 'Vape Client (AppData\\vape)', type: 'EXTERNAL_VAPE_DIR' },
       { path: path.join(userProfile, '.vape'), name: 'Vape Client (UserProfile\\.vape)', type: 'EXTERNAL_VAPE_DIR' },
       { path: path.join(appData, 'drip'), name: 'Drip Lite (AppData\\drip)', type: 'EXTERNAL_DRIP_DIR' },
       { path: path.join(home, '.drip'), name: 'Drip Lite (~/.drip)', type: 'EXTERNAL_DRIP_DIR' },
       { path: path.join(userProfile, 'slinky'), name: 'Slinky Client (slinky)', type: 'EXTERNAL_SLINKY_DIR' },
+      { path: path.join(appData, 'slinky'), name: 'Slinky Client (AppData\\slinky)', type: 'EXTERNAL_SLINKY_DIR' },
       { path: path.join(userProfile, '.future'), name: 'Future Client (.future)', type: 'EXTERNAL_FUTURE_DIR' },
       { path: path.join(userProfile, '.rusherhack'), name: 'RusherHack (.rusherhack)', type: 'EXTERNAL_RUSHER_DIR' },
       { path: path.join(userProfile, '.boze'), name: 'Boze Client (.boze)', type: 'EXTERNAL_BOZE_DIR' },
-      { path: path.join(userProfile, '.aristois'), name: 'Aristois Client (.aristois)', type: 'EXTERNAL_ARISTOIS_DIR' }
+      { path: path.join(userProfile, '.aristois'), name: 'Aristois Client (.aristois)', type: 'EXTERNAL_ARISTOIS_DIR' },
+      { path: path.join(appData, 'Aristois'), name: 'Aristois Client (AppData\\Aristois)', type: 'EXTERNAL_ARISTOIS_DIR' },
+      { path: path.join(appData, '.aristois'), name: 'Aristois Client (AppData\\.aristois)', type: 'EXTERNAL_ARISTOIS_DIR' },
+      // LiquidBounce
+      { path: path.join(appData, 'CCBlueX'), name: 'LiquidBounce (AppData\\CCBlueX)', type: 'EXTERNAL_LIQUIDBOUNCE_DIR' },
+      { path: path.join(appData, '.liquidbounce'), name: 'LiquidBounce (AppData\\.liquidbounce)', type: 'EXTERNAL_LIQUIDBOUNCE_DIR' },
+      { path: path.join(userProfile, '.liquidbounce'), name: 'LiquidBounce (UserProfile\\.liquidbounce)', type: 'EXTERNAL_LIQUIDBOUNCE_DIR' },
+      { path: path.join(home, '.CCBlueX'), name: 'LiquidBounce (~/.CCBlueX)', type: 'EXTERNAL_LIQUIDBOUNCE_DIR' },
+      // Meteor Client
+      { path: path.join(appData, 'meteor-client'), name: 'Meteor Client (AppData\\meteor-client)', type: 'EXTERNAL_METEOR_DIR' },
+      { path: path.join(appData, 'meteor'), name: 'Meteor Client (AppData\\meteor)', type: 'EXTERNAL_METEOR_DIR' },
+      { path: path.join(userProfile, '.meteor-client'), name: 'Meteor Client (UserProfile\\.meteor-client)', type: 'EXTERNAL_METEOR_DIR' },
+      { path: path.join(home, '.meteor-client'), name: 'Meteor Client (~/.meteor-client)', type: 'EXTERNAL_METEOR_DIR' },
+      // Wurst Client
+      { path: path.join(userProfile, '.wurst'), name: 'Wurst Client (UserProfile\\.wurst)', type: 'EXTERNAL_WURST_DIR' },
+      { path: path.join(appData, '.wurst'), name: 'Wurst Client (AppData\\.wurst)', type: 'EXTERNAL_WURST_DIR' },
+      { path: path.join(appData, 'wurst'), name: 'Wurst Client (AppData\\wurst)', type: 'EXTERNAL_WURST_DIR' },
+      { path: path.join(home, '.wurst'), name: 'Wurst Client (~/.wurst)', type: 'EXTERNAL_WURST_DIR' },
+      // Doomsday Client
+      { path: path.join(appData, 'doomsday'), name: 'Doomsday Client (AppData\\doomsday)', type: 'EXTERNAL_DOOMSDAY_DIR' },
+      { path: path.join(localAppData, 'doomsday'), name: 'Doomsday Client (LocalAppData\\doomsday)', type: 'EXTERNAL_DOOMSDAY_DIR' },
+      { path: path.join(userProfile, '.doomsday'), name: 'Doomsday Client (UserProfile\\.doomsday)', type: 'EXTERNAL_DOOMSDAY_DIR' },
+      { path: path.join(home, '.doomsday'), name: 'Doomsday Client (~/.doomsday)', type: 'EXTERNAL_DOOMSDAY_DIR' },
+      // Rise & Tenacity
+      { path: path.join(appData, 'Rise'), name: 'Rise Client (AppData\\Rise)', type: 'EXTERNAL_RISE_DIR' },
+      { path: path.join(appData, 'Tenacity'), name: 'Tenacity Client (AppData\\Tenacity)', type: 'EXTERNAL_TENACITY_DIR' }
     ];
 
+    const seenPaths = new Set();
     for (const er of externalRoots) {
+      if (!er.path || seenPaths.has(er.path)) continue;
+      seenPaths.add(er.path);
       if (fs.existsSync(er.path)) {
         findings.push({
           level: 'CRITICAL',
           type: er.type,
           name: er.name,
           path: er.path,
-          confidence: '100% (Somut Kanit: Harici Hile Dizin Izleri)',
-          description: `Kullanici ana dizininde harici hile konfigürasyon/depolama klasoru tespit edildi: ${er.name}`,
+          confidence: '100% (Somut Kanıt: Harici Hile Dizin İzleri)',
+          description: `Kullanıcı ana dizininde / uygulama verilerinde harici hile konfigürasyon ve veri klasörü tespit edildi: ${er.name}`,
+          whyFlagged: `Hile istemcisi çalıştırıldığında veya kurulduğunda bu dizine kullanıcı ayarlarını ve verilerini kaydeder.`,
+          adminAction: 'KESİN HİLE BAN: Bağımsız hile veri dizini somut kullanım kanıtıdır.',
           evidence: [
             `Konum: ${er.path}`,
-            `Hile: ${er.name}`
+            `Hile İstemcisi: ${er.name}`
           ]
         });
       }
@@ -740,6 +920,13 @@ class MinecraftInspectorEngine {
           for (const cf of configFindings) onFinding(cf);
         }
 
+        // Check Launcher profiles (launcher_profiles.json & launcher_profiles_microsoft_store.json)
+        const profileFindings = this.inspectLauncherProfiles(mcDir);
+        findings.push(...profileFindings);
+        if (onFinding) {
+          for (const pf of profileFindings) onFinding(pf);
+        }
+
         // 1. Mod, Version, ResourcePack and ShaderPack directories
         const targetSubdirs = ['mods', 'versions', 'resourcepacks', 'shaderpacks'];
 
@@ -766,6 +953,15 @@ class MinecraftInspectorEngine {
                   const fontFindings = fontExploitForensics.inspectZipPack(file);
                   findings.push(...fontFindings);
                 } catch (e) {}
+              }
+              continue;
+            }
+
+            if (sub === 'versions' && ext === '.json') {
+              const versionFindings = this.inspectVersionJson(file);
+              findings.push(...versionFindings);
+              if (onFinding) {
+                for (const vf of versionFindings) onFinding(vf);
               }
               continue;
             }

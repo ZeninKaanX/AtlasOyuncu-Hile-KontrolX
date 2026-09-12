@@ -8,10 +8,13 @@
   <link rel="stylesheet" href="css/style.css?v=2.6">
 </head>
 <body class="theme-dark">
-  <!-- Live Ambient Backdrop Glow Layer -->
+  <!-- Live Ambient Backdrop Glow Layer & Interactive Cyber Canvas -->
   <div class="ambient-glow-layer">
+    <canvas id="ambientCyberCanvas" class="ambient-cyber-canvas"></canvas>
+    <div class="cyber-grid-overlay"></div>
     <div class="glow-orb glow-top-right"></div>
     <div class="glow-orb glow-bottom-left"></div>
+    <div class="glow-orb glow-center-pulse"></div>
   </div>
 
   <div class="app-shell">
@@ -219,9 +222,14 @@
                A. GRAND HERO VERDICT CARD (The Signature Ocean Banner)
                =============================================================== -->
           <div class="hero-verdict-banner" id="heroVerdictCard">
-            <!-- Dynamic Radial Backdrop Glow -->
+            <!-- Dynamic Radial Backdrop Glow & Laser Sweep -->
             <div class="verdict-backdrop-glow" id="verdictBackdropGlow"></div>
             <div class="verdict-diagonal-line"></div>
+            <div class="verdict-laser-sweep"></div>
+            <div class="cyber-corner corner-tl"></div>
+            <div class="cyber-corner corner-tr"></div>
+            <div class="cyber-corner corner-bl"></div>
+            <div class="cyber-corner corner-br"></div>
 
             <div class="hero-grid-layout">
               <!-- Left Column: Title & Metadata -->
@@ -434,7 +442,7 @@
                     <span class="row-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg></span>
                     <span class="row-lbl" data-i18n="pc_server">Bağlı Sunucu</span>
                   </div>
-                  <span class="row-val font-mono text-cyan" id="pcServerAddress">play.atlasoyuncu.com</span>
+                  <span class="row-val font-mono text-cyan" id="pcServerAddress">mc.atlasoyuncu.com</span>
                 </div>
 
                 <div class="detail-row">
@@ -447,23 +455,36 @@
               </div>
 
               <!-- Official AtlasOyuncu Minecraft Server MOTD Card -->
-              <div class="server-motd-card">
+              <div class="server-motd-card interactive-glow-card">
                 <div class="motd-header">
                   <div class="server-avatar-box">
-                    <img src="assets/atlas_icon_full.png" alt="AtlasOyuncu" class="server-avatar-img">
-                    <span class="status-online-dot"></span>
+                    <div class="avatar-ring-glow"></div>
+                    <img src="assets/atlas_icon_full.png" alt="AtlasOyuncu" class="server-avatar-img" id="serverAvatarImg">
+                    <span class="status-online-dot" id="serverStatusDot">
+                      <span class="status-dot-ping"></span>
+                    </span>
                   </div>
                   <div class="server-title-col">
-                    <div class="server-name">AtlasOyuncu Network</div>
+                    <div class="server-title-row">
+                      <div class="server-name">AtlasOyuncu Network</div>
+                      <div class="live-signal-badge" id="serverSignalBadge" title="Sunucu Gecikmesi (Ping)">
+                        <span class="signal-bars">
+                          <span class="signal-bar bar-1"></span>
+                          <span class="signal-bar bar-2"></span>
+                          <span class="signal-bar bar-3"></span>
+                        </span>
+                        <span class="signal-latency-txt" id="serverLatencyTxt">126 ms</span>
+                      </div>
+                    </div>
                     <div class="server-players-badge">
-                      <span class="badge-green">Online</span>
-                      <span class="players-count">398 / 2026 Players</span>
+                      <span class="badge-green" id="serverOnlineBadge">Online</span>
+                      <span class="players-count" id="serverPlayersCount">Canlı Veri Alınıyor...</span>
                     </div>
                   </div>
                 </div>
 
                 <div class="motd-body-box">
-                  <p class="motd-text-line">
+                  <p class="motd-text-line" id="serverMotdText">
                     TR ᴀᴛʟᴀsᴏʏᴜɴᴄᴜ.ᴄᴏᴍ 1.21.11 | 26.2 ɢᴇʀᴄᴇᴋ ᴋᴀʟɪᴛᴇ 👑 sᴋʏʙʟᴏᴄᴋ | ᴛᴏᴡɴʏ | ʙᴏxᴘᴠᴘ | ᴘᴠᴘ | sᴍᴘ 👑
                   </p>
                 </div>
