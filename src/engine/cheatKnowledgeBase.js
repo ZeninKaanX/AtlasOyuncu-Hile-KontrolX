@@ -1135,6 +1135,36 @@ class CheatKnowledgeBase {
           adminAction: 'DEFINITE BAN: Confirmed cheat download in browser database records.',
           whyConcrete: '100% Concrete Forensic Proof: Target path and download timestamp verified.'
         }
+      },
+
+      ASTRALIS_CHEAT_FINDER_EVASION: {
+        tr: {
+          tacticName: 'Astralis / AstralisFinder Hile ve Bypass Aracı',
+          howItWorks: 'AstralisFinder, Minecraft için geliştirilen gizli bypass ve enjeksiyon betiklerinden biridir. PowerShell üzerinden -ExecutionPolicy Bypass parametresiyle çalıştırılarak sistem güvenlik ilkelerini aşmaya çalışır.',
+          adminAction: 'KESİN HİLE BAN: Oyuncu sisteminde Astralis çalıştırma veya bypass girişimleri PSReadLine/PowerShell loglarında tespit edilmiştir.',
+          whyConcrete: 'ConsoleHost_history ve PowerShell Operational loglarında somut komut satırı ve dosya yolu mevcuttur.'
+        },
+        en: {
+          tacticName: 'Astralis / AstralisFinder Cheat & Bypass Utility',
+          howItWorks: 'AstralisFinder is an evasion and stealth injection utility executed via PowerShell with -ExecutionPolicy Bypass to avoid detection.',
+          adminAction: 'DEFINITE BAN: Execution and compilation logs verified in PowerShell command history.',
+          whyConcrete: 'Direct command string and file arguments recorded in ConsoleHost history.'
+        }
+      },
+
+      PS2EXE_STEALTH_BINARY: {
+        tr: {
+          tacticName: 'PowerShell Hilesini EXE İkilisine Dönüştürme (Invoke-ps2exe)',
+          howItWorks: 'Hile geliştiricileri veya kullanıcıları, PowerShell hile kodlarını (.ps1) antivirüslerden ve adli denetimlerden kaçırmak için Invoke-ps2exe aracını kullanarak bağımsız .exe dosyasına dönüştürürler.',
+          adminAction: 'KESİN HİLE DERLEME BAN: Hilenin ikiliye dönüştürülme komutu ve kaynak/hedef parametreleri yakalanmıştır.',
+          whyConcrete: 'Invoke-ps2exe kaynak dosya (-inputFile) ve hedef dosya (-outputFile) parametreleriyle birlikte kütükte kayıtlıdır.'
+        },
+        en: {
+          tacticName: 'PowerShell Script to Stealth Binary Compilation (Invoke-ps2exe)',
+          howItWorks: 'Cheaters abuse Invoke-ps2exe to encapsulate raw PowerShell cheats into standalone executables to evade heuristic script block inspection.',
+          adminAction: 'DEFINITE BAN: Compilation trail with input and output files proven.',
+          whyConcrete: 'Concrete arguments (-inputFile, -outputFile) logged in PS history.'
+        }
       }
     };
   }

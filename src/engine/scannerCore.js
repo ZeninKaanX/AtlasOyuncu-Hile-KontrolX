@@ -44,6 +44,7 @@ const cheatKnowledgeBase = require('./cheatKnowledgeBase');
 const processHollowingDetector = require('./processHollowingDetector');
 const ldPreloadInjectionDetector = require('./ldPreloadInjectionDetector');
 const powerShellScriptForensics = require('./powerShellScriptForensics');
+const zoneIdentifierForensics = require('./zoneIdentifierForensics');
 const updater = require('./updater');
 const reporter = require('./reporter');
 const serverPolicy = require('../config/serverPolicy');
@@ -461,6 +462,11 @@ class ScannerCore {
         // 2AC. Network / Hosts / Named Pipes
         wrapPhase2('AG_ANALIZI', 'NETWORK/IPC', () =>
           networkForensics.scanNetworkAndIpc((s, c) => { reportProgress('AG_ANALIZI', 84, `Network: ${s}`, null, s, c); })
+        ),
+
+        // 2AD. Zone.Identifier (NTFS Mark of the Web ADS)
+        wrapPhase2('ZONE_IDENTIFIER_ANALIZI', 'ZONE IDENTIFIER', () =>
+          zoneIdentifierForensics.scanZoneIdentifiers((s, c) => { reportProgress('ZONE_IDENTIFIER_ANALIZI', 85, `ZoneID: ${s}`, null, s, c); })
         )
       ]);
 
