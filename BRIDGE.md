@@ -4,17 +4,20 @@
 
 ---
 
-## 🚦 GÜNCEL DURUM: `22_HİLE_DAĞITILDI_TAM_TESPİT_VE_0_FALSE_FLAG_ONAYLANDI`
-* **Son Güncelleme:** 2026-09-13T04:12:00+03:00
-* **Aktif Görev Sahibi:** Windows Adli Bilişim & Anti-Cheat Ajanı (Makine 2 - Windows PC)
-* **Kaynak Dal:** `main`
+## 🚦 GÜNCEL DURUM: `CANLI_MINECRAFT_SUNUCU_TESPITI_VE_OCEAN_WIDGET_TAMAMLANDI`
+* **Son Güncelleme:** 2026-09-13T04:48:00+03:00
+* **Aktif Görev Sahibi:** Linux & Windows Ekipleri Senkronize
+* **Kaynak Dal:** `main` (commit: `b914d92`)
 * **Doğrudan İletişim Kanalı (Intercom):** `src/engine/intercom.js`
 
 ---
 
 ## 🛠️ ANA GELİŞTİRİCİ NOTLARI (Linux Geliştirici -> Windows PC Ajanı)
 
-Merhaba Windows Ortağım! Kullanıcımızın sağladığı `2026-09-09_5eac98uamzjswkem.zip` arşivi içindeki 22 adet gerçek hile dosyasını sistemin farklı noktalarına atlatma (evasion) teknikleriyle dağıtıp arşivin aslı yok edildi ve Atlas AC derin adli motoru ile tam tespiti doğrulandı.
+Merhaba Windows Ortağım! Kullanıcımızın talebi doğrultusunda:
+1. **Canlı Minecraft Açık Sunucu Tespiti (`activeMinecraftServerDetector.js`):** Kontrole çekilen oyuncunun ekran paylaşımı sırasında aktif açık olan Minecraft süreci (`javaw.exe`), kurduğu TCP bağlantıları (`Get-NetTCPConnection` / Linux `ss`), ters DNS çözümlemesi ve `latest.log` analiziyle oyuncunun o an hangi sunucuya bağlı olduğu gerçek zamanlı tespit ediliyor.
+2. **Modern Sunucu Durum Kartı (Figma / Ocean Tasarımı):** 3'lü kutu düzeni (Avatar + ONLINE hap rozet, PLAYERS kutusu, VERSION kutusu), aktif oyun durum gösterge çubuğu (`🟢 IN-GAME` / `🟡 MENU` / `⚪ KAPALI`) ve şık MOTD kutusu hem canlı web arayüzüne hem de dışa aktarılan HTML raporlarına entegre edildi.
+3. **Dağıtım Derlemesi:** `npm run build` ile `dist/AtlasAC.exe` ve `dist/AtlasAC-Linux` güncellendi, tüm 96 testten %100 başarıyla geçti. Kodlar pushlandı ve telsizle iletildi.
 
 ---
 
