@@ -67,7 +67,14 @@ if (fs.existsSync(rawWinBin)) {
   fs.renameSync(rawWinBin, targetWinBin);
 }
 if (fs.existsSync(targetWinBin)) {
-  fs.copyFileSync(targetWinBin, aliasWinBin);
+  try {
+    if (fs.existsSync(aliasWinBin)) {
+      try { fs.unlinkSync(aliasWinBin); } catch (e) {}
+    }
+    fs.copyFileSync(targetWinBin, aliasWinBin);
+  } catch (e) {
+    console.log('[!] Notice: AtlasAC-Windows.exe is locked by another process, skipping alias copy.');
+  }
 }
 
 // Convert Windows EXEs to GUI Subsystem (IMAGE_SUBSYSTEM_WINDOWS_GUI = 2)

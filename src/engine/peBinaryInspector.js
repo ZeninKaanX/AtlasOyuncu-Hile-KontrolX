@@ -684,9 +684,22 @@ class PeBinaryInspector {
     // Runs AFTER confirmed-cheat checks so real cheats (LiquidLauncher etc.) are never shadowed.
     // Only suspicious when real cheat signals corroborate the disguise.
     if (isAmbiguousPe) {
+      // Exclude legitimate software installer temporary binaries (InnoSetup, Git, etc.)
+      if (lowerName.startsWith('git-') || filePath.includes('\\is-') || /is-[a-z0-9]+\.tmp/i.test(filePath)) {
+        return {
+          purpose: 'LEGITIMATE_INSTALLER_TEMP',
+          category: 'Installer Temporary Binary',
+          isSafe: true,
+          isThreat: false,
+          severity: 'INFO',
+          description: `Legitimate software installer temporary component (${fileName}).`,
+          evidence: [`File: ${fileName}`, `Path: ${filePath}`]
+        };
+      }
+
       const hasCorroboratingSignals =
         matchedCheatTokens.length > 0 ||
-        matchedJvmHooks.length >= 2 ||
+        (matchedJvmHooks.length >= 2 && (contentString.includes('jvm.dll') || contentString.includes('JNI_') || contentString.includes('net/minecraft'))) ||
         (matchedInjectionApis.length >= 2 && /inject|hook|hack|cheat|ghost|client/i.test(contentString));
 
       if (hasCorroboratingSignals) {

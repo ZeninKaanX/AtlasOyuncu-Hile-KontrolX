@@ -112,11 +112,13 @@ class SignatureDatabase {
         }
       }
 
-      // 1. Check Packages (Primary Namespace Anchor - SIMD fast text match)
+      // 1. Check Packages (Primary Namespace Anchor - strict directory boundary match)
       if (rule.packages && rule.packages.length > 0) {
         for (const pkg of rule.packages) {
           const pkgSlash = pkg.replace(/\./g, '/').toLowerCase();
-          const hasPkg = joinedText.includes(pkgSlash);
+          const hasPkg = joinedText.includes('\n' + pkgSlash + '/') ||
+                         joinedText.includes('/' + pkgSlash + '/') ||
+                         joinedText.includes('\n' + pkgSlash + '\n');
           if (hasPkg) {
             packageMatches++;
             hasPackageAffinity = true;
@@ -241,7 +243,21 @@ class SignatureDatabase {
 
       // 3. For all other clients:
       // Matched via verified Mod ID, file pattern, JavaAgent premain, OR bytecode structure
-      if (matchedByModId || hasFilePatternMatch || matchedJavaAgent || (hasPackageAffinity && (uniqueMainClassMatched || packageMatches >= 1))) {
+      let hasCombatMatch = false;
+      if (rule.combatClasses && rule.combatClasses.length > 0) {
+        for (const cc of rule.combatClasses) {
+          const ccLower = cc.toLowerCase();
+          if (joinedText.includes('/' + ccLower + '\n') || entrySet.has(ccLower)) {
+            hasCombatMatch = true;
+            matchedItems.push(`CombatModule: ${cc}`);
+          }
+        }
+      }
+
+      const hasClassRequirement = (rule.classes && rule.classes.length > 0);
+      const satisfiedClassReq = hasClassRequirement ? (uniqueMainClassMatched || hasCombatMatch) : true;
+
+      if (matchedByModId || hasFilePatternMatch || matchedJavaAgent || (hasPackageAffinity && satisfiedClassReq)) {
         detections.push({
           ruleId: rule.id,
           name: rule.name,

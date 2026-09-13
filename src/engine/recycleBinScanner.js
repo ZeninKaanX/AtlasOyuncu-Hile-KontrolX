@@ -95,6 +95,13 @@ class RecycleBinScanner {
               const deletionTime = parsed.deletionTimestamp;
               const originalSize = deepArchiveScanner.formatSize(parsed.fileSize);
 
+              // 0. Exclude legitimate anti-cheat and security diagnostic tools
+              const isSecurityScannerTool = /astralis|paladin|avenge|echo.*scanner|echoac|oceanac|ocean_ac|atlasac|atlas_ac|farben/i.test(originalName) ||
+                                            /astralis/i.test(originalPath);
+              if (isSecurityScannerTool) {
+                continue; // Meşru denetim/güvenlik araçları silinmiş hile sayılamaz!
+              }
+
               // 1. Check if original name matches known cheats
               const isCheatName = this.unambiguousCheatNames.some(cn => originalName.includes(cn));
 

@@ -1856,9 +1856,7 @@
       "description": "Open source Forge 1.8.9 ghost client created by BlebDaPleb.",
       "packages": [
         "me.blebdapleb.arsenic",
-        "arsenic.client",
-        "com.arsenic",
-        "arsenic"
+        "com.arsenic.client"
       ],
       "classes": [
         "Arsenic.class",
@@ -2131,9 +2129,8 @@
       "description": "Forge 1.8.9 closet ghost client with subtle reach and velocity tuning.",
       "packages": [
         "me.oxy",
-        "oxy.client",
         "com.oxy.client",
-        "oxyclient"
+        "me.oxy.client"
       ],
       "classes": [
         "OxyClient.class",
@@ -2929,8 +2926,11 @@
       ],
       "filePatterns": [
         "*crypt*client*.jar",
-        "*Crypt*.exe",
-        "*Crypt*.dll"
+        "Crypt.dll",
+        "CryptClient.dll",
+        "Crypt64.dll",
+        "Crypt.exe",
+        "CryptClient.exe"
       ],
       "prefetchPatterns": [
         "CRYPT.EXE",
