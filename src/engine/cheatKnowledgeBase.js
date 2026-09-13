@@ -1165,6 +1165,21 @@ class CheatKnowledgeBase {
           adminAction: 'DEFINITE BAN: Compilation trail with input and output files proven.',
           whyConcrete: 'Concrete arguments (-inputFile, -outputFile) logged in PS history.'
         }
+      },
+
+      DPS_DIAGNOSTIC_EXECUTION_RECORD: {
+        tr: {
+          tacticName: 'Windows DPS Tanılama Kütüğünde Silinemeyen Hile İzi',
+          howItWorks: 'Windows Diagnostic Policy Service (DPS / SysMain), çalıştırılan her uygulamanın kaynak tüketim ve performans metriklerini kilitli sistem dosyalarında saklar. Hileciler Prefetch veya BAM kayıtlarını temizleme araçlarıyla silseler bile, svchost tarafından kilitli tutulan DPS kayıtları silinemez.',
+          adminAction: 'KESİN HİLE BAN: Sistem düzeyinde kilitli DPS kütüğünde doğrulanmış hile ikilisi çalıştırma kaydı mevcuttur.',
+          whyConcrete: '100% Somut Adli Kanıt: Windows Diagnostic Policy Service kilitli sistem günlüğü doğrudan doğrulamıştır.'
+        },
+        en: {
+          tacticName: 'Windows DPS Locked Diagnostic Execution Record',
+          howItWorks: 'Windows Diagnostic Policy Service (DPS) logs process execution metrics in system-locked logs that survive CCleaner, BleachBit, and manual anti-forensic cleaning.',
+          adminAction: 'DEFINITE BAN: Direct process execution recorded in locked DPS system telemetry.',
+          whyConcrete: '100% Concrete Forensic Proof: System-level locked DPS event records.'
+        }
       }
     };
   }

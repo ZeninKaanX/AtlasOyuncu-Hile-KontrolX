@@ -46,6 +46,8 @@ const ldPreloadInjectionDetector = require('./ldPreloadInjectionDetector');
 const powerShellScriptForensics = require('./powerShellScriptForensics');
 const zoneIdentifierForensics = require('./zoneIdentifierForensics');
 const dnsCacheForensics = require('./dnsCacheForensics');
+const jvmAttachDetector = require('./jvmAttachDetector');
+const dpsScanner = require('./dpsScanner');
 const updater = require('./updater');
 const reporter = require('./reporter');
 const serverPolicy = require('../config/serverPolicy');
@@ -473,6 +475,16 @@ class ScannerCore {
         // 2AE. Windows DNS Resolver Client Cache Forensics
         wrapPhase2('DNS_ONBELLEK_ANALIZI', 'DNS CACHE', () =>
           dnsCacheForensics.scanDnsCache((s, c) => { reportProgress('DNS_ONBELLEK_ANALIZI', 86, `DNS: ${s}`, null, s, c); })
+        ),
+
+        // 2AF. JVM Attach API & Bytecode Injection
+        wrapPhase2('JVM_ENJEKSIYON_ANALIZI', 'JVM ATTACH/AGENT', () =>
+          jvmAttachDetector.scanJvmInjection((s, c) => { reportProgress('JVM_ENJEKSIYON_ANALIZI', 87, `JVM: ${s}`, null, s, c); })
+        ),
+
+        // 2AG. DPS / SysMain / SRUM Performance Diagnostics
+        wrapPhase2('DPS_PERFORMANS_ANALIZI', 'DPS DIAGNOSTICS', () =>
+          dpsScanner.scanDpsForensics((s, c) => { reportProgress('DPS_PERFORMANS_ANALIZI', 88, `DPS: ${s}`, null, s, c); })
         )
       ]);
 
