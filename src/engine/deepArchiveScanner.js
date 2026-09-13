@@ -82,10 +82,18 @@ class DeepArchiveScanner {
     // 2. User Desktop
     add(path.join(home, 'Desktop'));
     add(path.join(home, 'Masaüstü'));
+    if (isWindows) {
+      add(path.join(home, 'OneDrive', 'Desktop'));
+      add(path.join(home, 'OneDrive', 'Masaüstü'));
+    }
 
     // 3. User Documents
     add(path.join(home, 'Documents'));
     add(path.join(home, 'Belgelerim'));
+    if (isWindows) {
+      add(path.join(home, 'OneDrive', 'Documents'));
+      add(path.join(home, 'OneDrive', 'Belgelerim'));
+    }
 
     // 4. Temp Dirs
     const tmp = os.tmpdir();
