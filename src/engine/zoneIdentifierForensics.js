@@ -24,10 +24,10 @@ const KNOWN_CHEAT_DOMAINS = [
   'slinky.gg', 'slinkymc.com', 'liquidbounce.net', 'meteorclient.com',
   'wurstclient.net', 'riseclient.com', 'novoline.lol', 'astolfo.lgbt',
   'tenacity.dev', 'ravenbplus.cf', 'blackspigot.com', 'infernalplus.com',
-  'nullpt.rs', 'loader.cc', 'loader.gg', 'injecteur-mc.fr'
+  'nullpt.rs', 'loader.cc', 'loader.gg', 'injecteur-mc.fr', 'doomsdayclient.com'
 ];
 
-const CHEAT_NAME_PATTERNS = /vape|drip|slinky|meteor|wurst|liquid|rise|novoline|astolfo|tenacity|raven|astralis|autoclicker|cheat|inject/i;
+const CHEAT_NAME_PATTERNS = /vape|drip|slinky|meteor|wurst|liquid|rise|novoline|astolfo|tenacity|raven|astralis|autoclicker|cheat|inject|doomsday/i;
 
 class ZoneIdentifierForensics {
   constructor() {

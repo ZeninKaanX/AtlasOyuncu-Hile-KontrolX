@@ -608,7 +608,7 @@ class CheatKnowledgeBase {
 
       JVM_AGENT_ATTACHED: {
         tr: {
-          tacticName: '-javaagent / -Xbootclasspath ile JVM Bytecode Enjeksiyonu',
+          tacticName: 'Java Ajanı (-javaagent / -Xbootclasspath) ile JVM Bytecode Enjeksiyonu',
           howItWorks: 'Hile başlatıcıları, Minecraft\'ı başlatırken JVM\'e "-javaagent:cheat.jar" veya "-Xbootclasspath/p:cheat.jar" argümanı ekler. Bu mekanizma, hile JAR\'ının her Java sınıfı yüklenmeden önce çalışmasını sağlar ve sınıfları (örn. Reach, KillAura) bytecode seviyesinde değiştirir.',
           adminAction: 'Yetkili İnceleme Tavsiyesi: Meşru bir Minecraft kurulumuna -javaagent eklenmesinin geçerli hiçbir sebebi yoktur. Bu, bir hile yükleme mekanizmasıdır.',
           whyConcrete: 'javaw.exe komut satırındaki -javaagent argümanı doğrudan tespit edilmiştir.'

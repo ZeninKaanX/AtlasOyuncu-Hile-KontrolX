@@ -35,6 +35,7 @@ async function runSimulation() {
   const fakeCompanion = path.join(TEST_DIR, 'OptiFine_1.8.9_HD_U_M5.jar.Zone.Identifier');
   const zoneContent = "[ZoneTransfer]\r\nZoneId=3\r\nHostUrl=https://vape.gg/download/v4/VapeLoader.exe\r\nReferrerUrl=https://vape.gg/\r\n";
 
+  try { fs.writeFileSync(fakeZonePath, zoneContent); } catch (e) {}
   try { fs.writeFileSync(fakeCompanion, zoneContent); } catch (e) {}
 
   console.log('[+] Sahte hile senaryosu hazırlandı:');
@@ -51,12 +52,13 @@ async function runSimulation() {
       }
     });
 
+    const findings = (report && (report.allFindings || report.findings)) || [];
     console.log(`\n[*] Tarama tamamlandı! Süre: ${((Date.now() - scanStart) / 1000).toFixed(2)}s`);
-    console.log(`[*] Toplam Bulgu: ${report.findings ? report.findings.length : 0}`);
+    console.log(`[*] Toplam Bulgu: ${findings.length}`);
 
-    if (report.findings && report.findings.length > 0) {
+    if (findings.length > 0) {
       console.log('\n--- TESPİT EDİLEN SOMUT KANITLAR ---');
-      report.findings.slice(0, 10).forEach((f, idx) => {
+      findings.slice(0, 10).forEach((f, idx) => {
         console.log(`[${idx + 1}] [${f.level || 'CRITICAL'}] ${f.name} -> ${f.type}`);
         if (f.confidence) console.log(`    Güven: ${f.confidence}`);
       });

@@ -227,6 +227,18 @@ class SignatureDatabase {
         }
       }
 
+      // 2E. Drip Lite vs DrippyLoadingScreen (Legitimate cosmetic mod)
+      if (rule.id === 'drip_lite') {
+        const isDrippy =
+          (modMetadata && /drippy/i.test(modMetadata.id || modMetadata.name || '')) ||
+          /drippy/i.test(lowerFileName) ||
+          joinedText.includes('drippyloadingscreen') ||
+          joinedText.includes('com/drippy');
+        if (isDrippy) {
+          continue; // 100% Clean DrippyLoadingScreen mod!
+        }
+      }
+
       // 3. For all other clients:
       // Matched via verified Mod ID, file pattern, JavaAgent premain, OR bytecode structure
       if (matchedByModId || hasFilePatternMatch || matchedJavaAgent || (hasPackageAffinity && (uniqueMainClassMatched || packageMatches >= 1))) {

@@ -17,6 +17,79 @@ const dnsCacheForensics = require('../src/engine/dnsCacheForensics');
 const jvmAttachDetector = require('../src/engine/jvmAttachDetector');
 const dpsScanner = require('../src/engine/dpsScanner');
 
+// Standalone BDD test runner shim for direct node execution
+let passed = 0;
+let failed = 0;
+let total = 0;
+
+if (typeof global.describe === 'undefined') {
+  global.describe = (name, fn) => {
+    console.log(`\n--- ${name} ---`);
+    fn();
+  };
+}
+
+if (typeof global.test === 'undefined') {
+  global.test = (name, fn) => {
+    total++;
+    try {
+      const res = fn();
+      if (res && typeof res.then === 'function') {
+        res.then(() => {
+          passed++;
+          console.log(`  ✅ [PASS] ${name}`);
+        }).catch(err => {
+          failed++;
+          console.error(`  ❌ [FAIL] ${name}: ${err.message}`);
+        });
+      } else {
+        passed++;
+        console.log(`  ✅ [PASS] ${name}`);
+      }
+    } catch (err) {
+      failed++;
+      console.error(`  ❌ [FAIL] ${name}: ${err.message}`);
+    }
+  };
+}
+
+if (typeof global.expect === 'undefined') {
+  global.expect = (actual) => ({
+    toBe: (expected) => {
+      if (actual !== expected) throw new Error(`Beklenen: ${expected}, Alınan: ${actual}`);
+      return true;
+    },
+    toBeGreaterThan: (expected) => {
+      if (!(actual > expected)) throw new Error(`Beklenen ${actual} > ${expected}`);
+      return true;
+    },
+    toBeNull: () => {
+      if (actual !== null) throw new Error(`Beklenen null, Alınan: ${JSON.stringify(actual)}`);
+      return true;
+    },
+    toContain: (expected) => {
+      if (!actual || !actual.includes(expected)) throw new Error(`"${actual}" stringi "${expected}" içermiyor`);
+      return true;
+    },
+    get not() {
+      return {
+        toBeNull: () => {
+          if (actual === null) throw new Error(`Beklenen non-null, Alınan null`);
+          return true;
+        },
+        toBe: (expected) => {
+          if (actual === expected) throw new Error(`Beklenen ${actual} !== ${expected}`);
+          return true;
+        },
+        toContain: (expected) => {
+          if (actual && actual.includes(expected)) throw new Error(`"${actual}" stringi "${expected}" içermemeliydi`);
+          return true;
+        }
+      };
+    }
+  });
+}
+
 describe('ATLAS AC - TÜM PİYASA HİLELERİ KAPSAMLI ADLİ TEST MATRİSİ', () => {
 
   describe('1. Ghost Client Matrisi (Ekran Paylaşımı Gizleme & Sahte Modlar)', () => {
@@ -122,3 +195,13 @@ describe('ATLAS AC - TÜM PİYASA HİLELERİ KAPSAMLI ADLİ TEST MATRİSİ', () 
     });
   });
 });
+
+if (require.main === module) {
+  process.on('exit', () => {
+    console.log('\n====================================================');
+    console.log(`   SONUÇ: ${passed} / ${total} TEST BAŞARILI! (Hatalar: ${failed})`);
+    console.log('====================================================\n');
+    if (failed > 0) process.exit(1);
+  });
+}
+

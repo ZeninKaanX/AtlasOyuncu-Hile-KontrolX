@@ -844,6 +844,21 @@
       "browserDomains": [
         "vape.rip",
         "manthe.cc"
+      ],
+      "packages": [
+        "com.vape.client",
+        "pub.vape.lite"
+      ],
+      "classes": [
+        "Vape.class",
+        "VapeLite.class",
+        "com/vape/client/Vape.class",
+        "pub/vape/lite/VapeLite.class"
+      ],
+      "combatClasses": [
+        "Reach.class",
+        "Velocity.class",
+        "AutoClicker.class"
       ]
     },
     {
@@ -869,6 +884,18 @@
       ],
       "browserDomains": [
         "drip.gg"
+      ],
+      "packages": [
+        "com.drip.lite",
+        "drip.lite"
+      ],
+      "classes": [
+        "DripLite.class",
+        "com/drip/lite/Main.class"
+      ],
+      "combatClasses": [
+        "Reach.class",
+        "modules/combat/Reach.class"
       ]
     },
     {
@@ -887,6 +914,18 @@
       ],
       "browserDomains": [
         "slinky.gg"
+      ],
+      "packages": [
+        "cc.slinky",
+        "slinky.client"
+      ],
+      "classes": [
+        "Slinky.class",
+        "cc/slinky/client/Slinky.class"
+      ],
+      "combatClasses": [
+        "KillAura.class",
+        "Reach.class"
       ]
     },
     {
@@ -1036,6 +1075,14 @@
       ],
       "browserDomains": [
         "entropy.club"
+      ],
+      "packages": [
+        "club.entropy",
+        "entropy.client"
+      ],
+      "classes": [
+        "Entropy.class",
+        "club/entropy/client/Entropy.class"
       ]
     },
     {
@@ -1186,7 +1233,8 @@
       ],
       "description": "Stealth ghost client with external JVM hook injection.",
       "packages": [
-        "com.phantom.client"
+        "com.phantom.client",
+        "client.phantom"
       ],
       "prefetch": [
         "PHANTOM.EXE",
@@ -1198,6 +1246,10 @@
       ],
       "browserDomains": [
         "phantomclient.com"
+      ],
+      "classes": [
+        "Phantom.class",
+        "client/phantom/Phantom.class"
       ]
     },
     {
@@ -2394,7 +2446,8 @@
         "Horion.dll",
         "HorionInjector.exe",
         "horionbeta.club",
-        "HorionBeta"
+        "HorionBeta",
+        "Horion Client Bedrock"
       ],
       "filePatterns": [
         "*Horion*.dll",
@@ -2427,7 +2480,8 @@
         "Borion Client",
         "Borion.dll",
         "BorionInjector.exe",
-        "BorionBeta"
+        "BorionBeta",
+        "Borion Client Bedrock"
       ],
       "filePatterns": [
         "*Borion*.dll",
@@ -2775,7 +2829,8 @@
       "memoryStrings": [
         "Coffee Client",
         "me/coffee",
-        "CoffeeClient"
+        "CoffeeClient",
+        "Coffee Client (1.20.1)"
       ],
       "filePatterns": [
         "*coffee*client*.jar",
@@ -2823,7 +2878,8 @@
       "memoryStrings": [
         "Lumina Client",
         "stormcoph/LuminaClient",
-        "me/lumina"
+        "me/lumina",
+        "Lumina Client (1.20.1)"
       ],
       "filePatterns": [
         "*lumina*client*.jar",
