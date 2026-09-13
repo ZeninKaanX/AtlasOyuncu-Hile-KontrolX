@@ -45,6 +45,7 @@ const processHollowingDetector = require('./processHollowingDetector');
 const ldPreloadInjectionDetector = require('./ldPreloadInjectionDetector');
 const powerShellScriptForensics = require('./powerShellScriptForensics');
 const zoneIdentifierForensics = require('./zoneIdentifierForensics');
+const dnsCacheForensics = require('./dnsCacheForensics');
 const updater = require('./updater');
 const reporter = require('./reporter');
 const serverPolicy = require('../config/serverPolicy');
@@ -467,6 +468,11 @@ class ScannerCore {
         // 2AD. Zone.Identifier (NTFS Mark of the Web ADS)
         wrapPhase2('ZONE_IDENTIFIER_ANALIZI', 'ZONE IDENTIFIER', () =>
           zoneIdentifierForensics.scanZoneIdentifiers((s, c) => { reportProgress('ZONE_IDENTIFIER_ANALIZI', 85, `ZoneID: ${s}`, null, s, c); })
+        ),
+
+        // 2AE. Windows DNS Resolver Client Cache Forensics
+        wrapPhase2('DNS_ONBELLEK_ANALIZI', 'DNS CACHE', () =>
+          dnsCacheForensics.scanDnsCache((s, c) => { reportProgress('DNS_ONBELLEK_ANALIZI', 86, `DNS: ${s}`, null, s, c); })
         )
       ]);
 
