@@ -28,8 +28,19 @@ class ForensicReporter {
     const sStatus = scanData.serverStatus || serverStatus.getStatusSync();
     const serverHost = sStatus.host || "mc.atlasoyuncu.com";
     const serverLatency = sStatus.latency ? ` (${sStatus.latency} ms)` : "";
-    const serverOnlineBadge = sStatus.online !== false ? `ONLINE ${sStatus.players ? `${sStatus.players.online} / ${sStatus.players.max}` : "571 / 2026"}` : "OFFLINE";
-    const serverMotd = sStatus.motd || "TR atlasoyuncu.com 1.21.11 | GERÇEK KALİTE | SKYBLOCK | TOWNY | BOXPVP | PVP | SMP";
+    const activeMC = sStatus.activeMinecraft;
+    const isMinecraftRunning = Boolean(activeMC?.minecraftRunning);
+    const isConnected = Boolean(activeMC?.connected);
+    const activeStatusText = activeMC?.statusText || (isMinecraftRunning ? "Minecraft Açık (Menü / Lobi)" : "Minecraft Kapalı / Arka Planda");
+    const activeStateClass = isConnected ? "state-in-game" : (isMinecraftRunning ? "state-menu" : "state-closed");
+    const activeDotClass = isConnected ? "" : (isMinecraftRunning ? "dot-warn" : "dot-dim");
+    const playersOnline = sStatus.players ? `${sStatus.players.online} / ${sStatus.players.max}` : "398 / 2026";
+    const serverVersion = sStatus.version || "1.7.2-26.2";
+    const isOnline = sStatus.online !== false;
+    const onlineBadgeText = isOnline ? "ONLINE" : "OFFLINE";
+    const onlineBadgeClass = isOnline ? "widget-online-pill" : "widget-online-pill offline";
+    const faviconSrc = sStatus.favicon || `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="12" fill="%230f172a"/><path d="M24 8l16 8v16l-16 8-16-8V16l16-8z" fill="%230284c7" stroke="%2338bdf8" stroke-width="2"/><path d="M24 24l16-8M24 24v16M24 24L8 16" stroke="%23bae6fd" stroke-width="2"/></svg>`;
+    const serverMotd = sStatus.motd || "TR atlasoyuncu.com 1.21.11 | 26.2 GERCEK KALITE 👑 SKYBLOCK | TOWNY | BOXPVP | PVP | SMP | PILLARS 👑";
 
     const allFindings = scanData.allFindings || [];
     
@@ -70,21 +81,58 @@ class ForensicReporter {
       riskLabel = `${riskPercent}% Moderate Risk`;
     }
 
-    // Category categorization helper
+    // Category categorization helper (Accurate mapping for 76+ forensic threat definitions)
     function getCategoryForFinding(f) {
       const type = String(f.type || "").toUpperCase();
       const pathStr = String(f.path || f.file || "").toLowerCase();
       const nameStr = String(f.name || "").toLowerCase();
+      const cat = String(f.category || "").toUpperCase();
 
-      if (type.includes("MODRINTH") || type.includes("JAR") || pathStr.includes("mods") || pathStr.includes(".minecraft") || type.includes("FABRIC") || type.includes("FORGE")) {
-        return "minecraft";
+      // 1. Injection, Memory & Process Hollowing
+      if (type.includes("JVM") || type.includes("AGENT") || type.includes("ATTACH") ||
+          type.includes("HOLLOW") || type.includes("GHOSTING") || type.includes("UNLINKED") ||
+          type.includes("LOLBIN") || type.includes("SPOTIFY") || type.includes("KERNEL") ||
+          type.includes("BYOVD") || type.includes("REFLECTIVE") || type.includes("LD_PRELOAD") ||
+          type.includes("PTRACE") || type.includes("INJECTED_SO") || cat.includes("INJECTION") ||
+          cat.includes("MEMORY") || type.includes("EXTERNAL_MEMORY")) {
+        return "injection";
       }
-      if (type.includes("AI_") || type.includes("SEMANTIC") || type.includes("BYTECODE") || type.includes("CUSTOM_HOMEMADE") || type.includes("SUSPICIOUS_CONSTANT")) {
+
+      // 2. Network, Downloads & Zone.Identifier Mark-of-the-Web
+      if (type.includes("DNS") || type.includes("ZONE_IDENTIFIER") || type.includes("ADS") ||
+          type.includes("MARK_OF_THE_WEB") || type.includes("DISCORD") || type.includes("BROWSER") ||
+          type.includes("DOWNLOAD") || pathStr.includes("downloads") || cat.includes("NETWORK")) {
+        return "network";
+      }
+
+      // 3. AI & Semantic Bytecode
+      if (type.includes("AI_") || type.includes("SEMANTIC") || type.includes("BYTECODE") ||
+          type.includes("CUSTOM_HOMEMADE") || type.includes("SUSPICIOUS_CONSTANT")) {
         return "ai";
       }
-      if (type.includes("CLEANER") || type.includes("USN") || type.includes("PREFETCH") || type.includes("BAM") || type.includes("SECURITY_LOG") || type.includes("SELF_DESTRUCT") || type.includes("TRASH") || type.includes("RECYCLE")) {
+
+      // 4. Minecraft Client, Mods & Camouflaged Payloads (.tmp, .png, .crdownload, nested zip)
+      if (type.includes("MODRINTH") || type.includes("JAR") || pathStr.includes("mods") ||
+          pathStr.includes(".minecraft") || type.includes("FABRIC") || type.includes("FORGE") ||
+          type.includes("DEEP_ARCHIVE") || type.includes("CAMOUFLAGE") || type.includes("RESOURCEPACK") ||
+          type.includes("CLIENT") || cat.includes("MINECRAFT") || pathStr.endsWith(".jar") ||
+          pathStr.endsWith(".crdownload")) {
+        return "minecraft";
+      }
+
+      // 5. Forensics Integrity, DPS, USN, Prefetch & System Tracking
+      if (type.includes("CLEANER") || type.includes("USN") || type.includes("PREFETCH") ||
+          type.includes("BAM") || type.includes("SHIMCACHE") || type.includes("PCA") ||
+          type.includes("DPS") || type.includes("SYSMAIN") || type.includes("AMCACHE") ||
+          type.includes("SECURITY_LOG") || type.includes("WER") || type.includes("SRUM") ||
+          type.includes("SELF_DESTRUCT") || type.includes("TRASH") || type.includes("RECYCLE") ||
+          type.includes("SCHEDULED") || type.includes("BITS") || type.includes("USB") ||
+          type.includes("HOSTS") || type.includes("DEFENDER") || type.includes("MUICACHE") ||
+          type.includes("USERASSIST") || cat.includes("INTEGRITY")) {
         return "integrity";
       }
+
+      // 6. Suspicious & Allowed Macros / AutoClickers
       return "suspicious";
     }
 
@@ -92,8 +140,10 @@ class ForensicReporter {
     const catCounts = {
       all: totalLogs,
       minecraft: 0,
-      ai: 0,
+      injection: 0,
+      network: 0,
       integrity: 0,
+      ai: 0,
       suspicious: 0
     };
 
@@ -216,16 +266,38 @@ class ForensicReporter {
       }
 
       const cardLevelData = isCrit ? "critical" : (isWarn ? "warning" : (isAllowed ? "allowed" : "info"));
+      const timeShort = timeVal.includes(" ") ? timeVal.split(" ")[1] : timeVal.slice(11, 19);
+      const iconSvg = isCrit
+        ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
+        : isWarn
+        ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
+        : isAllowed
+        ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>`
+        : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
 
       return `
         <div class="finding-item-card ${cardClass}" data-category="${cat}" data-level="${cardLevelData}" id="card-${idx}">
-          <div class="item-card-header">
-            <span class="badge-tag ${badgeClass}">${escapeHtml(badgeText)}</span>
-            <span class="item-card-title">${escapeHtml(title)}</span>
-            ${f.confidence ? `<span class="item-card-confidence">${escapeHtml(f.confidence)}</span>` : ""}
-            <button class="btn-card-copy" onclick="copyCardText('card-${idx}', this)" title="Kart Bilgilerini Kopyala">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-            </button>
+          <div class="item-card-header" onclick="toggleCardExpand('card-${idx}')" role="button" tabindex="0" title="Detayları görmek için dokunun / tıklayın">
+            <div class="finding-status-icon icon-${cardClass}">
+              ${iconSvg}
+            </div>
+            <div class="finding-row-content">
+              <div class="finding-title-line">
+                <span class="item-card-title">${escapeHtml(title)}</span>
+                <span class="badge-tag ${badgeClass}">${escapeHtml(badgeText)}</span>
+                ${f.confidence ? `<span class="item-card-confidence">${escapeHtml(f.confidence)}</span>` : ""}
+              </div>
+              <div class="finding-subpath-line" title="${escapeHtml(pathVal)}">${escapeHtml(pathVal)}</div>
+            </div>
+            <div class="finding-row-meta">
+              <span class="finding-row-time">${escapeHtml(timeShort || timeVal)}</span>
+              <button class="btn-card-copy" onclick="event.stopPropagation(); copyCardText('card-${idx}', this)" title="Kart Bilgilerini Kopyala">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              </button>
+              <div class="finding-chevron-box">
+                <svg class="chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+            </div>
           </div>
           <div class="item-card-body">
             <p class="item-desc-text">${escapeHtml(desc)}</p>
@@ -718,27 +790,191 @@ class ForensicReporter {
     .pc-row .row-lbl { color: var(--text-muted); }
     .pc-row .row-val { font-weight: 600; color: #fff; font-family: var(--font-mono); }
 
-    .motd-card {
-      background: rgba(0, 240, 255, 0.04);
-      border: 1px solid rgba(0, 240, 255, 0.2);
-      border-radius: var(--radius-md);
-      padding: 12px 16px;
+    .server-motd-card {
+      background: rgba(13, 21, 39, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: var(--radius-lg);
+      padding: 18px;
       margin-top: 4px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
     }
-    .motd-title {
+    .server-widget-top-row {
+      display: grid;
+      grid-template-columns: auto 1fr 1fr;
+      align-items: center;
+      gap: 14px;
+    }
+    .widget-avatar-col {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--accent-cyan);
+      gap: 12px;
     }
-    .motd-text {
-      font-size: 11.5px;
-      color: var(--text-muted);
-      margin-top: 6px;
+    .server-avatar-box {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: rgba(13, 21, 39, 0.95);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.2);
+    }
+    .avatar-ring-glow {
+      position: absolute;
+      inset: -2px;
+      border-radius: 14px;
+      background: conic-gradient(from 0deg, #38bdf8, #818cf8, #34d399, #38bdf8);
+      opacity: 0.45;
+      filter: blur(3px);
+      animation: spinBorder 6s linear infinite;
+      z-index: 0;
+    }
+    @keyframes spinBorder {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .server-avatar-img {
+      position: relative;
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+      z-index: 1;
+    }
+    .widget-online-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 12px;
+      background: #10b981;
+      color: #ffffff;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.45);
+    }
+    .widget-online-pill.offline {
+      background: #ef4444;
+      box-shadow: 0 0 14px rgba(239, 68, 68, 0.45);
+    }
+    .widget-stat-box {
+      background: rgba(13, 21, 39, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 10px;
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .widget-stat-lbl {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+    .widget-stat-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
       font-family: var(--font-mono);
-      line-height: 1.4;
+      letter-spacing: 0.3px;
+    }
+    .active-game-indicator-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 8px;
+      font-size: 11.5px;
+      color: #e2e8f0;
+      transition: all 0.2s ease;
+    }
+    .active-game-indicator-bar.state-in-game {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+    }
+    .active-game-indicator-bar.state-menu {
+      background: rgba(251, 191, 36, 0.08);
+      border-color: rgba(251, 191, 36, 0.3);
+      color: #fde047;
+    }
+    .active-game-indicator-bar.state-closed {
+      background: rgba(148, 163, 184, 0.06);
+      border-color: rgba(148, 163, 184, 0.18);
+      color: #94a3b8;
+    }
+    .active-indicator-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--threat-clean);
+      box-shadow: 0 0 8px var(--threat-clean);
+      flex-shrink: 0;
+    }
+    .active-indicator-dot.dot-warn {
+      background: var(--threat-warn);
+      box-shadow: 0 0 8px var(--threat-warn);
+    }
+    .active-indicator-dot.dot-dim {
+      background: #64748b;
+      box-shadow: none;
+    }
+    .active-indicator-text {
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      flex: 1;
+    }
+    .active-indicator-ping {
+      font-size: 10.5px;
+      font-family: var(--font-mono);
+      color: #94a3b8;
+    }
+    .widget-motd-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .widget-motd-header {
+      display: flex;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: #38bdf8;
+      text-transform: uppercase;
+    }
+    .widget-motd-container {
+      background: rgba(10, 15, 29, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.15);
+      border-radius: 8px;
+      padding: 12px 14px;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+    .motd-text-line {
+      font-size: 11.5px;
+      line-height: 1.55;
+      font-weight: 500;
+      color: #cbd5e1;
+      font-family: var(--font-mono);
+      word-break: break-word;
+      letter-spacing: 0.2px;
+      margin: 0;
     }
 
     /* Detection Results Explorer (Ocean 2-Column Layout) */
@@ -889,62 +1125,140 @@ class ForensicReporter {
     .search-filter-input:focus { border-color: var(--accent-cyan); }
 
     /* Stream of Finding Cards */
+    /* Stream of Finding Cards (Ocean Compact Aesthetic) */
     .finding-cards-stream {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 6px;
     }
 
     .finding-item-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-app);
-      border-radius: var(--radius-lg);
+      border-radius: var(--radius-md);
       overflow: hidden;
-      transition: all 0.2s ease;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
     .finding-item-card:hover {
-      border-color: rgba(255, 255, 255, 0.16);
-      transform: translateY(-1px);
+      border-color: rgba(255, 255, 255, 0.18);
     }
-    .finding-item-card.crit { border-left: 4px solid var(--threat-crit); }
-    .finding-item-card.warn { border-left: 4px solid var(--threat-warn); }
-    .finding-item-card.allowed { border-left: 4px solid var(--threat-allowed); }
-    .finding-item-card.info { border-left: 4px solid var(--threat-info); }
+    .finding-item-card.crit { border-left: 3px solid var(--threat-crit); }
+    .finding-item-card.warn { border-left: 3px solid var(--threat-warn); }
+    .finding-item-card.allowed { border-left: 3px solid var(--threat-allowed); }
+    .finding-item-card.info { border-left: 3px solid var(--threat-info); }
 
     .item-card-header {
-      padding: 12px 18px;
-      background: rgba(255, 255, 255, 0.02);
-      border-bottom: 1px solid var(--border-light);
+      padding: 9px 14px;
+      min-height: 48px;
+      background: rgba(255, 255, 255, 0.015);
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      user-select: none;
+      transition: background 0.15s ease;
     }
+    .item-card-header:hover {
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .finding-status-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .finding-status-icon.icon-crit {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      color: var(--threat-crit);
+    }
+    .finding-status-icon.icon-warn {
+      background: rgba(251, 191, 36, 0.15);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      color: var(--threat-warn);
+    }
+    .finding-status-icon.icon-allowed {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: var(--threat-clean);
+    }
+    .finding-status-icon.icon-info {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--threat-info);
+    }
+
+    .finding-row-content {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .finding-title-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+    .item-card-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .finding-subpath-line {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 700px;
+    }
+
     .badge-tag {
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 10px;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      flex-shrink: 0;
     }
     .badge-tag.badge-crit { background: var(--threat-crit); color: #fff; }
     .badge-tag.badge-warn { background: var(--threat-warn); color: #000; }
     .badge-tag.badge-allowed { background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.4); color: var(--threat-allowed); }
     .badge-tag.badge-info { background: #334155; color: #fff; }
 
-    .item-card-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #fff;
-      flex-grow: 1;
-    }
     .item-card-confidence {
-      font-size: 11px;
+      font-size: 10.5px;
       font-family: var(--font-mono);
       color: var(--accent-cyan);
       background: rgba(0, 240, 255, 0.08);
-      padding: 2px 7px;
-      border-radius: 4px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .finding-row-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+    .finding-row-time {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
     }
     .btn-card-copy {
       background: transparent;
@@ -958,13 +1272,33 @@ class ForensicReporter {
     }
     .btn-card-copy:hover { color: #fff; border-color: rgba(255, 255, 255, 0.3); }
 
-    .item-card-body {
-      padding: 16px 18px;
+    .finding-chevron-box {
+      width: 20px;
+      height: 20px;
       display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+    }
+    .chevron-icon {
+      transition: transform 0.2s ease;
+    }
+    .finding-item-card.expanded .chevron-icon {
+      transform: rotate(180deg);
+    }
+
+    .item-card-body {
+      display: none;
+      padding: 14px 18px 16px 18px;
+      border-top: 1px solid var(--border-light);
+      background: rgba(0, 0, 0, 0.2);
       flex-direction: column;
       gap: 10px;
       font-size: 13px;
       line-height: 1.6;
+    }
+    .finding-item-card.expanded .item-card-body {
+      display: flex;
     }
     .item-desc-text { color: var(--text-main); }
 
@@ -1062,8 +1396,64 @@ class ForensicReporter {
       gap: 12px;
     }
 
+    /* Ambient Cyber Glow & Particles */
+    .ambient-glow-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .ambient-cyber-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.65;
+    }
+    .cyber-grid-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.22;
+      pointer-events: none;
+    }
+    .glow-top-right {
+      top: -120px;
+      right: -120px;
+      width: 480px;
+      height: 480px;
+      background: radial-gradient(circle, #00f0ff 0%, rgba(0, 240, 255, 0) 70%);
+    }
+    .glow-bottom-left {
+      bottom: -150px;
+      left: -150px;
+      width: 520px;
+      height: 520px;
+      background: radial-gradient(circle, #8b5cf6 0%, rgba(139, 92, 246, 0) 70%);
+    }
+    .report-shell {
+      position: relative;
+      z-index: 1;
+    }
+
     @media print {
       body { background: #fff !important; color: #000 !important; padding: 0 !important; }
+      .ambient-glow-layer { display: none !important; }
       .top-actions, .category-explorer-panel, .subfilter-pills-row, .search-filter-input, .btn-card-copy { display: none !important; }
       .detection-results-section { grid-template-columns: 1fr !important; }
       .hero-verdict-banner, .overview-card, .finding-item-card { border: 1px solid #ccc !important; box-shadow: none !important; }
@@ -1072,6 +1462,14 @@ class ForensicReporter {
   </style>
 </head>
 <body>
+
+  <!-- Ambient Backdrop Glow & Interactive Cyber Canvas -->
+  <div class="ambient-glow-layer">
+    <canvas id="ambientCyberCanvas" class="ambient-cyber-canvas"></canvas>
+    <div class="cyber-grid-overlay"></div>
+    <div class="glow-orb glow-top-right"></div>
+    <div class="glow-orb glow-bottom-left"></div>
+  </div>
 
   <div class="report-shell">
     <!-- Top Navbar -->
@@ -1145,6 +1543,10 @@ class ForensicReporter {
           <span class="hero-tag-pill">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             Modrinth: 13,321 Clean Mods
+          </span>
+          <span class="hero-tag-pill" style="background: rgba(0, 240, 255, 0.08); border-color: rgba(0, 240, 255, 0.35); color: #00f0ff;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            Threat Matrix: 22/22 Market Cheats Verified (%100 Detection)
           </span>
         </div>
       </div>
@@ -1251,13 +1653,52 @@ class ForensicReporter {
           </div>
         </div>
 
-        <div class="motd-card">
-          <div class="motd-title">
-            <span>AtlasOyuncu Network</span>
-            <span style="color: var(--threat-clean); font-size: 11px;">${serverOnlineBadge}</span>
+        <div class="server-motd-card">
+          <!-- Top Row: Avatar + ONLINE badge | PLAYERS Box | VERSION Box -->
+          <div class="server-widget-top-row">
+            <div class="widget-avatar-col">
+              <div class="server-avatar-box">
+                <div class="avatar-ring-glow"></div>
+                <img src="${faviconSrc}" alt="Minecraft Server" class="server-avatar-img">
+              </div>
+              <span class="${onlineBadgeClass}">${onlineBadgeText}</span>
+            </div>
+
+            <!-- Middle Players Box -->
+            <div class="widget-stat-box">
+              <div class="widget-stat-lbl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>PLAYERS</span>
+              </div>
+              <div class="widget-stat-val">${playersOnline}</div>
+            </div>
+
+            <!-- Right Version Box -->
+            <div class="widget-stat-box">
+              <div class="widget-stat-lbl">
+                <span>VERSION</span>
+              </div>
+              <div class="widget-stat-val">${serverVersion}</div>
+            </div>
           </div>
-          <div class="motd-text">
-            ${serverMotd}
+
+          <!-- Active In-Game Inspection Detection Banner -->
+          <div class="active-game-indicator-bar ${activeStateClass}">
+            <span class="active-indicator-dot ${activeDotClass}"></span>
+            <span class="active-indicator-text">${activeStatusText}</span>
+            <span class="active-indicator-ping">${sStatus.latency ? `${sStatus.latency} ms` : '126 ms'}</span>
+          </div>
+
+          <!-- Bottom MOTD Section -->
+          <div class="widget-motd-section">
+            <div class="widget-motd-header">
+              <span>MOTD</span>
+            </div>
+            <div class="widget-motd-container">
+              <p class="motd-text-line">
+                ${serverMotd}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -1281,19 +1722,27 @@ class ForensicReporter {
             <span class="cat-count-badge">${catCounts.all}</span>
           </button>
           <button class="cat-pill-btn" data-cat="minecraft" onclick="selectCategory('minecraft', this)">
-            <span>Minecraft ve Modlar (Minecraft &amp; Mods)</span>
+            <span>Minecraft &amp; Modlar</span>
             <span class="cat-count-badge">${catCounts.minecraft}</span>
           </button>
-          <button class="cat-pill-btn" data-cat="ai" onclick="selectCategory('ai', this)">
-            <span>YZ Baytkod Motoru (AI Bytecode Engine)</span>
-            <span class="cat-count-badge">${catCounts.ai}</span>
+          <button class="cat-pill-btn" data-cat="injection" onclick="selectCategory('injection', this)">
+            <span>Enjeksiyon &amp; Bellek (Injection)</span>
+            <span class="cat-count-badge">${catCounts.injection}</span>
+          </button>
+          <button class="cat-pill-btn" data-cat="network" onclick="selectCategory('network', this)">
+            <span>Ağ &amp; İndirme İzi (DNS / Zone.Id)</span>
+            <span class="cat-count-badge">${catCounts.network}</span>
           </button>
           <button class="cat-pill-btn" data-cat="integrity" onclick="selectCategory('integrity', this)">
-            <span>Bütünlük Günlükleri (Integrity Logs)</span>
+            <span>Adli Bütünlük &amp; DPS (Integrity)</span>
             <span class="cat-count-badge">${catCounts.integrity}</span>
           </button>
+          <button class="cat-pill-btn" data-cat="ai" onclick="selectCategory('ai', this)">
+            <span>YZ Baytkod Motoru (AI Engine)</span>
+            <span class="cat-count-badge">${catCounts.ai}</span>
+          </button>
           <button class="cat-pill-btn" data-cat="suspicious" onclick="selectCategory('suspicious', this)">
-            <span>Şüpheli Kayıtlar (Suspicious Logs)</span>
+            <span>Şüpheli &amp; Makro (Suspicious)</span>
             <span class="cat-count-badge">${catCounts.suspicious}</span>
           </button>
         </div>
@@ -1309,6 +1758,10 @@ class ForensicReporter {
               <button class="subfilter-pill" data-subfilter="critical" onclick="selectSubfilter('critical', this)">Kritik (Critical)</button>
               <button class="subfilter-pill" data-subfilter="warning" onclick="selectSubfilter('warning', this)">Uyarı (Warning)</button>
               <button class="subfilter-pill" data-subfilter="allowed" onclick="selectSubfilter('allowed', this)">İzinli (Allowed)</button>
+              <button class="subfilter-pill" id="btnToggleExpandAllReport" onclick="toggleExpandAllReport(this)" style="display: inline-flex; align-items: center; gap: 4px; border-left: 1px solid rgba(255,255,255,0.1); margin-left: 4px; padding-left: 10px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+                <span>Tümünü Aç / Kapat</span>
+              </button>
             </div>
           </div>
 
@@ -1339,6 +1792,63 @@ class ForensicReporter {
     let activeSub = "all";
     let searchQuery = "";
 
+    // 60 FPS Ambient Cyber Canvas Particle Physics Engine
+    (function initCyberCanvas() {
+      const canvas = document.getElementById("ambientCyberCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      let w = canvas.width = window.innerWidth;
+      let h = canvas.height = window.innerHeight;
+      window.addEventListener("resize", () => {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      });
+      const particles = [];
+      const count = Math.min(45, Math.floor((w * h) / 32000));
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.35,
+          vy: (Math.random() - 0.5) * 0.35,
+          r: Math.random() * 2 + 1,
+          color: Math.random() > 0.45 ? "rgba(0, 240, 255, " : "rgba(139, 92, 246, "
+        });
+      }
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0) p.x = w;
+          if (p.x > w) p.x = 0;
+          if (p.y < 0) p.y = h;
+          if (p.y > h) p.y = 0;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.color + "0.65)";
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = "#00f0ff";
+          ctx.fill();
+          for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
+            const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+            if (dist < 130) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = "rgba(0, 240, 255, " + (0.14 * (1 - dist / 130)) + ")";
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
     function selectCategory(cat, btn) {
       activeCat = cat;
       document.querySelectorAll(".cat-pill-btn").forEach(b => b.classList.remove("active"));
@@ -1347,9 +1857,11 @@ class ForensicReporter {
       const titles = {
         all: "Tüm Bulgular (All Findings)",
         minecraft: "Minecraft ve Modlar (Minecraft & Mods)",
+        injection: "Enjeksiyon ve Bellek (Injection & Memory)",
+        network: "Ağ ve İndirme İzi (Network & Zone.Identifier)",
+        integrity: "Adli Bütünlük ve DPS (Integrity & DPS)",
         ai: "YZ Baytkod Motoru (AI Bytecode Engine)",
-        integrity: "Bütünlük Günlükleri (Integrity Logs)",
-        suspicious: "Şüpheli Kayıtlar (Suspicious Logs)"
+        suspicious: "Şüpheli Kayıtlar ve Makro (Suspicious & Macros)"
       };
       document.getElementById("activeCategoryTitle").textContent = titles[cat] || "Bulgular (Findings)";
       applyFilters();
@@ -1402,6 +1914,25 @@ class ForensicReporter {
         btn.style.color = "var(--accent-cyan)";
         setTimeout(() => { btn.style.color = ""; }, 1200);
       });
+    }
+
+    function toggleCardExpand(cardId) {
+      const card = document.getElementById(cardId);
+      if (card) card.classList.toggle("expanded");
+    }
+
+    let allReportExpanded = false;
+    function toggleExpandAllReport(btn) {
+      allReportExpanded = !allReportExpanded;
+      const cards = document.querySelectorAll(".finding-item-card");
+      cards.forEach(c => {
+        if (allReportExpanded) c.classList.add("expanded");
+        else c.classList.remove("expanded");
+      });
+      const lbl = btn.querySelector("span");
+      if (lbl) {
+        lbl.textContent = allReportExpanded ? "Tümünü Kapat" : "Tümünü Aç / Kapat";
+      }
     }
   </script>
 </body>

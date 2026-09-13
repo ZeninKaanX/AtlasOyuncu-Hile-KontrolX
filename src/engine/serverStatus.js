@@ -11,6 +11,7 @@
  */
 
 const net = require('net');
+const activeMinecraftDetector = require('./activeMinecraftServerDetector');
 
 class ServerStatusTracker {
   constructor() {
@@ -236,25 +237,47 @@ class ServerStatusTracker {
     }
 
     this.fetchPromise = (async () => {
+      let detection = null;
       try {
-        const status = await this.pingServer(this.defaultHost, this.defaultPort, 4000);
-        this.lastStatus = status;
+        detection = await activeMinecraftDetector.detectActiveServer(force);
+      } catch (e) {}
+
+      const targetHost = (detection && detection.server && detection.server.host) ? detection.server.host : this.defaultHost;
+      const targetPort = (detection && detection.server && detection.server.port) ? detection.server.port : this.defaultPort;
+
+      try {
+        const status = await this.pingServer(targetHost, targetPort, 4000);
+        const merged = {
+          ...status,
+          activeMinecraft: detection,
+          cached: false
+        };
+        this.lastStatus = merged;
         this.lastFetchTime = Date.now();
-        return { ...status, cached: false };
+        return merged;
       } catch (err) {
+        let fallbackStatus = null;
+        if (targetHost !== this.defaultHost) {
+          try {
+            fallbackStatus = await this.pingServer(this.defaultHost, this.defaultPort, 3000);
+          } catch (e2) {}
+        }
+
         const fallback = {
-          online: false,
-          host: this.defaultHost,
-          port: this.defaultPort,
-          players: this.lastStatus?.players || { online: 0, max: 2026 },
-          version: this.lastStatus?.version || '1.21.11',
-          motd: this.lastStatus?.motd || 'TR atlasoyuncu.com 1.21.11 | GERÇEK KALİTE',
-          latency: null,
-          favicon: this.lastStatus?.favicon || null,
+          online: Boolean(fallbackStatus && fallbackStatus.online),
+          host: targetHost,
+          port: targetPort,
+          players: fallbackStatus?.players || this.lastStatus?.players || { online: 0, max: 2026 },
+          version: fallbackStatus?.version || this.lastStatus?.version || '1.21.11',
+          motd: fallbackStatus?.motd || this.lastStatus?.motd || 'TR atlasoyuncu.com 1.21.11 | GERÇEK KALİTE',
+          latency: fallbackStatus?.latency || null,
+          favicon: fallbackStatus?.favicon || this.lastStatus?.favicon || null,
+          activeMinecraft: detection,
           error: err.message,
           lastChecked: new Date().toISOString(),
           cached: false
         };
+        this.lastStatus = fallback;
         this.lastFetchTime = Date.now();
         return fallback;
       } finally {

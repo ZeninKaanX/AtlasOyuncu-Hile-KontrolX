@@ -128,6 +128,27 @@
             <span class="nav-label" data-i18n="nav_usb">USB Storage</span>
           </button>
 
+          <button class="nav-btn" data-tab="dns_zone" id="btnNavDnsZone">
+            <span class="nav-icon-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/><path d="m4.93 4.93 4.24 4.24"/></svg>
+            </span>
+            <span class="nav-label" data-i18n="nav_dns_zone">DNS &amp; Zone.Identifier</span>
+          </button>
+
+          <button class="nav-btn" data-tab="hollowing_ps" id="btnNavHollowing">
+            <span class="nav-icon-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+            </span>
+            <span class="nav-label" data-i18n="nav_hollowing_ps">Hollowing &amp; Scriptler</span>
+          </button>
+
+          <button class="nav-btn" data-tab="dps_deep" id="btnNavDpsDeep">
+            <span class="nav-icon-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            </span>
+            <span class="nav-label" data-i18n="nav_dps_deep">DPS &amp; Derin Arşiv</span>
+          </button>
+
           <button class="nav-btn" data-tab="terminal" id="btnNavTerminal">
             <span class="nav-icon-box">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>
@@ -275,6 +296,10 @@
                   <span class="hero-tag-pill tag-whitelist">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     <span>Modrinth: 13,321 Clean Mods</span>
+                  </span>
+                  <span class="hero-tag-pill tag-matrix" style="background: rgba(0, 240, 255, 0.08); border-color: rgba(0, 240, 255, 0.35); color: #00f0ff;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+                    <span data-i18n="tag_threat_matrix">Threat Matrix: 22/22 Market Cheats Verified (%100 Detection)</span>
                   </span>
                 </div>
               </div>
@@ -454,39 +479,53 @@
                 </div>
               </div>
 
-              <!-- Official AtlasOyuncu Minecraft Server MOTD Card -->
-              <div class="server-motd-card interactive-glow-card">
-                <div class="motd-header">
-                  <div class="server-avatar-box">
-                    <div class="avatar-ring-glow"></div>
-                    <img src="assets/atlas_icon_full.png" alt="AtlasOyuncu" class="server-avatar-img" id="serverAvatarImg">
-                    <span class="status-online-dot" id="serverStatusDot">
-                      <span class="status-dot-ping"></span>
-                    </span>
+              <!-- Official AtlasOyuncu Minecraft Live Server Telemetry Card (Matching Ocean / User Design) -->
+              <div class="server-motd-card interactive-glow-card" id="minecraftServerWidget">
+                <!-- Top Row: Avatar + ONLINE badge | PLAYERS Box | VERSION Box -->
+                <div class="server-widget-top-row">
+                  <div class="widget-avatar-col">
+                    <div class="server-avatar-box">
+                      <div class="avatar-ring-glow"></div>
+                      <img src="assets/atlas_icon_full.png" alt="Minecraft Server" class="server-avatar-img" id="serverAvatarImg">
+                    </div>
+                    <span class="widget-online-pill" id="serverOnlineBadge">ONLINE</span>
                   </div>
-                  <div class="server-title-col">
-                    <div class="server-title-row">
-                      <div class="server-name">AtlasOyuncu Network</div>
-                      <div class="live-signal-badge" id="serverSignalBadge" title="Sunucu Gecikmesi (Ping)">
-                        <span class="signal-bars">
-                          <span class="signal-bar bar-1"></span>
-                          <span class="signal-bar bar-2"></span>
-                          <span class="signal-bar bar-3"></span>
-                        </span>
-                        <span class="signal-latency-txt" id="serverLatencyTxt">126 ms</span>
-                      </div>
+
+                  <!-- Middle Players Box -->
+                  <div class="widget-stat-box">
+                    <div class="widget-stat-lbl">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                      <span>PLAYERS</span>
                     </div>
-                    <div class="server-players-badge">
-                      <span class="badge-green" id="serverOnlineBadge">Online</span>
-                      <span class="players-count" id="serverPlayersCount">Canlı Veri Alınıyor...</span>
+                    <div class="widget-stat-val" id="serverPlayersCount">398 / 2026</div>
+                  </div>
+
+                  <!-- Right Version Box -->
+                  <div class="widget-stat-box">
+                    <div class="widget-stat-lbl">
+                      <span>VERSION</span>
                     </div>
+                    <div class="widget-stat-val" id="serverVersionText">1.7.2-26.2</div>
                   </div>
                 </div>
 
-                <div class="motd-body-box">
-                  <p class="motd-text-line" id="serverMotdText">
-                    TR ᴀᴛʟᴀsᴏʏᴜɴᴄᴜ.ᴄᴏᴍ 1.21.11 | 26.2 ɢᴇʀᴄᴇᴋ ᴋᴀʟɪᴛᴇ 👑 sᴋʏʙʟᴏᴄᴋ | ᴛᴏᴡɴʏ | ʙᴏxᴘᴠᴘ | ᴘᴠᴘ | sᴍᴘ 👑
-                  </p>
+                <!-- Active In-Game Inspection Detection Banner -->
+                <div class="active-game-indicator-bar" id="activeMinecraftBanner">
+                  <span class="active-indicator-dot" id="activeMinecraftDot"></span>
+                  <span class="active-indicator-text" id="activeMinecraftStatusText">Minecraft Açık Kontrolü Yapılıyor...</span>
+                  <span class="active-indicator-ping" id="serverLatencyTxt">126 ms</span>
+                </div>
+
+                <!-- Bottom MOTD Section -->
+                <div class="widget-motd-section">
+                  <div class="widget-motd-header">
+                    <span>MOTD</span>
+                  </div>
+                  <div class="widget-motd-container">
+                    <p class="motd-text-line" id="serverMotdText">
+                      TR ATLASOYUNCU.COM 1.21.11 | 26.2 GERCEK KALITE 👑 SKYBLOCK | TOWNY | BOXPVP | PVP | SMP | PILLARS 👑
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -528,6 +567,36 @@
                     <span class="cat-count-badge" id="catCountMc">0</span>
                   </button>
 
+                  <button class="cat-btn" data-filter="injection">
+                    <div class="cat-btn-left">
+                      <span class="cat-icon-circle icon-crit">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+                      </span>
+                      <span class="cat-btn-title" data-i18n="cat_injection">Enjeksiyon &amp; Bellek</span>
+                    </div>
+                    <span class="cat-count-badge" id="catCountInj">0</span>
+                  </button>
+
+                  <button class="cat-btn" data-filter="network">
+                    <div class="cat-btn-left">
+                      <span class="cat-icon-circle icon-cyan">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                      </span>
+                      <span class="cat-btn-title" data-i18n="cat_network">Ağ &amp; İndirme İzi</span>
+                    </div>
+                    <span class="cat-count-badge" id="catCountNet">0</span>
+                  </button>
+
+                  <button class="cat-btn" data-filter="integrity">
+                    <div class="cat-btn-left">
+                      <span class="cat-icon-circle icon-blue">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+                      </span>
+                      <span class="cat-btn-title" data-i18n="cat_integrity">Bütünlük &amp; DPS</span>
+                    </div>
+                    <span class="cat-count-badge" id="catCountIntegrity">0</span>
+                  </button>
+
                   <button class="cat-btn" data-filter="ai">
                     <div class="cat-btn-left">
                       <span class="cat-icon-circle icon-violet">
@@ -536,16 +605,6 @@
                       <span class="cat-btn-title" data-i18n="cat_ai">YZ Baytkod Motoru</span>
                     </div>
                     <span class="cat-count-badge" id="catCountAi">0</span>
-                  </button>
-
-                  <button class="cat-btn" data-filter="integrity">
-                    <div class="cat-btn-left">
-                      <span class="cat-icon-circle icon-blue">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
-                      </span>
-                      <span class="cat-btn-title" data-i18n="cat_integrity">Bütünlük Günlükleri</span>
-                    </div>
-                    <span class="cat-count-badge" id="catCountIntegrity">0</span>
                   </button>
 
                   <button class="cat-btn" data-filter="suspicious">
@@ -568,6 +627,10 @@
                     <button class="btn-copy-all" id="btnCopyAllFindings" title="Copy Evidence Log">
                       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
                       <span data-i18n="btn_copy_log">Günlüğü Kopyala</span>
+                    </button>
+                    <button class="btn-copy-all" id="btnToggleExpandAll" title="Tüm Kartları Genişlet veya Daralt">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+                      <span id="btnToggleExpandText" data-i18n="btn_toggle_expand">Tümünü Aç / Kapat</span>
                     </button>
                   </div>
 
@@ -656,6 +719,33 @@
             <p>OP AutoClicker, Murgee, SpeedClicker, Logitech LUA scripts, Razer Synapse macros, Bloody AMC, and external Python cheat processes.</p>
           </div>
           <div class="findings-cards-stream" id="macrosList"></div>
+        </section>
+
+        <!-- TAB: DNS & ZONE IDENTIFIER -->
+        <section class="tab-pane" id="pane-dns_zone">
+          <div class="tab-header-card">
+            <h2>DNS Çözümleyici &amp; Mark-of-the-Web (Zone.Identifier)</h2>
+            <p>Windows DNS önbelleğindeki hile lisans sorguları, ipconfig /flushdns kanıt karartma tespiti ve NTFS Alternate Data Streams köken analizi.</p>
+          </div>
+          <div class="findings-cards-stream" id="dnsZoneList"></div>
+        </section>
+
+        <!-- TAB: PROCESS HOLLOWING & SCRIPTS -->
+        <section class="tab-pane" id="pane-hollowing_ps">
+          <div class="tab-header-card">
+            <h2>Process Hollowing &amp; PowerShell Script Blokları</h2>
+            <p>Süreç hayaletleme (ghosting), silinmiş bellek haritaları, PowerShell Event ID 4104 script blokları ve LOLBin suistimalleri.</p>
+          </div>
+          <div class="findings-cards-stream" id="hollowingPsList"></div>
+        </section>
+
+        <!-- TAB: DPS & DEEP ARCHIVE -->
+        <section class="tab-pane" id="pane-dps_deep">
+          <div class="tab-header-card">
+            <h2>DPS (Diagnostic Policy) &amp; Derin Gizli Arşiv Taraması</h2>
+            <p>CCleaner/BleachBit ile silinemeyen svchost-kilitli DPS yürütme kayıtları ve .tmp, .png, .crdownload kamuflajlı iç içe hile JAR tespiti.</p>
+          </div>
+          <div class="findings-cards-stream" id="dpsDeepList"></div>
         </section>
 
         <!-- TAB 9: LIVE TELEMETRY & TERMINAL -->

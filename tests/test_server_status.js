@@ -109,6 +109,27 @@ async function runTests() {
     assert.ok(html.includes('mc.atlasoyuncu.com'), 'HTML must include mc.atlasoyuncu.com');
     assert.ok(html.includes('580 / 2026'), 'HTML must include 580 / 2026');
     assert.ok(!html.includes('play.atlasoyuncu.com'), 'HTML must NOT include play.atlasoyuncu.com');
+    assert.ok(html.includes('server-widget-top-row'), 'HTML must include modern 3-box server widget');
+    assert.ok(html.includes('active-game-indicator-bar'), 'HTML must include active game detection bar');
+  });
+
+  // 1.7 Active Minecraft process & socket detection module
+  await testAsync('1.7 Canlı Minecraft Süreç & Bağlantı Tespiti: detectActiveServer() geçerli şema döndürmeli', async () => {
+    const activeDetector = require('../src/engine/activeMinecraftServerDetector');
+    const detection = await activeDetector.detectActiveServer(true);
+    assert.ok(detection, 'Detection must return object');
+    assert.strictEqual(typeof detection.minecraftRunning, 'boolean');
+    assert.strictEqual(typeof detection.connected, 'boolean');
+    assert.ok(['IN_GAME', 'MENU_OR_LOCAL', 'NOT_RUNNING'].includes(detection.gameState));
+    assert.ok(typeof detection.statusText === 'string');
+    assert.ok(detection.server && typeof detection.server.host === 'string');
+  });
+
+  // 1.8 ServerStatus attaches activeMinecraft telemetry
+  await testAsync('1.8 Canlı Durum Entegrasyonu: fetchStatus() activeMinecraft telemetrisini iliştirmeli', async () => {
+    const status = await serverStatus.fetchStatus(true);
+    assert.ok(status.activeMinecraft, 'Status response must contain activeMinecraft');
+    assert.strictEqual(typeof status.activeMinecraft.minecraftRunning, 'boolean');
   });
 
   console.log('\n================================================================');
