@@ -1567,13 +1567,42 @@ function createFindingCardElement(f) {
   const isUrl = Boolean(f.url && !f.path);
   const timestampValue = f.timestamp || new Date().toISOString().replace('T', ' ').slice(0, 19);
 
+  // Prepare rich, complete evidence list for live UI
+  let evList = [];
+  if (loc.evidence) {
+    evList = (Array.isArray(loc.evidence) ? loc.evidence : [loc.evidence])
+      .map(e => String(e).trim())
+      .filter(e => e.length > 0 && !e.endsWith(':') && !e.endsWith(': '));
+  }
+
+  if (evList.length === 0) {
+    if (pathValue && pathValue !== 'System Memory' && pathValue !== 'Sistem Belleği / Süreç') {
+      evList.push(`${currentLang === 'tr' ? 'Hedef Konum / Dosya:' : 'Target Path:'} ${pathValue}`);
+    }
+    if (timestampValue) {
+      evList.push(`${currentLang === 'tr' ? 'Adli Kayıt Zamanı:' : 'Record Timestamp:'} ${timestampValue}`);
+    }
+    if (loc.description) {
+      evList.push(`${currentLang === 'tr' ? 'Somut Tespit Açıklaması:' : 'Finding Description:'} ${loc.description}`);
+    }
+    if (loc.confidence) {
+      evList.push(`${currentLang === 'tr' ? 'Adli Doğruluk Oranı:' : 'Forensic Confidence:'} ${loc.confidence}`);
+    }
+    if (whyReason) {
+      evList.push(`${currentLang === 'tr' ? 'Adli Değerlendirme:' : 'Forensic Evaluation:'} ${whyReason}`);
+    }
+    if (f.type) {
+      evList.push(`${currentLang === 'tr' ? 'Tespit Tipi:' : 'Detection Type:'} ${f.type}`);
+    }
+  }
+
   let evidenceHtml = '';
-  if (loc.evidence && Array.isArray(loc.evidence) && loc.evidence.length > 0) {
+  if (evList.length > 0) {
     evidenceHtml = `
       <div class="evidence-box">
         <strong>${t.lbl_evidence}:</strong>
         <ul style="margin: 6px 0 0 16px; padding: 0;">
-          ${loc.evidence.map(e => `<li>${escapeHtml(e)}</li>`).join('')}
+          ${evList.map(e => `<li>${escapeHtml(e)}</li>`).join('')}
         </ul>
       </div>
     `;

@@ -315,9 +315,9 @@ class BrowserForensicsEngine {
             `Sayfa Başlığı: ${visit.title || 'Bilinmiyor'}`,
             `Ziyaret Tarihi: ${visit.timestamp}`,
             `İndirilen Hile Dosyası: ${matchingDl.fileName}`,
-            `İndirilen Dosya Yolu: ${matchingDl.targetPath}`,
+            `İndirilen Dosya Yolu: ${matchingDl.targetPath || matchingDl.fileName}`,
             `İndirme Zamanı: ${matchingDl.timestamp}`,
-            `İndirme Bağlantısı: ${matchingDl.url}`,
+            ...(matchingDl.url ? [`İndirme Bağlantısı: ${matchingDl.url}`] : []),
             `Adli Durum: Hile sitesi ziyareti ile dosya indirme kaydı eşleşmiştir.`
           ]
         });
@@ -376,8 +376,8 @@ class BrowserForensicsEngine {
           description: `Tarayıcıda (${dbBrowser}) hile dosyası indirme kaydı tespit edildi: ${dl.fileName}`,
           evidence: [
             `Ziyaret / İndirme Türü: ${dl.visitType || 'Doğrudan Dosya İndirme (DOWNLOAD)'}`,
-            `Dosya Yolu: ${dl.targetPath}`,
-            `İndirme Bağlantısı: ${dl.url}`,
+            `Dosya Yolu: ${dl.targetPath || dl.fileName}`,
+            ...(dl.url ? [`İndirme Bağlantısı: ${dl.url}`] : []),
             `Tarih & Saat: ${dl.timestamp}`
           ]
         });

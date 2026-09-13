@@ -71,8 +71,18 @@ class PrefetchEngine {
             level: 'INFO',
             type: 'JOURNAL_WIPE_TOOL_EXECUTED',
             name: entry.Name,
+            file: entry.Name,
+            path: `C:\\Windows\\Prefetch\\${entry.Name}`,
             timestamp: writeTime,
-            description: 'FSUTIL.EXE was executed on this machine (Windows File System Utility - normal system maintenance or USN query).'
+            confidence: '100% (Somut Kanıt: Windows Prefetch Yürütme Kütüğü)',
+            description: `FSUTIL.EXE sistem aracı bu bilgisayarda çalıştırılmıştır: ${entry.Name} (Windows Dosya Sistemi Bakım Aracı / USN Sorgulama).`,
+            whyFlagged: 'FSUTIL.EXE, NTFS USN günlüğünü silmek veya sorgulamak için kullanılabilen bir Windows sistem aracıdır. Bilgi amaçlı kaydedilmiştir.',
+            evidence: [
+              `Prefetch Dosyası: C:\\Windows\\Prefetch\\${entry.Name}`,
+              `Son Yürütme Zamanı: ${writeTime}`,
+              `Dosya Boyutu: ${entry.Length ? (entry.Length / 1024).toFixed(1) + ' KB' : 'Bilinmiyor'}`,
+              `Adli Anlamı: Windows dosya sistemi yönetim aracı yürütme izi doğrulandı`
+            ]
           });
         }
 
@@ -88,12 +98,21 @@ class PrefetchEngine {
               type: isAllowed ? 'ALLOWED_UTILITY_AUTOCLICKER' : 'AUTOCLICKER_PREFETCH',
               name: `${ac.name} ${isAllowed ? '(Sunucu Kuralı: İzinli)' : ''}`,
               file: entry.Name,
+              path: `C:\\Windows\\Prefetch\\${entry.Name}`,
               timestamp: writeTime,
               isSafe: isAllowed,
               isThreat: !isAllowed,
               badge: isAllowed ? 'ALLOWED_POLICY' : null,
               badgeText: isAllowed ? 'SUNUCU İZNİ: AUTOCLICKER SERBEST' : null,
-              description: `AutoClicker execution found in Windows Prefetch: ${ac.name} (${entry.Name}) at ${writeTime}.${isAllowed ? ' Sunucu kuralları gereği ban sebebi sayılmamaktadır.' : ''}`
+              confidence: '100% (Somut Kanıt: Windows Prefetch İzi)',
+              description: `AutoClicker execution found in Windows Prefetch: ${ac.name} (${entry.Name}) at ${writeTime}.${isAllowed ? ' Sunucu kuralları gereği ban sebebi sayılmamaktadır.' : ''}`,
+              whyFlagged: `${ac.name} çalıştırma izi saptandı. Sunucu politikası izin verdiği için ceza uygulanmaz.`,
+              evidence: [
+                `Prefetch Dosyası: C:\\Windows\\Prefetch\\${entry.Name}`,
+                `Son Yürütme Zamanı: ${writeTime}`,
+                `Yürütülen Araç: ${ac.name}`,
+                `Politika Durumu: ${isAllowed ? 'Sunucu Kuralı: Serbest (ALLOWED_POLICY)' : 'Yasaklı Araç'}`
+              ]
             });
             break;
           }
@@ -106,8 +125,17 @@ class PrefetchEngine {
               type: 'CHEAT_CLIENT_PREFETCH',
               name: client.name,
               file: entry.Name,
+              path: `C:\\Windows\\Prefetch\\${entry.Name}`,
               timestamp: writeTime,
-              description: `Cheat client executable found in Windows Prefetch: ${client.name} (${entry.Name}) at ${writeTime}`
+              confidence: '100% (Somut Kanıt: Windows Prefetch Yürütme İzi)',
+              description: `Cheat client executable found in Windows Prefetch: ${client.name} (${entry.Name}) at ${writeTime}`,
+              whyFlagged: `Bu hile istemcisi (${client.name}), Windows bellek yönetim kütüğüne göre bu bilgisayarda bizzat çalıştırılmıştır.`,
+              evidence: [
+                `Prefetch Dosyası: C:\\Windows\\Prefetch\\${entry.Name}`,
+                `Son Yürütme Zamanı: ${writeTime}`,
+                `İmza Kuralı: ${client.name}`,
+                `Adli Doğrulama: Windows işletim sistemi yürütme geçmişi kaydı`
+              ]
             });
           }
         }

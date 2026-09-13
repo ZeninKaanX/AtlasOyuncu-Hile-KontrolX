@@ -55,6 +55,9 @@ class UsbTrackerEngine {
                           m.description = `Harici USB depolama biriminde hile JAR modülü tespit edildi: ${fullPath}`;
                           m.evidence = m.evidence || [];
                           m.evidence.unshift(`USB Sürücüsü: ${drivePath}`);
+                          m.evidence.push(`Dosya Yolu: ${fullPath}`);
+                          m.evidence.push(`Dosya Boyutu: ${(st.size / 1024).toFixed(1)} KB`);
+                          m.evidence.push(`Zaman Damgası: ${st.mtime.toISOString().replace('T', ' ').slice(0, 19)}`);
                           cheatFindings.push(m);
                         }
                       }

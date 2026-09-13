@@ -136,9 +136,38 @@ class ForensicReporter {
       const expl = cheatKnowledgeBase.getExplanation(f, "tr");
       const whyReason = f.whyFlagged || (expl && expl.whyConcrete) || f.reason || (isCrit ? "Yetkisiz hile imzası veya enjeksiyon kancası tespit edildi." : "Sistem bütünlüğü parametreleri incelendi.");
 
+      // Prepare rich, complete evidence list
+      let evList = [];
+      if (f.evidence) {
+        evList = (Array.isArray(f.evidence) ? f.evidence : [f.evidence])
+          .map(e => String(e).trim())
+          .filter(e => e.length > 0 && !e.endsWith(':') && !e.endsWith(': '));
+      }
+
+      // If evidence list is empty or minimal, build comprehensive concrete forensic evidence points automatically
+      if (evList.length === 0) {
+        if (pathVal && pathVal !== "Sistem Belleği / Süreç") {
+          evList.push(`Hedef Konum / Dosya: ${pathVal}`);
+        }
+        if (timeVal) {
+          evList.push(`Adli Kayıt Zamanı: ${timeVal}`);
+        }
+        if (desc) {
+          evList.push(`Somut Tespit Açıklaması: ${desc}`);
+        }
+        if (f.confidence) {
+          evList.push(`Adli Kanıt Doğruluk Oranı: ${f.confidence}`);
+        }
+        if (whyReason) {
+          evList.push(`Adli Değerlendirme: ${whyReason}`);
+        }
+        if (f.type) {
+          evList.push(`Tespit Tipi & Modülü: ${f.type}`);
+        }
+      }
+
       let evidenceHtml = "";
-      if (f.evidence && (Array.isArray(f.evidence) ? f.evidence.length > 0 : String(f.evidence).length > 0)) {
-        const evList = Array.isArray(f.evidence) ? f.evidence : [f.evidence];
+      if (evList.length > 0) {
         evidenceHtml = `
           <div class="evidence-box">
             <strong>Somut Kanıt Parametreleri:</strong>
