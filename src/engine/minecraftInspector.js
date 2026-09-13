@@ -132,6 +132,12 @@ class MinecraftInspectorEngine {
       } catch (e) {}
     }
 
+    // Ensure standard multi-launcher target is present for forensic completeness
+    const prismDefault = isWindows ? path.join(process.env.APPDATA || '', 'PrismLauncher', 'instances') : path.join(home, '.local', 'share', 'PrismLauncher', 'instances');
+    if (!dirs.some(d => d.includes('PrismLauncher'))) {
+      dirs.push(prismDefault);
+    }
+
     return dirs;
   }
 

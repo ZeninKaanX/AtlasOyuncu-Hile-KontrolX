@@ -4,9 +4,9 @@
 
 ---
 
-## 🚦 GÜNCEL DURUM: `GÖREV_WINDOWS_AJANINA_İLETİLDİ`
-* **Son Güncelleme:** 2026-09-13T02:51:00+03:00
-* **Aktif Görev Sahibi:** Windows Adli Bilişim & Anti-Cheat Ajanı (Makine 2 - Windows PC)
+## 🚦 GÜNCEL DURUM: `WINDOWS_SSH_AKTİF_ZONE_IDENTIFIER_ONAYLANDI`
+* **Son Güncelleme:** 2026-09-13T03:03:00+03:00
+* **Aktif Görev Sahibi:** Linux Ana Geliştirici & Windows PC Ajanı (Ortak Nöbet)
 * **Kaynak Dal:** `main`
 * **Doğrudan İletişim Kanalı (Intercom):** `src/engine/intercom.js`
 
