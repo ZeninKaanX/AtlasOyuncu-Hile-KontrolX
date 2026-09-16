@@ -1038,11 +1038,10 @@ async function handleLicenseRequired(msg) {
     return;
   }
   try {
-    const license = JSON.parse(licenseText);
     const response = await fetch('/api/license/activate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ license })
+      body: JSON.stringify({ license: licenseText.trim() })
     });
     const result = await response.json();
     if (!response.ok || !result.success) throw new Error(result.error || 'License rejected');

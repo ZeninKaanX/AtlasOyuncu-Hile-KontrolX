@@ -20,6 +20,8 @@ const signature = crypto.sign(null, Buffer.from(licenseManager.canonicalPayload(
 const license = { payload, signature };
 
 assert.strictEqual(licenseManager.verifyLicense(license, now, publicKey).valid, true, 'Valid signed license must pass');
+const compact = `ATLAS1.${Buffer.from(JSON.stringify(payload)).toString('base64url')}.${Buffer.from(signature, 'base64').toString('base64url')}`;
+assert.strictEqual(licenseManager.verifyLicense(compact, now, publicKey).valid, true, 'Compact website key must pass');
 assert.strictEqual(licenseManager.verifyLicense({ payload: { ...payload, customer: 'Changed' }, signature }, now, publicKey).valid, false, 'Tampering must invalidate signature');
 assert.strictEqual(licenseManager.verifyLicense(license, new Date('2031-01-01T00:00:00.000Z'), publicKey).valid, false, 'Expired license must fail');
 assert.strictEqual(licenseManager.verifyLicense({ payload: { ...payload, features: [] }, signature }, now, publicKey).valid, false, 'Unsigned feature change must fail');

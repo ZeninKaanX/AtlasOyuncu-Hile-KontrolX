@@ -63,7 +63,17 @@ function canonicalPayload(payload) {
 function parseLicense(input) {
   const raw = Buffer.isBuffer(input) ? input.toString('utf8') : String(input || '');
   if (!raw || Buffer.byteLength(raw) > MAX_LICENSE_BYTES) throw new Error('Lisans verisi geçersiz veya çok büyük.');
-  const license = JSON.parse(raw);
+  let license;
+  if (raw.startsWith('ATLAS1.')) {
+    const parts = raw.trim().split('.');
+    if (parts.length !== 3) throw new Error('Lisans anahtarı biçimi geçersiz.');
+    license = {
+      payload: JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8')),
+      signature: Buffer.from(parts[2], 'base64url').toString('base64')
+    };
+  } else {
+    license = JSON.parse(raw);
+  }
   if (!license || typeof license !== 'object' || !license.payload || typeof license.signature !== 'string') {
     throw new Error('Lisans biçimi geçersiz.');
   }
@@ -118,4 +128,4 @@ function activate(input) {
   return { ...status, path: file };
 }
 
-module.exports = { PRODUCT, canonicalPayload, getMachineId, getStatus, verifyLicense, activate, licensePath };
+module.exports = { PRODUCT, canonicalPayload, getMachineId, getStatus, verifyLicense, activate, licensePath, parseLicense };

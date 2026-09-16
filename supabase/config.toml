@@ -1,0 +1,10 @@
+project_id = "atlas-ac"
+
+[functions.register]
+verify_jwt = false
+
+[functions.admin-invite]
+verify_jwt = false
+
+[functions.portal]
+verify_jwt = true

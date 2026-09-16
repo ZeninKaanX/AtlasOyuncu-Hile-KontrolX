@@ -1,75 +1,15 @@
-<!doctype html>
-<html lang="tr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Atlas AC — Minecraft istemci bütünlüğü ve adli hile kontrol platformu.">
-  <meta name="theme-color" content="#070a12">
-  <meta name="application-name" content="Atlas AC">
-  <meta name="release" content="pages-2026-09-16">
-  <title>Atlas AC — Client Integrity Platform</title>
-  <link rel="stylesheet" href="assets/site.css">
-</head>
-<body>
-  <div class="noise" aria-hidden="true"></div>
-  <header class="nav wrap">
-    <a class="brand" href="#top" aria-label="Atlas AC ana sayfa"><span class="mark">A</span><span>ATLAS <b>AC</b></span></a>
-    <nav aria-label="Ana menü">
-      <a href="#engines">Motorlar</a><a href="#security">Güvenlik</a><a href="#license">Lisans</a>
-    </nav>
-    <a class="button small ghost" href="#license">Erişim iste</a>
-  </header>
-
-  <main id="top">
-    <section class="hero wrap">
-      <div class="eyebrow"><i></i> CLIENT INTEGRITY / FORENSICS</div>
-      <h1>Şüpheyi değil,<br><span>kanıtı</span> raporlar.</h1>
-      <p class="lead">Minecraft istemcilerini süreç belleğinden silinmiş dosya izlerine kadar inceleyen, lisanslı personel erişimine sahip bütünlük platformu.</p>
-      <div class="actions"><a class="button" href="#license">Lisans talep et <span>→</span></a><a class="text-link" href="#engines">Mimarinin içine bak</a></div>
-      <div class="signal-card" aria-label="Sistem durumu">
-        <div class="radar"><span></span><span></span><span></span><b></b></div>
-        <div class="signal-copy"><small>ATLAS SENSOR GRID</small><strong>9 analiz katmanı</strong><p>Canlı süreçler, Minecraft modları, USN, Prefetch, BAM, tarayıcı, USB ve enjeksiyon izleri.</p></div>
-        <div class="status"><i></i> OPERATIONAL</div>
-      </div>
-    </section>
-
-    <section class="metrics wrap" aria-label="Öne çıkan özellikler">
-      <article><strong>SHA-256</strong><span>Kanıt bütünlüğü</span></article>
-      <article><strong>Ed25519</strong><span>İmzalı lisans</span></article>
-      <article><strong>Local-only</strong><span>Adli veri mahremiyeti</span></article>
-      <article><strong>HTML</strong><span>Taşınabilir rapor</span></article>
-    </section>
-
-    <section class="section wrap" id="engines">
-      <div class="section-head"><div><span class="kicker">DETECTION FABRIC</span><h2>Tek ekranda derin inceleme</h2></div><p>Her bulgu kaynağı, zaman damgası ve güven seviyesiyle kayıt altına alınır. Otomatik karar, personelin inceleyebileceği kanıtlarla birlikte sunulur.</p></div>
-      <div class="grid">
-        <article class="feature featured"><span class="num">01</span><h3>Minecraft &amp; Bytecode</h3><p>JAR, mod klasörleri, gömülü sınıflar ve şüpheli giriş/enjeksiyon davranışları.</p><div class="code-line"><i></i> archive → class → heuristic</div></article>
-        <article class="feature"><span class="num">02</span><h3>Bellek &amp; Süreç</h3><p>Çalışan süreçler, JVM parametreleri, DLL kancaları ve şüpheli araç zincirleri.</p></article>
-        <article class="feature"><span class="num">03</span><h3>Silinme İzleri</h3><p>NTFS USN, Prefetch, BAM ve yakın zamanda kaldırılmış çalıştırılabilir dosyalar.</p></article>
-        <article class="feature"><span class="num">04</span><h3>Çevresel Kanıt</h3><p>Tarayıcı indirmeleri, Zone.Identifier, USB geçmişi, makro ve tıklayıcı izleri.</p></article>
-      </div>
-    </section>
-
-    <section class="section wrap security" id="security">
-      <div class="lock" aria-hidden="true"><div>◆</div></div>
-      <div><span class="kicker">ZERO-SECRET CLIENT</span><h2>Anahtar istemcide değil.</h2><p>Uygulama yalnızca herkese açık doğrulama anahtarını taşır. Lisanslar çevrimdışı Ed25519 imzasıyla doğrulanır; imza üreten özel anahtar siteye, uygulamaya veya GitHub Pages’a yüklenmez.</p>
-        <ul><li>Makineye bağlı, süreli lisans</li><li>Her tarama başlangıcında yeniden doğrulama</li><li>Adli veriler yalnızca yerel cihazda</li></ul>
-      </div>
-    </section>
-
-    <section class="section wrap license" id="license">
-      <div><span class="kicker">CONTROLLED ACCESS</span><h2>Yetkili kullanım başvurusu</h2><p>Atlas AC herkese açık indirime sunulmaz. Sunucu bilgilerinizi ve uygulamanın gösterdiği 64 karakterli Makine Kimliği’ni iletin; onaylanan cihaz için imzalı lisans hazırlanır.</p></div>
-      <form id="licenseForm">
-        <label>Ad / Sunucu adı<input id="customer" maxlength="100" required placeholder="Örn. Atlas Oyuncu"></label>
-        <label>Makine Kimliği<input id="machine" minlength="64" maxlength="64" pattern="[A-Fa-f0-9]{64}" required placeholder="64 karakterli kimlik"></label>
-        <label>İletişim bilgisi<input id="contact" maxlength="120" required placeholder="Discord veya e-posta"></label>
-        <button class="button" type="submit">GitHub üzerinden talep oluştur <span>→</span></button>
-        <small>Form herkese açık olabilecek bir GitHub Issue taslağı açar. E-posta yerine herkese açık Discord kullanıcı adınızı yazın; parola veya özel anahtar paylaşmayın.</small>
-      </form>
-    </section>
-  </main>
-
-  <footer class="wrap"><a class="brand" href="#top"><span class="mark">A</span><span>ATLAS <b>AC</b></span></a><p>Client Integrity &amp; Anti-Cheat Forensics</p><span>© <span id="year"></span> Atlas AC</span></footer>
-  <script src="assets/site.js" defer></script>
-</body>
-</html>
+<!doctype html><html lang="tr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#06080d">
+<meta name="description" content="Atlas AC — Minecraft toplulukları için adli istemci bütünlüğü platformu.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'">
+<title>Atlas AC — Kanıta dayalı hile kontrolü</title><link rel="stylesheet" href="assets/site.css"></head>
+<body><div class="ambient"></div>
+<header class="nav shell"><a class="brand" href="index.html"><span class="brand-glyph">A</span><span>ATLAS<small>ANTI-CHEAT</small></span></a><nav><a href="#workflow">Nasıl çalışır?</a><a href="#engines">Motorlar</a><a href="#security">Güvenlik</a></nav><a class="button button-sm" href="auth.html">Atlas'a giriş <span>↗</span></a></header>
+<main><section class="hero shell"><div class="hero-glow"></div><span class="eyebrow"><i></i> MINECRAFT CLIENT FORENSICS</span><h1>Hileleri saniyeler içinde<br><em>kanıta dönüştürün.</em></h1><p>Gizlenmiş istemcileri, silinmiş dosya izlerini ve bellek enjeksiyonlarını tek bir doğrulanabilir raporda birleştirin. Ekibinizi tahminle değil, somut delille yönetin.</p><div class="hero-actions"><a class="button" href="auth.html">Kontrol panelini aç <span>→</span></a><a class="button button-ghost" href="#workflow">Sistemi keşfet</a></div>
+<div class="product-frame"><div class="frame-bar"><span><i></i><i></i><i></i></span><b>Atlas / Forensic Console</b><small>LIVE PREVIEW</small></div><div class="product-grid"><aside><div class="mini-brand">A</div><b>Dashboard</b><span>Scanner</span><span>Licenses</span><span>Detections</span><span>Reports</span></aside><div class="preview"><small>SCAN / 8F3C21A9</small><div class="preview-title"><div><h3>Client verdict</h3><p>Forensic integrity summary</p></div><strong>REVIEW</strong></div><div class="preview-cards"><article><span>Detections</span><b class="red">06</b></article><article><span>Warnings</span><b class="amber">12</b></article><article><span>Verified</span><b class="green">318</b></article></div><div class="preview-chart"><div><span>Risk timeline</span><b>62%</b></div><svg viewBox="0 0 600 120" preserveAspectRatio="none"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#5081ff" stop-opacity=".35"/><stop offset="1" stop-color="#5081ff" stop-opacity="0"/></linearGradient></defs><path d="M0 96 C80 82 100 90 170 62 S280 83 350 45 S460 70 600 18 V120 H0Z" fill="url(#g)"/><path d="M0 96 C80 82 100 90 170 62 S280 83 350 45 S460 70 600 18" fill="none" stroke="#5e8cff" stroke-width="3"/></svg></div></div></div></div></section>
+<section class="games"><div class="shell"><span>MINECRAFT JAVA</span><span>FABRIC</span><span>FORGE</span><span>PRISM LAUNCHER</span><span>WINDOWS FORENSICS</span></div></section>
+<section class="section shell" id="workflow"><div class="section-copy"><span class="eyebrow">CONTROLLED WORKFLOW</span><h2>Bir anahtar.<br>Kontrollü erişim.</h2><p>Atlas herkese açık bir indirme değildir. Yönetici davet verir, kullanıcı hesabını açar ve yalnızca kendi cihazı için imzalı lisans üretir.</p></div><div class="steps"><article><b>01</b><h3>Davetle kayıt</h3><p>Yalnızca yönetici tarafından verilen, süreli ve tek kullanımlık davet anahtarı hesap açabilir.</p></article><article><b>02</b><h3>Cihazı doğrula</h3><p>Uygulamanın gösterdiği Makine Kimliği panelde lisansa bağlanır.</p></article><article><b>03</b><h3>Güvenle indir</h3><p>Kurulum dosyası private depodan kısa ömürlü, yetkili bağlantıyla teslim edilir.</p></article></div></section>
+<section class="section shell" id="engines"><div class="section-head"><div><span class="eyebrow">FORENSIC FABRIC</span><h2>Yüzeyin altına bakın.</h2></div><p>Atlas, aktif süreçlerden silinmiş NTFS kayıtlarına uzanan farklı sinyalleri ilişkilendirir; her bulguyu kaynağı ve zamanıyla sunar.</p></div><div class="feature-grid"><article class="wide"><small>01 / DEEP INSPECTION</small><h3>Minecraft &amp; bytecode</h3><p>JAR yapıları, gömülü sınıflar, özel combat mantıkları ve meşru mod kılığına sokulmuş yükleyiciler.</p><div class="scanline"><span></span></div></article><article><small>02 / LIVE</small><h3>Bellek &amp; süreç</h3><p>JVM argümanları, DLL enjeksiyonları ve çalışan araç zincirleri.</p></article><article><small>03 / HISTORY</small><h3>Silinmiş kanıt</h3><p>USN, Prefetch, BAM, RecentApps ve geri dönüşüm izleri.</p></article><article><small>04 / CONTEXT</small><h3>İndirme &amp; USB</h3><p>Tarayıcı, Zone.Identifier ve harici depolama korelasyonu.</p></article></div></section>
+<section class="section security shell" id="security"><div class="security-mark">◆<span></span></div><div><span class="eyebrow">SIGNED ACCESS</span><h2>Özel anahtar hiçbir zaman istemcide değil.</h2><p>Hesaplar Supabase Auth ile korunur. Lisans imzası yalnızca sunucu tarafındaki Edge Function içinde üretilir; kurulum dosyası private Storage’da kalır.</p><ul><li>Davet anahtarlı kayıt</li><li>Makineye ve süreye bağlı Ed25519 lisansı</li><li>Tek kullanımlık özel indirme bağlantısı</li><li>Sunucu tarafı cihaz limiti ve denetim kaydı</li></ul><a class="button" href="auth.html?mode=register">Davet anahtarıyla kayıt ol <span>→</span></a></div></section>
+<section class="cta shell"><span class="eyebrow">ATLAS AC</span><h2>Topluluğunuz.<br><em>Korumaya değer.</em></h2><p>Yetkiniz varsa saniyeler içinde hesabınıza erişin.</p><a class="button light" href="auth.html">Giriş yap <span>→</span></a></section></main>
+<footer class="shell"><a class="brand" href="index.html"><span class="brand-glyph">A</span><span>ATLAS<small>ANTI-CHEAT</small></span></a><span>Client Integrity &amp; Forensics</span><span>© <b id="year"></b> Atlas AC</span></footer><script src="assets/site.js" defer></script></body></html>

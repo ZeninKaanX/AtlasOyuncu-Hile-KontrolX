@@ -35,7 +35,8 @@ const payload = {
 };
 const privateKey = fs.readFileSync(privateKeyPath);
 const signature = crypto.sign(null, Buffer.from(canonicalPayload(payload)), privateKey).toString('base64');
-fs.writeFileSync(output, `${JSON.stringify({ payload, signature }, null, 2)}\n`, { mode: 0o600, flag: 'wx' });
+const compact = `ATLAS1.${Buffer.from(JSON.stringify(payload)).toString('base64url')}.${Buffer.from(signature, 'base64').toString('base64url')}`;
+fs.writeFileSync(output, `${compact}\n`, { mode: 0o600, flag: 'wx' });
 console.log(`Lisans oluşturuldu: ${output}`);
 console.log(`Lisans ID: ${payload.licenseId}`);
 console.log(`Bitiş: ${payload.expiresAt}`);
