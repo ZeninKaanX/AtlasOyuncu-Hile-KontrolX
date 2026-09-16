@@ -198,31 +198,35 @@
   <div class="custom-modal hidden" id="modalCreateScan">
     <div class="custom-modal-dialog" style="max-width:520px;">
       <div class="modal-header">
-        <h3><span>⚡</span> Yeni Kontrol Oturumu</h3>
+        <h3><span>⚡</span> Yeni Ocean Tarama PIN'i (Screen Check)</h3>
         <button class="modal-close-btn" id="btnCloseCreateModal">✕</button>
       </div>
       <div class="modal-body">
-        <p style="font-size:12px;color:var(--muted);margin:0;">Şüpheli oyuncunun Minecraft adını girerek tek kullanımlık bir kontrol kodu üretin. Oyuncu uygulamayı açıp bu kodu girdiğinde tarama canlı olarak buraya yansıyacaktır.</p>
+        <p style="font-size:12px;color:var(--muted);margin:0;">Şüpheli oyuncunun adını girerek 8 haneli tek kullanımlık bir Tarama PIN'i üretin. Oyuncu lisansa ihtiyaç duymadan bu PIN ile taramayı başlatacak; tüm adli bulgular ve deliller anlık olarak bu panele akacaktır.</p>
         
         <form id="formCreateScan" style="display:grid;gap:12px;">
           <label style="display:grid;gap:6px;font-size:11px;color:#94a3b8;">
-            Oyuncu Adı (Minecraft IGN)
-            <input type="text" id="inputScanPlayerName" placeholder="Örn: xProGamer" required style="background:#07090d;border:1px solid #28303e;color:#fff;padding:12px;border-radius:8px;font-family:inherit;font-size:13px;outline:0;">
+            Şüpheli Oyuncu Adı (Minecraft IGN veya Discord)
+            <input type="text" id="inputScanPlayerName" placeholder="Örn: xProGamer veya Discord#1234" required style="background:#07090d;border:1px solid #28303e;color:#fff;padding:12px;border-radius:8px;font-family:inherit;font-size:13px;outline:0;">
           </label>
-          <button type="submit" class="button" id="btnSubmitCreateScan" style="margin-top:8px;">Kontrol Kodunu Üret <span>→</span></button>
+          <button type="submit" class="button" id="btnSubmitCreateScan" style="margin-top:8px;">8 Haneli Tarama PIN'i Üret <span>→</span></button>
         </form>
 
-        <div id="createScanResultBox" class="hidden" style="margin-top:16px;background:#070a10;border:1px solid #00f0ff44;border-radius:8px;padding:16px;display:grid;gap:10px;">
-          <span style="font-size:11px;color:#22c55e;font-weight:600;">✓ Kontrol Oturumu Başlatıldı!</span>
+        <div id="createScanResultBox" class="hidden" style="margin-top:16px;background:#070a10;border:1px solid #00f0ff44;border-radius:8px;padding:16px;display:grid;gap:12px;">
+          <span style="font-size:11px;color:#22c55e;font-weight:600;">✓ Ocean Tarama PIN'i Başarıyla Üretildi!</span>
           <div style="display:flex;align-items:center;justify-content:space-between;background:#000;padding:12px;border-radius:6px;border:1px dashed #00f0ff;">
             <div>
-              <small style="display:block;font-size:9px;color:#94a3b8;">OYUNCUYA İLETİLECEK KOD:</small>
-              <strong id="createdScanCodeDisplay" style="font-family:ui-monospace;font-size:24px;color:#00f0ff;letter-spacing:2px;">ATL-0000</strong>
+              <small style="display:block;font-size:9px;color:#94a3b8;letter-spacing:1px;">OYUNCUYA İLETİLECEK 8 HANELİ PIN:</small>
+              <strong id="createdScanCodeDisplay" style="font-family:ui-monospace;font-size:26px;color:#00f0ff;letter-spacing:3px;">8F3C21A9</strong>
             </div>
-            <button id="btnCopyCreatedCode" class="button button-sm button-ghost">Kopyala</button>
+            <button id="btnCopyCreatedCode" class="button button-sm button-ghost">PIN Kopyala</button>
           </div>
-          <p style="font-size:11px;color:#94a3b8;margin:0;">
-            Oyuncuya söyleyin: <em>"Atlas AC'yi aç ve bu kodu girip taramayı başlat."</em>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="btnCopyCreatedLink" class="button button-sm button-ghost" style="flex:1;">🔗 İndirme Linkini Kopyala</button>
+            <button id="btnCopyCreatedMsg" class="button button-sm button-ghost" style="flex:1;">💬 Kontrol Mesajını Kopyala</button>
+          </div>
+          <p style="font-size:11px;color:#94a3b8;margin:0;line-height:1.5;">
+            Oyuncuya mesajı iletin. Oyuncu istemciyi açıp PIN'i girdiğinde lisans sorulmadan tarama başlar; <strong>tüm bulgular buraya canlı yansır.</strong>
           </p>
           <button id="btnWatchLiveScan" class="button button-sm" style="margin-top:6px;">Canlı Taramayı İzle <span>↗</span></button>
         </div>

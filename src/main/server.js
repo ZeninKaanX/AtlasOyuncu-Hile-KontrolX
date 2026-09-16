@@ -334,6 +334,16 @@ wss.on('connection', (ws) => {
     }));
   } catch (_) {}
 
+  try {
+    if (process.env.ATLAS_INITIAL_PIN) {
+      ws.send(JSON.stringify({
+        type: 'SESSION_CODE',
+        sessionCode: process.env.ATLAS_INITIAL_PIN,
+        autoStart: true
+      }));
+    }
+  } catch (_) {}
+
   ws.on('message', async (message) => {
     try {
       const data = JSON.parse(message);
@@ -345,18 +355,28 @@ wss.on('connection', (ws) => {
           data: status
         }));
       } else if (data.action === 'START_SCAN') {
-        const license = licenseManager.getStatus();
-        if (!license.valid) {
-          ws.send(JSON.stringify({
-            type: 'LICENSE_REQUIRED',
-            message: license.error,
-            machineId: license.machineId
-          }));
-          return;
+        let sessionCode = (data.sessionCode || process.env.ATLAS_INITIAL_PIN || '').trim().toUpperCase();
+        const playerName = (data.playerName || 'Şüpheli Oyuncu').trim();
+
+        // OCEAN AC ARCHITECTURE:
+        // A suspect player is running a remote screen check authorized by staff.
+        // If an 8-character PIN or session code is provided, the scan is authorized by the session PIN.
+        // NO machine license is required from the suspect player!
+        const isSessionScan = Boolean(sessionCode && sessionCode.length >= 4);
+
+        if (!isSessionScan) {
+          // If no PIN provided, check local machine license for standalone inspection
+          const license = licenseManager.getStatus();
+          if (!license.valid) {
+            ws.send(JSON.stringify({
+              type: 'LICENSE_REQUIRED',
+              message: 'Tarama için yetkilinizin verdiği 8 haneli PIN kodunu girin veya geçerli bir lisans anahtarı tanımlayın.',
+              machineId: license.machineId
+            }));
+            return;
+          }
         }
 
-        let sessionCode = (data.sessionCode || '').trim().toUpperCase();
-        const playerName = (data.playerName || 'Şüpheli Oyuncu').trim();
         try {
           const syncRes = await cloudSync.initSession(sessionCode, playerName);
           if (syncRes && syncRes.sessionCode) {
@@ -367,8 +387,22 @@ wss.on('connection', (ws) => {
                 sessionCode: sessionCode
               }));
             } catch (_) {}
+          } else if (isSessionScan) {
+            ws.send(JSON.stringify({
+              type: 'SCAN_ERROR',
+              message: 'Girilen Tarama PIN kodu geçersiz veya süresi dolmuş. Lütfen yetkilinizden yeni bir PIN isteyiniz.'
+            }));
+            return;
           }
-        } catch (_) {}
+        } catch (err) {
+          if (isSessionScan) {
+            ws.send(JSON.stringify({
+              type: 'SCAN_ERROR',
+              message: 'Sunucuyla bağlantı kurulamadı: ' + err.message
+            }));
+            return;
+          }
+        }
 
         // Emit exactly one terminal event. Engine-level command timeouts are
         // handled inside scanners so a still-running scan is never called done.

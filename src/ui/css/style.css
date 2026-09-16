@@ -2667,3 +2667,232 @@ body {
   color: var(--text-dim);
   padding: 0 4px;
 }
+
+/* ==========================================================================
+   OCEAN AC COMPACT SCANNER WINDOW (EXACT REPLICA OF USER SCREENSHOT)
+   ========================================================================== */
+.ocean-scanner-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 7, 12, 0.88);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.ocean-scanner-modal.active {
+  display: flex !important;
+}
+
+.ocean-scanner-window {
+  width: 520px;
+  max-width: 94vw;
+  background: #11141b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.9), 0 0 50px rgba(0, 150, 255, 0.08);
+  overflow: hidden;
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  user-select: none;
+}
+
+.ocean-win-header {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ocean-win-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ocean-btn-ctrl {
+  width: 28px;
+  height: 24px;
+  background: #1a202c;
+  border: 1px solid #2d3748;
+  border-radius: 5px;
+  color: #94a3b8;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ocean-btn-ctrl:hover {
+  background: #2d3748;
+  color: #ffffff;
+}
+
+.ocean-btn-ctrl.close:hover {
+  background: #dc2626;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+.ocean-win-body {
+  padding: 36px 40px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+.ocean-emblem {
+  margin-bottom: 16px;
+}
+
+.ocean-glyph {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 5px;
+  color: #94a3b8;
+  display: inline-block;
+  filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.15));
+}
+
+.ocean-win-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 28px;
+  letter-spacing: 0.3px;
+}
+
+/* Pre-scan PIN Input Card */
+.ocean-pin-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.ocean-pin-input {
+  width: 100%;
+  max-width: 320px;
+  background: #090c13;
+  border: 1px solid #283347;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: ui-monospace, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: #00f0ff;
+  text-align: center;
+  letter-spacing: 2px;
+  outline: none;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.ocean-pin-input:focus {
+  border-color: #00f0ff;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+}
+
+.ocean-start-action-btn {
+  background: #1e293b;
+  border: 1px solid #38bdf8;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 12px 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ocean-start-action-btn:hover {
+  background: #0284c7;
+  border-color: #00f0ff;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);
+}
+
+.ocean-pin-note {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* Progress Bar (Exact replica of user screenshot) */
+.ocean-progress-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ocean-bar-track {
+  width: 100%;
+  height: 24px;
+  background: #181d27;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.ocean-bar-fill {
+  height: 100%;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #0284c7, #00f0ff);
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ocean-status-row {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.ocean-status-row span {
+  color: #e2e8f0;
+}
+
+/* Completed Card */
+.ocean-completed-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.ocean-completed-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #4ade80;
+}
+
+.ocean-completed-sub {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+/* Watermark */
+.ocean-watermark {
+  position: absolute;
+  bottom: 12px;
+  right: 18px;
+  font-size: 10px;
+  color: #475569;
+  letter-spacing: 0.2px;
+}
+

@@ -57,10 +57,14 @@ Deno.serve(async req => {
   // SCREEN CHECK (KONTROL) ACTIONS FOR STAFF
   if (action === 'create_scan') {
     const playerName = String(body.playerName || 'Şüpheli Oyuncu').trim().slice(0, 32);
-    // Generate unique code ATL-XXXX
+    // Generate unique 8-character Ocean AC style PIN (e.g. 8F3C21A9)
+    const pinChars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
     let sessionCode = '';
-    for (let i = 0; i < 5; i++) {
-      const code = `ATL-${Math.floor(1000 + Math.random() * 9000)}`;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      let code = '';
+      const rnd = new Uint8Array(8);
+      crypto.getRandomValues(rnd);
+      for (let i = 0; i < 8; i++) code += pinChars[rnd[i] % pinChars.length];
       const { data: existing } = await db.from('scan_sessions').select('id').eq('session_code', code).maybeSingle();
       if (!existing) {
         sessionCode = code;

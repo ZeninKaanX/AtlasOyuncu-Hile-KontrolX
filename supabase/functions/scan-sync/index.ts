@@ -56,16 +56,18 @@ Deno.serve(async req => {
         }).eq('id', existing.id);
 
         return json({ success: true, sessionCode: existing.session_code, id: existing.id }, 200, headers);
+      } else {
+        return json({ error: 'Geçersiz veya süresi dolmuş Tarama PIN kodu.' }, 404, headers);
       }
     }
 
-    // If code not provided or not found, auto-generate unique 8-character code: ATL-XXXX
-    if (!sessionCode) {
-      const rnd = Math.floor(1000 + Math.random() * 9000);
-      sessionCode = `ATL-${rnd}`;
-    }
+    // If code not provided, auto-generate unique 8-character Ocean AC style PIN
+    const pinChars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const rnd = new Uint8Array(8);
+    crypto.getRandomValues(rnd);
+    for (let i = 0; i < 8; i++) sessionCode += pinChars[rnd[i] % pinChars.length];
 
-    const { data: inserted, error: insErr } = await db.from('scan_sessions').upsert({
+    const { data: inserted, error: insErr } = await db.from('scan_sessions').insert({
       session_code: sessionCode,
       player_name: playerName,
       status: 'scanning',

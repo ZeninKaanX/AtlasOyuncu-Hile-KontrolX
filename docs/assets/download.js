@@ -53,17 +53,24 @@ function updateLinks() {
   }
 }
 
-// Check URL Params for pre-filled key (?key=...)
+// Check URL Params for pre-filled key (?key=... or ?pin=...)
 const urlParams = new URLSearchParams(window.location.search);
-const keyFromUrl = urlParams.get('key');
+const keyFromUrl = urlParams.get('key') || urlParams.get('pin') || urlParams.get('code');
 if (keyFromUrl) {
-  keyInput.value = keyFromUrl.trim();
+  keyInput.value = keyFromUrl.trim().toUpperCase();
 }
 const platFromUrl = urlParams.get('platform');
 if (platFromUrl === 'linux') {
   cardLin.click();
 } else {
   updateLinks();
+}
+
+// Auto submit if PIN or Key provided in URL
+if (keyFromUrl) {
+  setTimeout(() => {
+    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+  }, 400);
 }
 
 form.addEventListener('submit', async (e) => {
@@ -73,7 +80,7 @@ form.addEventListener('submit', async (e) => {
 
   const btn = document.getElementById('btnVerifyDownload');
   btn.disabled = true;
-  btn.textContent = 'Anahtar Doğrulanıyor...';
+  btn.textContent = 'Doğrulanıyor...';
 
   resultBox.className = 'dl-result-box hidden';
   mirrorsContainer.classList.add('hidden');
@@ -81,15 +88,31 @@ form.addEventListener('submit', async (e) => {
   try {
     let isValid = false;
     let label = '';
+    const cleanUpper = rawKey.toUpperCase();
+
+    // Check 0: Ocean AC Scan PIN Check (8-char PIN or ATL-XXXX)
+    if (cleanUpper.length >= 4 && cleanUpper.length <= 16 && !cleanUpper.startsWith('ATLAS1.')) {
+      try {
+        const pinRes = await fetch(`${SUPABASE_URL}/functions/v1/scan-sync?code=${encodeURIComponent(cleanUpper)}`, {
+          headers: { apikey: SUPABASE_PUBLISHABLE_KEY }
+        });
+        if (pinRes.ok) {
+          const pinData = await pinRes.json();
+          if (pinData && pinData.session) {
+            isValid = true;
+            label = `✓ Geçerli Ocean Tarama PIN'i: ${cleanUpper} (Oyuncu: ${pinData.session.player_name || 'Şüpheli'})`;
+          }
+        }
+      } catch (_) {}
+    }
 
     // Check 1: Founder Invite / Admin Code
-    const cleanUpper = rawKey.toUpperCase();
-    if (cleanUpper === 'ATLAS-KURUCU-2026' || cleanUpper.startsWith('ATLAS-KURUCU') || cleanUpper.startsWith('ATLAS-ADMIN')) {
+    if (!isValid && (cleanUpper === 'ATLAS-KURUCU-2026' || cleanUpper.startsWith('ATLAS-KURUCU') || cleanUpper.startsWith('ATLAS-ADMIN'))) {
       isValid = true;
       label = 'Yetkili Kurucu / Yönetici Anahtarı Onaylandı';
     } 
     // Check 2: Signed Ed25519 License Format: ATLAS1.<payload_b64>.<sig_b64>
-    else if (rawKey.startsWith('ATLAS1.')) {
+    else if (!isValid && rawKey.startsWith('ATLAS1.')) {
       try {
         const parts = rawKey.split('.');
         if (parts.length === 3) {

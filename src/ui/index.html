@@ -900,6 +900,59 @@
     </div>
   </div>
 
+  <!-- =====================================================================
+       OCEAN-STYLE COMPACT SCANNER WINDOW (EXACT REPLICA OF USER SCREENSHOT media_1789591775592.png)
+       ===================================================================== -->
+  <div class="ocean-scanner-modal active" id="oceanScannerModal">
+    <div class="ocean-scanner-window" id="oceanScannerWindow">
+      <!-- Window Controls -->
+      <div class="ocean-win-header">
+        <div class="ocean-win-controls">
+          <button class="ocean-btn-ctrl" id="btnOceanMin" title="Simge Durumuna Küçült">−</button>
+          <button class="ocean-btn-ctrl close" id="btnOceanClose" title="Kapat">✕</button>
+        </div>
+      </div>
+
+      <div class="ocean-win-body">
+        <!-- Top Fish / Atlas Glyph Emblem -->
+        <div class="ocean-emblem">
+          <span class="ocean-glyph">}&lt;(((◈&gt;</span>
+        </div>
+
+        <!-- Title matching user screenshot -->
+        <h2 class="ocean-win-title">Advanced Automated screenshare</h2>
+
+        <!-- Initial PIN Entry Box (Before scan starts) -->
+        <div class="ocean-pin-card" id="oceanPinCard">
+          <input type="text" class="ocean-pin-input" id="oceanPinInput" placeholder="TARAMA PIN'İ (ÖRN: 8F3C21A9)" maxlength="16" autocomplete="off" spellcheck="false">
+          <button class="ocean-start-action-btn" id="btnOceanStart">⚡ Taramayı Başlat</button>
+          <div class="ocean-pin-note">Yetkilinizin verdiği 8 haneli PIN kodunu giriniz. Lisans gerekmez.</div>
+        </div>
+
+        <!-- Scanning Progress Bar (Shown during scan - exact match to user screenshot) -->
+        <div class="ocean-progress-card hidden" id="oceanProgressCard">
+          <div class="ocean-bar-track">
+            <div class="ocean-bar-fill" id="oceanBarFill" style="width: 0%;"></div>
+          </div>
+          <div class="ocean-status-row">
+            <span id="oceanStageTxt">Loading modules...</span> • <span id="oceanPercentTxt">0%</span>
+          </div>
+        </div>
+
+        <!-- Completed State -->
+        <div class="ocean-completed-card hidden" id="oceanCompletedCard">
+          <div class="ocean-completed-title">✓ Tarama Tamamlandı • %100</div>
+          <div class="ocean-completed-sub">Tüm adli veriler yetkilinin web paneline canlı olarak aktarıldı. Bu pencereyi kapatabilirsiniz.</div>
+        </div>
+
+        <!-- Watermark matching user screenshot -->
+        <div class="ocean-watermark">
+          <span>powered by atlas-ac</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="js/app.js?v=3.2"></script>
 </body>
 </html>

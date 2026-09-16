@@ -382,7 +382,58 @@ document.addEventListener('DOMContentLoaded', () => {
   initSystemStats();
   initServerStatus();
   initCyberParticles();
+  initOceanScannerWindow();
 });
+
+function initOceanScannerWindow() {
+  const modal = document.getElementById('oceanScannerModal');
+  const win = document.getElementById('oceanScannerWindow');
+  const pinInput = document.getElementById('oceanPinInput');
+  const btnStart = document.getElementById('btnOceanStart');
+  const pinCard = document.getElementById('oceanPinCard');
+  const progressCard = document.getElementById('oceanProgressCard');
+  const stageTxt = document.getElementById('oceanStageTxt');
+  const percentTxt = document.getElementById('oceanPercentTxt');
+  const btnClose = document.getElementById('btnOceanClose');
+  const btnMin = document.getElementById('btnOceanMin');
+
+  if (btnClose && modal) {
+    btnClose.addEventListener('click', () => {
+      modal.classList.remove('active');
+    });
+  }
+
+  if (btnMin && win) {
+    btnMin.addEventListener('click', () => {
+      win.style.opacity = win.style.opacity === '0.25' ? '1' : '0.25';
+    });
+  }
+
+  if (btnStart && pinInput) {
+    btnStart.addEventListener('click', () => {
+      const pin = pinInput.value.trim().toUpperCase();
+      if (!pin) {
+        pinInput.focus();
+        showToast(currentLang === 'tr' ? 'PIN Gerekli' : 'PIN Required', currentLang === 'tr' ? 'Lütfen yetkilinizin verdiği 8 haneli PIN kodunu giriniz.' : 'Please enter the 8-character PIN provided by your reviewer.', 'warning', 4000);
+        return;
+      }
+      window.activeSessionCode = pin;
+      const legacyInput = document.getElementById('inputClientSessionCode');
+      if (legacyInput) legacyInput.value = pin;
+
+      if (pinCard) pinCard.classList.add('hidden');
+      if (progressCard) progressCard.classList.remove('hidden');
+      if (stageTxt) stageTxt.textContent = 'Loading modules...';
+      if (percentTxt) percentTxt.textContent = '0%';
+
+      requestScanStart();
+    });
+
+    pinInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') btnStart.click();
+    });
+  }
+}
 
 function initPin() {
   const heroPinBadge = document.getElementById('heroPinBadge');
@@ -1007,14 +1058,24 @@ function handleServerMessage(msg) {
     window.activeSessionCode = msg.sessionCode;
     const badge = document.getElementById('hudSessionCodeBadge');
     if (badge) {
-      badge.textContent = `KONTROL: ${msg.sessionCode}`;
+      badge.textContent = `PIN: ${msg.sessionCode}`;
       badge.style.display = 'inline-block';
     }
     const input = document.getElementById('inputClientSessionCode');
     if (input && !input.value) {
       input.value = msg.sessionCode;
     }
-    logTerminal('INFO', `Adli Kontrol Oturumu: ${msg.sessionCode} (Sonuçlar yetkiliye aktarılıyor)`);
+    const oceanInput = document.getElementById('oceanPinInput');
+    if (oceanInput && !oceanInput.value) {
+      oceanInput.value = msg.sessionCode;
+    }
+    if (msg.autoStart) {
+      setTimeout(() => {
+        const startBtn = document.getElementById('btnOceanStart');
+        if (startBtn) startBtn.click();
+      }, 300);
+    }
+    logTerminal('INFO', `Ocean Kontrol Oturumu: ${msg.sessionCode} (Sonuçlar yetkiliye aktarılıyor)`);
   } else if (msg.type === 'UPDATE_RESULT') {
     logTerminal('INFO', msg.message);
   } else if (msg.type === 'SERVER_STATUS') {
@@ -1168,6 +1229,10 @@ function startProgressAnimation() {
       if (percentEl) percentEl.textContent = intVal;
       const barFill = document.getElementById('hudProgressBarFill');
       if (barFill) barFill.style.width = intVal + '%';
+      const oceanBar = document.getElementById('oceanBarFill');
+      if (oceanBar) oceanBar.style.width = intVal + '%';
+      const oceanPct = document.getElementById('oceanPercentTxt');
+      if (oceanPct) oceanPct.textContent = intVal + '%';
       if (ringCircle) {
         const offset = CIRCUMFERENCE - (intVal / 100) * CIRCUMFERENCE;
         ringCircle.style.strokeDashoffset = offset;
@@ -1213,6 +1278,11 @@ function handleProgressUpdate(msg) {
     advanceHudStep(currentKey);
   } else if (msg.log && hudActiveLbl) {
     hudActiveLbl.textContent = msg.log;
+  }
+
+  const oceanStage = document.getElementById('oceanStageTxt');
+  if (oceanStage) {
+    oceanStage.textContent = msg.log || msg.stage || 'Scanning modules...';
   }
 
   if (msg.log) {
@@ -1350,6 +1420,18 @@ function handleScanComplete(data) {
     btnScan.disabled = false;
     btnScan.textContent = currentLang === 'tr' ? 'Yeniden Tara' : 'Start Full Scan';
   }
+
+  // Ocean Compact Scanner Window: Complete state
+  const oceanProgress = document.getElementById('oceanProgressCard');
+  const oceanDone = document.getElementById('oceanCompletedCard');
+  const oceanBar = document.getElementById('oceanBarFill');
+  const oceanPct = document.getElementById('oceanPercentTxt');
+  if (oceanBar) oceanBar.style.width = '100%';
+  if (oceanPct) oceanPct.textContent = '100%';
+  if (oceanProgress && oceanDone) {
+    oceanProgress.classList.add('hidden');
+    oceanDone.classList.remove('hidden');
+  }
 }
 
 // Scan sunucu tarafinda hata verdiginde UI'yi "sonsuz tarama" durumundan
@@ -1391,6 +1473,16 @@ function finalizeScanWithError(message) {
 
   logTerminal('WARN', (currentLang === 'tr' ? 'Tarama hatayla sonlandı: ' : 'Scan failed: ') + message);
   showToast(currentLang === 'tr' ? 'Tarama Hatası' : 'Scan Error', message, 'error', 6000);
+
+  // Ocean Compact Scanner Window: Reset on error
+  const oceanProgress = document.getElementById('oceanProgressCard');
+  const oceanPin = document.getElementById('oceanPinCard');
+  const oceanStage = document.getElementById('oceanStageTxt');
+  if (oceanStage) oceanStage.textContent = (currentLang === 'tr' ? 'Hata: ' : 'Error: ') + message;
+  if (oceanProgress && oceanPin) {
+    oceanProgress.classList.add('hidden');
+    oceanPin.classList.remove('hidden');
+  }
 }
 
 // WS henuz acilmadan "Tara"ya basilmis olabilir (uygulama yeni acildiysa). Bu

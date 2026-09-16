@@ -13,6 +13,12 @@ const { execSync, spawnSync } = require('child_process');
 
 const args = process.argv.slice(2);
 
+// Extract Ocean AC style --pin <PIN> or -p <PIN>
+const pinFlagIdx = args.findIndex(a => a === '--pin' || a === '-p' || a === '--session' || a === '-s');
+if (pinFlagIdx !== -1 && args[pinFlagIdx + 1]) {
+  process.env.ATLAS_INITIAL_PIN = args[pinFlagIdx + 1].trim().toUpperCase();
+}
+
 if (args.includes('--stop') || args.includes('--kill') || args.includes('-k') || args.includes('stop')) {
   console.log('[*] Atlas AC kapatma sinyali gönderiliyor...');
   const fallbackStop = () => {

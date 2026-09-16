@@ -379,7 +379,24 @@ byId('btnCopyCreatedCode').addEventListener('click', async () => {
   const code = byId('createdScanCodeDisplay').textContent;
   await navigator.clipboard.writeText(code);
   byId('btnCopyCreatedCode').textContent = 'Kopyalandı!';
-  setTimeout(() => { byId('btnCopyCreatedCode').textContent = 'Kopyala'; }, 1500);
+  setTimeout(() => { byId('btnCopyCreatedCode').textContent = 'PIN Kopyala'; }, 1500);
+});
+
+byId('btnCopyCreatedLink')?.addEventListener('click', async () => {
+  const code = byId('createdScanCodeDisplay').textContent;
+  const link = `https://zeninkaanx.github.io/AtlasOyuncu-Hile-KontrolX/download.html?pin=${encodeURIComponent(code)}`;
+  await navigator.clipboard.writeText(link);
+  byId('btnCopyCreatedLink').textContent = 'Link Kopyalandı!';
+  setTimeout(() => { byId('btnCopyCreatedLink').textContent = '🔗 İndirme Linkini Kopyala'; }, 1500);
+});
+
+byId('btnCopyCreatedMsg')?.addEventListener('click', async () => {
+  const code = byId('createdScanCodeDisplay').textContent;
+  const link = `https://zeninkaanx.github.io/AtlasOyuncu-Hile-KontrolX/download.html?pin=${encodeURIComponent(code)}`;
+  const msg = `🛡️ Atlas AC ile ekran kontrolüne alındınız.\nLütfen 5 dakika içinde istemciyi indirip PIN kodunu giriniz:\nİndirme Bağlantısı: ${link}\nTarama PIN: ${code}\n(İstemci açıldığında PIN'i girmeniz yeterlidir, lisans gerekmez.)`;
+  await navigator.clipboard.writeText(msg);
+  byId('btnCopyCreatedMsg').textContent = 'Mesaj Kopyalandı!';
+  setTimeout(() => { byId('btnCopyCreatedMsg').textContent = '💬 Kontrol Mesajını Kopyala'; }, 1500);
 });
 
 // Inspector Close
