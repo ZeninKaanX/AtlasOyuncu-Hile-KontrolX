@@ -867,6 +867,19 @@
         <span class="ticker-lead">Active Target:</span>
         <span id="hudTickerText">Calibrating inspection modules...</span>
       </div>
+
+      <!-- Verdict Announcement Box (Post-Scan Result for Screen Check / Kontrol) -->
+      <div class="hud-verdict-box hidden" id="hudVerdictBox">
+        <div class="hud-verdict-header">
+          <span class="hud-verdict-badge clean" id="hudVerdictBadge">TEMİZ (0 İHLAL)</span>
+          <div class="hud-verdict-title" id="hudVerdictTitle">Adli Bilişim Doğrulandı</div>
+        </div>
+        <div class="hud-verdict-desc" id="hudVerdictDesc">Sistemde bilinen hiçbir hile, bypass veya adli karartma izi bulunamadı.</div>
+        <div class="hud-verdict-actions">
+          <button class="hud-action-btn primary" id="btnHudViewReport">Detaylı Raporu İncele <span>→</span></button>
+          <button class="hud-action-btn secondary" id="btnHudClose">Pencereyi Kapat</button>
+        </div>
+      </div>
     </div>
   </div>
 

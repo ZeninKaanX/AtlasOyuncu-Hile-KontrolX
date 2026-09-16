@@ -1298,21 +1298,42 @@ function handleScanComplete(data) {
   const totalFindings = (data.allFindings || []).length;
   logTerminal('SUCCESS', `Inspection complete. Analyzed findings count: ${totalFindings}.`);
 
-    setTimeout(() => {
-      const hudModal = document.getElementById('scanModalHud');
-      if (hudModal) {
-        hudModal.classList.remove('active');
-      }
-      const btnShowHud = document.getElementById('btnShowHud');
-      if (btnShowHud) {
-        btnShowHud.classList.remove('scanning-active');
-      }
-      const btnScan = document.getElementById('btnStartScan');
-      if (btnScan) {
-        btnScan.disabled = false;
-        btnScan.textContent = currentLang === 'tr' ? 'Yeniden Tara' : 'Start Full Scan';
-      }
-    }, 1200);
+  // 3. Screen Check (Kontrol) Mode: Display verdict banner inside HUD
+  const allFindings = data.allFindings || [];
+  const criticalFindings = allFindings.filter(f => f.severity === 'CRITICAL' || f.threat === 'CRITICAL');
+  const verdictBox = document.getElementById('hudVerdictBox');
+  const verdictBadge = document.getElementById('hudVerdictBadge');
+  const verdictTitle = document.getElementById('hudVerdictTitle');
+  const verdictDesc = document.getElementById('hudVerdictDesc');
+
+  if (verdictBox && verdictBadge && verdictTitle && verdictDesc) {
+    verdictBox.classList.remove('hidden');
+    if (criticalFindings.length === 0) {
+      verdictBadge.className = 'hud-verdict-badge clean';
+      verdictBadge.textContent = currentLang === 'tr' ? 'TEMİZ (0 İHLAL)' : 'CLEAN (0 VIOLATIONS)';
+      verdictTitle.textContent = currentLang === 'tr' ? 'Adli Bilişim Doğrulandı — Oyuncu Temiz' : 'Forensics Verified — Clean Player';
+      verdictDesc.textContent = currentLang === 'tr'
+        ? '33 adli motor, bellek ve mod arşivi eksiksiz tarandı. Sistemde hiçbir hile veya atlatma izine rastlanmadı.'
+        : 'All 33 forensic inspection engines verified. No cheat, bypass or injection indicators detected.';
+    } else {
+      verdictBadge.className = 'hud-verdict-badge threat';
+      verdictBadge.textContent = currentLang === 'tr' ? `${criticalFindings.length} İHLAL TESPİT EDİLDİ` : `${criticalFindings.length} THREATS DETECTED`;
+      verdictTitle.textContent = currentLang === 'tr' ? 'Kritik Hile / Atlatma İzi Bulundu' : 'Critical Threat / Cheat Traces Found';
+      verdictDesc.textContent = currentLang === 'tr'
+        ? `Sistemde ${criticalFindings.length} adet kritik hile veya adli delil karartma izi saptandı. Detayları rapordan inceleyin.`
+        : `${criticalFindings.length} critical forensic cheat violations found. Review the detailed inspection report.`;
+    }
+  }
+
+  const btnShowHud = document.getElementById('btnShowHud');
+  if (btnShowHud) {
+    btnShowHud.classList.remove('scanning-active');
+  }
+  const btnScan = document.getElementById('btnStartScan');
+  if (btnScan) {
+    btnScan.disabled = false;
+    btnScan.textContent = currentLang === 'tr' ? 'Yeniden Tara' : 'Start Full Scan';
+  }
 }
 
 // Scan sunucu tarafinda hata verdiginde UI'yi "sonsuz tarama" durumundan
@@ -1405,6 +1426,8 @@ function initActionButtons() {
         return;
       }
 
+      const verdictBox = document.getElementById('hudVerdictBox');
+      if (verdictBox) verdictBox.classList.add('hidden');
       flaggedStages.clear();
       resetHudCards();
       clearFindings();
@@ -1424,6 +1447,23 @@ function initActionButtons() {
   const btnCloseHud = document.getElementById('btnCloseHud');
   if (btnCloseHud) {
     btnCloseHud.addEventListener('click', closeHud);
+  }
+
+  const btnHudClose = document.getElementById('btnHudClose');
+  if (btnHudClose) {
+    btnHudClose.addEventListener('click', closeHud);
+  }
+
+  const btnHudViewReport = document.getElementById('btnHudViewReport');
+  if (btnHudViewReport) {
+    btnHudViewReport.addEventListener('click', () => {
+      closeHud();
+      // Scroll smoothly to findings or switch tab
+      const findingsSection = document.getElementById('findingsExplorerSection') || document.querySelector('.findings-section');
+      if (findingsSection) {
+        findingsSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
   }
 
   const hudModal = document.getElementById('scanModalHud');
