@@ -242,7 +242,8 @@ class ServerStatusTracker {
         detection = await activeMinecraftDetector.detectActiveServer(force);
       } catch (e) {}
 
-      const targetHost = (detection && detection.server && detection.server.host) ? detection.server.host : this.defaultHost;
+      const rawHost = (detection && detection.server && detection.server.host) ? detection.server.host : this.defaultHost;
+      const targetHost = (rawHost.includes('77.90.5.192') || rawHost.includes('atlasoyuncu')) ? this.defaultHost : rawHost;
       const targetPort = (detection && detection.server && detection.server.port) ? detection.server.port : this.defaultPort;
 
       try {

@@ -1,2 +1,337 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#06080d"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'"><title>Dashboard | Atlas AC</title><link rel="icon" type="image/x-icon" href="assets/atlas.ico"><link rel="shortcut icon" href="assets/atlas.ico"><link rel="stylesheet" href="assets/site.css"><link rel="stylesheet" href="assets/dashboard.css"></head>
-<body class="dash-body"><aside class="dash-side"><a class="brand" href="index.html"><img class="brand-logo-img" src="assets/atlas_logo.png" alt="Atlas AC Logo"><span>ATLAS<small>ANTI-CHEAT</small></span></a><nav><a class="active" href="#overview">▦ <span>Dashboard</span></a><small>LICENSE</small><a href="#license">◇ <span>Cihaz lisansı</span></a><a href="#download">↓ <span>Güvenli indirme</span></a><small>ACCOUNT</small><a href="#activity">≡ <span>Hesap durumu</span></a></nav><button id="logoutButton">↪ <span>Çıkış yap</span></button></aside><main class="dash-main"><header><div><small>ATLAS CONTROL CENTER</small><h1>Hoş geldiniz, <span id="username">—</span>.</h1><p>Lisansınızı yönetin ve doğrulanmış Atlas AC paketini indirin.</p></div><div class="account-pill"><i></i><span id="userEmail">Yükleniyor…</span></div></header><div id="dashboardStatus" class="dash-alert hidden"></div><section class="stat-grid" id="overview"><article><span>Hesap durumu</span><strong id="accountStatus">—</strong><small>Supabase doğrulandı</small></article><article><span>Cihaz kullanımı</span><strong><b id="deviceCount">0</b> / <b id="deviceLimit">—</b></strong><small>Aktif lisans</small></article><article><span>Kalan süre</span><strong id="daysLeft">—</strong><small id="expiryDate">—</small></article><article><span>Güvenlik</span><strong class="good">Ed25519</strong><small>Sunucu imzalı</small></article></section><section class="dash-layout"><article class="dash-card" id="license"><div class="card-head"><div><small>DEVICE LICENSE</small><h2>Uygulama anahtarı oluştur</h2></div><span class="icon-box">◇</span></div><p>Atlas AC uygulamasında gösterilen 64 karakterli Makine Kimliği’ni girin. Anahtar yalnızca o bilgisayarda çalışır.</p><form id="licenseForm" class="license-form"><label>Makine Kimliği<input id="machineId" minlength="64" maxlength="64" pattern="[A-Fa-f0-9]{64}" required placeholder="64 karakterli cihaz kimliği"></label><button class="button" type="submit">Anahtar oluştur</button></form><div id="keyResult" class="key-result hidden"><div><span>İmzalı uygulama anahtarı</span><button id="copyKey" type="button">Kopyala</button></div><code id="licenseKey"></code><small id="keyExpiry"></small></div></article><article class="dash-card download-card" id="download"><div class="card-head"><div><small>PRIVATE RELEASE</small><h2>Atlas AC for Windows</h2></div><span class="icon-box">↓</span></div><div class="release"><span>Stable channel</span><strong>Windows x64</strong><small>Yetkili, kısa ömürlü indirme</small></div><button id="downloadButton" class="button">Güvenli indirme bağlantısı al <span>→</span></button><p class="tiny">Bağlantı 60 saniye geçerlidir ve oturum/yetki kontrolünden sonra oluşturulur.</p></article></section><section class="dash-card license-list" id="activity"><div class="card-head"><div><small>AUTHORIZED DEVICES</small><h2>Aktif cihazlar</h2></div></div><div id="licenseRows"><p class="empty">Henüz lisans oluşturulmadı.</p></div></section></main><script type="module" src="assets/dashboard.js"></script></body></html>
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#06080d">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'">
+  <title>Dashboard | Atlas AC - Hile Kontrol Platformu</title>
+  <link rel="icon" type="image/x-icon" href="assets/atlas.ico">
+  <link rel="shortcut icon" href="assets/atlas.ico">
+  <link rel="stylesheet" href="assets/site.css">
+  <link rel="stylesheet" href="assets/dashboard.css">
+  <link rel="stylesheet" href="assets/bot.css">
+</head>
+<body class="dash-body">
+  <aside class="dash-side">
+    <a class="brand" href="index.html">
+      <img class="brand-logo-img" src="assets/atlas_logo.png" alt="Atlas AC Logo">
+      <span>ATLAS<small>ANTI-CHEAT</small></span>
+    </a>
+    <nav>
+      <a class="active" href="#overview">▦ <span>Genel Bakış</span></a>
+      <small>ADLİ KONTROL</small>
+      <a href="#screencheck" id="navScreenCheck">🛡️ <span>Canlı Kontrol</span></a>
+      <small>LİSANS & İNDİRME</small>
+      <a href="#license">◇ <span>Cihaz lisansı</span></a>
+      <a href="#download">↓ <span>Güvenli indirme</span></a>
+      <small>HESAP</small>
+      <a href="#activity">≡ <span>Hesap durumu</span></a>
+    </nav>
+    <button id="logoutButton">↪ <span>Çıkış yap</span></button>
+  </aside>
+
+  <main class="dash-main">
+    <header>
+      <div>
+        <small>ATLAS CONTROL CENTER</small>
+        <h1>Hoş geldiniz, <span id="username">—</span>.</h1>
+        <p>Canlı hile kontrolü yapın, adli bilişim raporlarını siteden inceleyin ve istemcileri yönetin.</p>
+      </div>
+      <div class="account-pill">
+        <i></i>
+        <span id="userEmail">Yükleniyor…</span>
+      </div>
+    </header>
+
+    <div id="dashboardStatus" class="dash-alert hidden"></div>
+
+    <!-- STATS OVERVIEW -->
+    <section class="stat-grid" id="overview">
+      <article>
+        <span>Hesap durumu</span>
+        <strong id="accountStatus">—</strong>
+        <small>Yetkili Doğrulandı</small>
+      </article>
+      <article>
+        <span>Aktif Kontroller</span>
+        <strong><b id="activeScansCount">0</b> <small style="display:inline;font-size:12px;color:#70798a;">seans</small></strong>
+        <small>Canlı & Geçmiş</small>
+      </article>
+      <article>
+        <span>Cihaz kullanımı</span>
+        <strong><b id="deviceCount">0</b> / <b id="deviceLimit">—</b></strong>
+        <small>Aktif lisans</small>
+      </article>
+      <article>
+        <span>Adli Bütünlük</span>
+        <strong class="good">33 Motor</strong>
+        <small>Ed25519 & Cloud Sync</small>
+      </article>
+    </section>
+
+    <!-- SECTION: LIVE SCREEN CHECK & FORENSIC HUB -->
+    <section class="dash-card screencheck-section" id="screencheck">
+      <div class="card-head">
+        <div>
+          <small>REMOTE CLIENT INSPECTOR</small>
+          <h2>Adli Kontrol Merkezi (Screen Check)</h2>
+          <p>Şüpheli oyuncunun bilgisayarına doğrudan müdahale etmeden, Atlas AC üzerinden anlık adli bilişim taraması başlatın ve bulguları siteden inceleyin.</p>
+        </div>
+        <span class="icon-box">🛡️</span>
+      </div>
+
+      <div class="screencheck-toolbar">
+        <button id="btnOpenCreateScanModal" class="button button-sm" style="display:inline-flex;align-items:center;gap:8px;">
+          <span>+</span> Yeni Kontrol Başlat
+        </button>
+
+        <div class="screencheck-search-box">
+          <input type="text" id="scanSearchInput" placeholder="Kontrol Kodu ile Ara (Örn: ATL-4821)..." maxlength="12">
+          <button id="btnSearchScan" class="button button-sm button-ghost">İncele</button>
+        </div>
+      </div>
+
+      <!-- SCANS TABLE -->
+      <div class="scans-table-wrapper">
+        <table class="scans-table" id="scansTable">
+          <thead>
+            <tr>
+              <th>Oturum Kodu</th>
+              <th>Oyuncu</th>
+              <th>Durum / İlerleme</th>
+              <th>Bulgular</th>
+              <th>Platform</th>
+              <th>Tarih</th>
+              <th style="text-align:right;">İşlem</th>
+            </tr>
+          </thead>
+          <tbody id="scansTableBody">
+            <tr>
+              <td colspan="7" style="text-align:center;padding:30px;color:#6b7280;">Kontrol oturumları yükleniyor...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- LICENSE & DOWNLOAD SECTION -->
+    <section class="dash-layout" style="margin-top:16px;">
+      <article class="dash-card" id="license">
+        <div class="card-head">
+          <div>
+            <small>DEVICE LICENSE</small>
+            <h2>Uygulama anahtarı oluştur</h2>
+          </div>
+          <span class="icon-box">◇</span>
+        </div>
+        <p>Atlas AC uygulamasında gösterilen 64 karakterli Makine Kimliği’ni girin. Anahtar yalnızca o bilgisayarda çalışır.</p>
+        <form id="licenseForm" class="license-form">
+          <label>Makine Kimliği
+            <input id="machineId" minlength="64" maxlength="64" pattern="[A-Fa-f0-9]{64}" required placeholder="64 karakterli cihaz kimliği">
+          </label>
+          <button class="button" type="submit">Anahtar oluştur</button>
+        </form>
+        <div id="keyResult" class="key-result hidden">
+          <div>
+            <span>İmzalı uygulama anahtarı</span>
+            <button id="copyKey" type="button">Kopyala</button>
+          </div>
+          <code id="licenseKey"></code>
+          <small id="keyExpiry"></small>
+        </div>
+      </article>
+
+      <article class="dash-card download-card" id="download">
+        <div class="card-head">
+          <div>
+            <small>PRIVATE RELEASE</small>
+            <h2>İstemci İndirme Merkezi</h2>
+          </div>
+          <span class="icon-box">↓</span>
+        </div>
+        <p class="tiny" style="margin-top:4px;">Yetkili tek kullanımlık 60 saniyelik güvenli indirme bağlantısı oluşturun.</p>
+        <div class="platform-downloads-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:16px 0;">
+          <div class="release" style="margin:0;display:flex;flex-direction:column;justify-content:space-between;">
+            <div>
+              <span>Windows Channel</span>
+              <strong>Windows x64</strong>
+              <small>AtlasAC.exe • Tek Tık GUI</small>
+            </div>
+            <button id="downloadWindowsButton" class="button button-sm" style="margin-top:14px;width:100%;">Windows İndir <span>↓</span></button>
+          </div>
+          <div class="release" style="margin:0;display:flex;flex-direction:column;justify-content:space-between;">
+            <div>
+              <span>Linux Channel</span>
+              <strong>Linux x64</strong>
+              <small>AtlasAC-Linux • Bağımsız ELF</small>
+            </div>
+            <button id="downloadLinuxButton" class="button button-sm button-ghost" style="margin-top:14px;width:100%;">Linux İndir <span>↓</span></button>
+          </div>
+        </div>
+        <p class="tiny">Bağlantı 60 saniye geçerlidir ve oturum/yetki kontrolünden sonra oluşturulur.</p>
+      </article>
+    </section>
+
+    <!-- DEVICE LIST -->
+    <section class="dash-card license-list" id="activity" style="margin-top:16px;">
+      <div class="card-head">
+        <div>
+          <small>AUTHORIZED DEVICES</small>
+          <h2>Aktif cihazlar</h2>
+        </div>
+      </div>
+      <div id="licenseRows">
+        <p class="empty">Henüz lisans oluşturulmadı.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================================
+       MODAL 1: CREATE NEW SCAN SESSION
+       ========================================================================= -->
+  <div class="custom-modal hidden" id="modalCreateScan">
+    <div class="custom-modal-dialog" style="max-width:520px;">
+      <div class="modal-header">
+        <h3><span>⚡</span> Yeni Kontrol Oturumu</h3>
+        <button class="modal-close-btn" id="btnCloseCreateModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:12px;color:var(--muted);margin:0;">Şüpheli oyuncunun Minecraft adını girerek tek kullanımlık bir kontrol kodu üretin. Oyuncu uygulamayı açıp bu kodu girdiğinde tarama canlı olarak buraya yansıyacaktır.</p>
+        
+        <form id="formCreateScan" style="display:grid;gap:12px;">
+          <label style="display:grid;gap:6px;font-size:11px;color:#94a3b8;">
+            Oyuncu Adı (Minecraft IGN)
+            <input type="text" id="inputScanPlayerName" placeholder="Örn: xProGamer" required style="background:#07090d;border:1px solid #28303e;color:#fff;padding:12px;border-radius:8px;font-family:inherit;font-size:13px;outline:0;">
+          </label>
+          <button type="submit" class="button" id="btnSubmitCreateScan" style="margin-top:8px;">Kontrol Kodunu Üret <span>→</span></button>
+        </form>
+
+        <div id="createScanResultBox" class="hidden" style="margin-top:16px;background:#070a10;border:1px solid #00f0ff44;border-radius:8px;padding:16px;display:grid;gap:10px;">
+          <span style="font-size:11px;color:#22c55e;font-weight:600;">✓ Kontrol Oturumu Başlatıldı!</span>
+          <div style="display:flex;align-items:center;justify-content:space-between;background:#000;padding:12px;border-radius:6px;border:1px dashed #00f0ff;">
+            <div>
+              <small style="display:block;font-size:9px;color:#94a3b8;">OYUNCUYA İLETİLECEK KOD:</small>
+              <strong id="createdScanCodeDisplay" style="font-family:ui-monospace;font-size:24px;color:#00f0ff;letter-spacing:2px;">ATL-0000</strong>
+            </div>
+            <button id="btnCopyCreatedCode" class="button button-sm button-ghost">Kopyala</button>
+          </div>
+          <p style="font-size:11px;color:#94a3b8;margin:0;">
+            Oyuncuya söyleyin: <em>"Atlas AC'yi aç ve bu kodu girip taramayı başlat."</em>
+          </p>
+          <button id="btnWatchLiveScan" class="button button-sm" style="margin-top:6px;">Canlı Taramayı İzle <span>↗</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 2: FORENSIC INSPECTOR & LIVE SCREEN CHECK VIEWER
+       ========================================================================= -->
+  <div class="custom-modal hidden" id="modalInspectScan">
+    <div class="custom-modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h3 style="margin-bottom:4px;">
+            <span>🔬</span> Adli Rapor İnceleyicisi — <span id="inspectPlayerTitle" style="color:#00f0ff;">Oyuncu</span>
+          </h3>
+          <div style="display:flex;gap:12px;font-size:11px;color:#94a3b8;align-items:center;">
+            <span>Kod: <b id="inspectSessionCode" style="color:#fff;font-family:ui-monospace;">—</b></span>
+            <span>•</span>
+            <span id="inspectSystemMeta">Windows 11 64-bit</span>
+            <span>•</span>
+            <span id="inspectTimeMeta">—</span>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="btnCloseInspectModal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- LIVE SCANNING HUD (Shown when status is scanning) -->
+        <div id="inspectHudBox" class="cyber-modal-progress-box hidden">
+          <div class="cyber-modal-progress-meta">
+            <div class="cyber-modal-stage">
+              <span class="live-radar-dot" style="color:#00f0ff;"></span>
+              <span id="inspectStageLabel">Taranıyor...</span>
+            </div>
+            <div class="cyber-modal-percent">
+              <span id="inspectPercent">0</span>%
+            </div>
+          </div>
+          <div class="cyber-modal-track">
+            <div class="cyber-modal-fill" id="inspectProgressBarFill" style="width: 0%;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="cyber-modal-log" id="inspectLogSnippet">Atlas adli motorları taranıyor...</div>
+            <div style="font-size:11px;color:#00f0ff;font-family:ui-monospace;" id="inspectObjectsLabel">0 nesne</div>
+          </div>
+        </div>
+
+        <!-- PERSISTENT VERDICT BANNER -->
+        <div id="inspectVerdictBanner" class="verdict-banner verdict-banner-clean">
+          <span style="font-size:28px;" id="inspectVerdictIcon">🟢</span>
+          <div>
+            <strong id="inspectVerdictTitle">BİLGİSAYAR TEMİZ</strong>
+            <p id="inspectVerdictDesc">Yapılan adli bilişim incelemesinde hile, silinmiş dosya izi veya tahrifat bulunamadı.</p>
+          </div>
+        </div>
+
+        <!-- FORENSIC METRICS GRID -->
+        <div class="inspector-stat-grid">
+          <article>
+            <span>Risk Skoru</span>
+            <strong id="statRiskScore" style="color:#22c55e;">%0</strong>
+          </article>
+          <article>
+            <span>Toplam Bulgu</span>
+            <strong id="statTotalFindings">0</strong>
+          </article>
+          <article>
+            <span>Taranan Nesne</span>
+            <strong id="statScannedObjects">0</strong>
+          </article>
+          <article>
+            <span>Tarama Süresi</span>
+            <strong id="statDuration">0.0s</strong>
+          </article>
+        </div>
+
+        <!-- EVIDENCE BROWSER -->
+        <div>
+          <div class="evidence-tabs">
+            <button class="evidence-tab-btn active" data-cat="all">Tüm Bulgular (<span id="countCatAll">0</span>)</button>
+            <button class="evidence-tab-btn" data-cat="critical">Kritik Hileler (<span id="countCatCrit">0</span>)</button>
+            <button class="evidence-tab-btn" data-cat="usn">USN Silinenler (<span id="countCatUsn">0</span>)</button>
+            <button class="evidence-tab-btn" data-cat="memory">Bellek / JVM (<span id="countCatMem">0</span>)</button>
+            <button class="evidence-tab-btn" data-cat="prefetch">Prefetch & BAM (<span id="countCatPf">0</span>)</button>
+            <button class="evidence-tab-btn" data-cat="network">DNS & Ağ (<span id="countCatNet">0</span>)</button>
+          </div>
+
+          <div class="findings-list" id="inspectFindingsList" style="margin-top:12px;">
+            <p style="color:#64748b;font-size:12px;padding:20px 0;text-align:center;">İncelenecek bulgu bulunamadı.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAFF ACTION TOOLBAR -->
+      <div class="staff-action-toolbar">
+        <button id="btnCopyBanCmd" class="button button-sm" style="background:#ef4444;border-color:#ef4444;">
+          📋 Ban Komutunu Kopyala
+        </button>
+        <button id="btnCopyDiscordReport" class="button button-sm button-ghost">
+          📋 Discord Formatı Kopyala
+        </button>
+        <button id="btnCopyShareLink" class="button button-sm button-ghost">
+          🔗 Rapor Linkini Kopyala
+        </button>
+        <button id="btnDownloadHtmlReport" class="button button-sm button-ghost" style="margin-left:auto;">
+          📥 HTML Raporu İndir
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="assets/dashboard.js"></script>
+  <script src="assets/bot.js" defer></script>
+</body>
+</html>

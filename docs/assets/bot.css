@@ -1,0 +1,396 @@
+/* ==========================================================================
+   ATLAS AC — CHIBI CYBER ROBOT MASCOT & FLOATING ASSISTANT
+   Exact Match to User Reference (Floating Blue Cyber Companion)
+   ========================================================================== */
+
+.atlas-companion-wrapper {
+  position: fixed;
+  bottom: 24px;
+  right: 28px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  user-select: none;
+}
+
+/* --- Floating Chibi Mascot --- */
+.mascot-avatar-stage {
+  cursor: pointer;
+  position: relative;
+  margin-bottom: -10px;
+  z-index: 2;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 10px 20px rgba(0, 150, 255, 0.45));
+}
+
+.mascot-avatar-stage:hover {
+  transform: translateY(-8px) scale(1.08);
+}
+
+.mascot-body-svg {
+  width: 72px;
+  height: 72px;
+  animation: mascotHoverFloat 3.5s ease-in-out infinite;
+}
+
+@keyframes mascotHoverFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* Mascot Eyes Expressions */
+.eye-glow {
+  fill: #00f0ff;
+  filter: drop-shadow(0 0 6px #00f0ff);
+  transition: all 0.2s ease;
+}
+
+.mascot-shadow {
+  width: 46px;
+  height: 8px;
+  background: radial-gradient(ellipse at center, rgba(0, 240, 255, 0.35) 0%, transparent 75%);
+  border-radius: 50%;
+  margin-top: -6px;
+  margin-bottom: 8px;
+  animation: mascotShadowScale 3.5s ease-in-out infinite;
+}
+
+@keyframes mascotShadowScale {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(0.75);
+    opacity: 0.4;
+  }
+}
+
+/* Speech Bubble Prompt above Mascot */
+.mascot-speech-bubble {
+  position: absolute;
+  top: -38px;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #e0f2fe;
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), 0 0 12px rgba(56, 189, 248, 0.2);
+  animation: speechPopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mascot-speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid rgba(56, 189, 248, 0.6);
+}
+
+/* --- Floating Input Pill Bar --- */
+.companion-pill-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(340px, calc(100vw - 40px));
+  height: 46px;
+  background: rgba(13, 17, 26, 0.94);
+  border: 1px solid rgba(80, 135, 255, 0.35);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 999px;
+  padding: 4px 6px 4px 12px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 240, 255, 0.15);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.companion-pill-bar:focus-within {
+  border-color: #00f0ff;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 240, 255, 0.35);
+}
+
+.btn-pill-action {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #93c5fd;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-pill-action:hover, .btn-pill-action.active {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+  color: #ffffff;
+  transform: rotate(45deg);
+}
+
+.companion-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.companion-input::placeholder {
+  color: #64748b;
+  font-size: 11.5px;
+}
+
+.btn-pill-send {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #00f0ff, #2563eb);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+}
+
+.btn-pill-send:hover {
+  transform: scale(1.08);
+  filter: brightness(1.2);
+  box-shadow: 0 0 18px rgba(0, 240, 255, 0.7);
+}
+
+/* --- Dropdown Drawer Menu (Like in Reference Screenshot) --- */
+.companion-drawer {
+  position: absolute;
+  bottom: 58px;
+  right: 0;
+  width: 330px;
+  max-height: 480px;
+  background: rgba(11, 15, 25, 0.96);
+  border: 1px solid rgba(80, 135, 255, 0.35);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 18px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 40px rgba(0, 240, 255, 0.15);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: drawerSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s ease;
+}
+
+.companion-drawer.hidden {
+  display: none !important;
+}
+
+@keyframes drawerSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.drawer-header strong {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.drawer-close {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.drawer-close:hover {
+  color: #ffffff;
+}
+
+/* Chat Messages Stream Area */
+.drawer-chat-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 260px;
+}
+
+.drawer-chat-msg {
+  display: flex;
+  flex-direction: column;
+  max-width: 90%;
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.drawer-chat-msg.bot {
+  align-self: flex-start;
+}
+
+.drawer-chat-msg.user {
+  align-self: flex-end;
+}
+
+.drawer-bubble {
+  padding: 10px 14px;
+  border-radius: 12px;
+  word-break: break-word;
+}
+
+.drawer-chat-msg.bot .drawer-bubble {
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #e2e8f0;
+}
+
+.drawer-chat-msg.user .drawer-bubble {
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  color: #ffffff;
+  border-radius: 12px 12px 2px 12px;
+}
+
+/* Quick Topic Menu Items (Exact Style as Screenshot Eklentiler) */
+.drawer-topics-list {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+.drawer-topic-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.drawer-topic-item:hover {
+  background: rgba(56, 189, 248, 0.12);
+}
+
+.topic-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  flex-shrink: 0;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.topic-text {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.topic-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.topic-desc {
+  font-size: 9.5px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Typing indicator */
+.typing-dots {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px 6px;
+}
+
+.typing-dots span {
+  width: 5px;
+  height: 5px;
+  background: #38bdf8;
+  border-radius: 50%;
+  animation: typingBounce 1.2s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-5px); opacity: 1; }
+}
+
+@media (max-width: 480px) {
+  .atlas-companion-wrapper {
+    right: 14px;
+    bottom: 16px;
+  }
+  .companion-pill-bar {
+    width: calc(100vw - 28px);
+  }
+  .companion-drawer {
+    width: calc(100vw - 28px);
+    right: 0;
+  }
+}

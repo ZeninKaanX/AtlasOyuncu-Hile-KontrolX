@@ -15,6 +15,7 @@ const scannerCore = require('../engine/scannerCore');
 const updater = require('../engine/updater');
 const serverStatus = require('../engine/serverStatus');
 const licenseManager = require('../engine/licenseManager');
+const cloudSync = require('../engine/cloudSync');
 
 const app = express();
 const server = http.createServer(app);
@@ -353,6 +354,22 @@ wss.on('connection', (ws) => {
           }));
           return;
         }
+
+        let sessionCode = (data.sessionCode || '').trim().toUpperCase();
+        const playerName = (data.playerName || 'Şüpheli Oyuncu').trim();
+        try {
+          const syncRes = await cloudSync.initSession(sessionCode, playerName);
+          if (syncRes && syncRes.sessionCode) {
+            sessionCode = syncRes.sessionCode;
+            try {
+              ws.send(JSON.stringify({
+                type: 'SESSION_CODE',
+                sessionCode: sessionCode
+              }));
+            } catch (_) {}
+          }
+        } catch (_) {}
+
         // Emit exactly one terminal event. Engine-level command timeouts are
         // handled inside scanners so a still-running scan is never called done.
         let scanSettled = false;
@@ -363,6 +380,9 @@ wss.on('connection', (ws) => {
         };
         try {
           const results = await scannerCore.runFullScan((stage, percent, log, finding, target, objectsCount) => {
+            try {
+              cloudSync.sendProgress(percent, stage, log, finding, target, objectsCount);
+            } catch (_) {}
             ws.send(JSON.stringify({
               type: 'PROGRESS',
               stage,
@@ -373,7 +393,10 @@ wss.on('connection', (ws) => {
               objectsCount
             }));
           });
-          finishScan('SCAN_COMPLETE', { data: results });
+          try {
+            await cloudSync.completeSession(results);
+          } catch (_) {}
+          finishScan('SCAN_COMPLETE', { data: results, sessionCode });
         } catch (err) {
           ws.send(JSON.stringify({
             type: 'PROGRESS',
@@ -381,7 +404,7 @@ wss.on('connection', (ws) => {
             percent: 100,
             log: `Scan error: ${err.message}`
           }));
-          finishScan('SCAN_ERROR', { message: err.message });
+          finishScan('SCAN_ERROR', { message: err.message, sessionCode });
         }
       } else if (data.action === 'CHECK_UPDATES') {
         const updateRes = await updater.checkForUpdates();

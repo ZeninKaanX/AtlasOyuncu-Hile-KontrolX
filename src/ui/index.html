@@ -216,6 +216,7 @@
           </div>
 
           <!-- Quick Action Buttons -->
+          <input type="text" id="inputClientSessionCode" placeholder="Kontrol Kodu (ATL-XXXX)" maxlength="12" style="background:#0c1017;border:1px solid #28303e;color:#00f0ff;padding:8px 12px;border-radius:6px;font-family:ui-monospace,monospace;font-size:11px;outline:0;width:155px;text-transform:uppercase;" title="Yetkilinin verdiği kontrol kodunu girin (boş bırakılırsa otomatik üretilir)">
           <button class="btn-top-action btn-scan-cta" id="btnStartScan">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             <span data-i18n="btn_start_scan">Start Full Scan</span>
@@ -767,7 +768,10 @@
       <div class="cyber-rect-progress-panel">
         <div class="rect-hud-top-meta">
           <div class="rect-status-col">
-            <span class="rect-live-chip"><span class="live-dot"></span> ADLİ BİLİŞİM TARAMASI</span>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span class="rect-live-chip"><span class="live-dot"></span> ADLİ BİLİŞİM TARAMASI</span>
+              <span id="hudSessionCodeBadge" style="display:none;font-family:ui-monospace,monospace;font-size:11px;font-weight:700;color:#00f0ff;background:rgba(0,240,255,0.12);border:1px solid #00f0ff;padding:2px 8px;border-radius:4px;letter-spacing:1px;">KONTROL: ATL-XXXX</span>
+            </div>
             <div class="hud-header-title">Atlas AC Inspection</div>
             <div class="hud-active-step-lbl" id="hudActiveStepLabel">Initializing Inspection Engine...</div>
           </div>

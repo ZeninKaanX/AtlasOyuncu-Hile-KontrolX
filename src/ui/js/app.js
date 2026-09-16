@@ -1002,7 +1002,19 @@ function handleServerMessage(msg) {
   if (msg.type === 'PROGRESS') {
     handleProgressUpdate(msg);
   } else if (msg.type === 'SCAN_COMPLETE') {
-    handleScanComplete(msg.data);
+    handleScanComplete(msg.data, msg.sessionCode);
+  } else if (msg.type === 'SESSION_CODE') {
+    window.activeSessionCode = msg.sessionCode;
+    const badge = document.getElementById('hudSessionCodeBadge');
+    if (badge) {
+      badge.textContent = `KONTROL: ${msg.sessionCode}`;
+      badge.style.display = 'inline-block';
+    }
+    const input = document.getElementById('inputClientSessionCode');
+    if (input && !input.value) {
+      input.value = msg.sessionCode;
+    }
+    logTerminal('INFO', `Adli Kontrol Oturumu: ${msg.sessionCode} (Sonuçlar yetkiliye aktarılıyor)`);
   } else if (msg.type === 'UPDATE_RESULT') {
     logTerminal('INFO', msg.message);
   } else if (msg.type === 'SERVER_STATUS') {
@@ -1385,9 +1397,17 @@ function finalizeScanWithError(message) {
 // durumda UI'yi hemen baslatip istegi baglanti acilinca otomatik tekrar yollar.
 function requestScanStart() {
   if (scanRetryTimer) { clearInterval(scanRetryTimer); scanRetryTimer = null; scanRetryCount = 0; }
+  const codeInput = document.getElementById('inputClientSessionCode');
+  const sessionCode = (codeInput?.value || window.activeSessionCode || '').trim().toUpperCase();
+
   const sendIfOpen = () => {
     if (ws && ws.readyState === WebSocket.OPEN) {
-      try { ws.send(JSON.stringify({ action: 'START_SCAN' })); } catch (e) {}
+      try {
+        ws.send(JSON.stringify({
+          action: 'START_SCAN',
+          sessionCode: sessionCode || undefined
+        }));
+      } catch (e) {}
       if (scanRetryTimer) { clearInterval(scanRetryTimer); scanRetryTimer = null; }
       scanRetryCount = 0;
       return true;

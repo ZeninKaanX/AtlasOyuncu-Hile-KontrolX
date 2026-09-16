@@ -42,11 +42,80 @@ Deno.serve(async req => {
     return json({ key, expiresAt: expiresAt.toISOString() }, 201, headers);
   }
   if (action === 'download') {
-    const { data, error } = await db.storage.from('atlas-downloads').createSignedUrl('AtlasAC.exe', 60, { download: 'AtlasAC.exe' });
-    if (error || !data) return json({ error: 'Kurulum dosyası henüz hazır değil.' }, 404, headers);
-    await audit(db, user.id, 'download.windows', req, {});
-    return json({ url: data.signedUrl, expiresIn: 60 }, 200, headers);
+    const platform = String(body.platform || new URL(req.url).searchParams.get('platform') || 'windows').toLowerCase();
+    const filename = platform === 'linux' ? 'AtlasAC-Linux' : 'AtlasAC.exe';
+    const { data, error } = await db.storage.from('atlas-downloads').createSignedUrl(filename, 60, { download: filename });
+    if (error || !data) {
+      const releaseUrl = `https://github.com/ZeninKaanX/AtlasOyuncu-Hile-KontrolX/releases/download/v1.0.0/${filename}`;
+      await audit(db, user.id, `download.${platform}.github`, req, {});
+      return json({ url: releaseUrl, expiresIn: 60, filename }, 200, headers);
+    }
+    await audit(db, user.id, `download.${platform}`, req, {});
+    return json({ url: data.signedUrl, expiresIn: 60, filename }, 200, headers);
   }
+
+  // SCREEN CHECK (KONTROL) ACTIONS FOR STAFF
+  if (action === 'create_scan') {
+    const playerName = String(body.playerName || 'Şüpheli Oyuncu').trim().slice(0, 32);
+    // Generate unique code ATL-XXXX
+    let sessionCode = '';
+    for (let i = 0; i < 5; i++) {
+      const code = `ATL-${Math.floor(1000 + Math.random() * 9000)}`;
+      const { data: existing } = await db.from('scan_sessions').select('id').eq('session_code', code).maybeSingle();
+      if (!existing) {
+        sessionCode = code;
+        break;
+      }
+    }
+    if (!sessionCode) sessionCode = `ATL-${Date.now().toString().slice(-4)}`;
+
+    const { data: inserted, error: insErr } = await db.from('scan_sessions').insert({
+      session_code: sessionCode,
+      staff_id: user.id,
+      player_name: playerName,
+      status: 'pending',
+      progress: 0,
+      current_stage: 'Oyuncu Bağlantısı Bekleniyor'
+    }).select().single();
+
+    if (insErr) return json({ error: insErr.message }, 500, headers);
+    await audit(db, user.id, 'scan.created', req, { sessionCode, playerName });
+    return json({ success: true, session: inserted }, 201, headers);
+  }
+
+  if (action === 'list_scans') {
+    const { data: scans, error } = await db
+      .from('scan_sessions')
+      .select('id,session_code,player_name,status,progress,current_stage,current_log,target,objects_count,verdict,risk_score,findings_count,client_platform,created_at,completed_at')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) return json({ error: error.message }, 500, headers);
+    return json({ scans: scans || [] }, 200, headers);
+  }
+
+  if (action === 'get_scan') {
+    const scanId = String(body.id || new URL(req.url).searchParams.get('id') || '').trim();
+    const code = String(body.code || new URL(req.url).searchParams.get('code') || '').trim().toUpperCase();
+
+    let query = db.from('scan_sessions').select('*');
+    if (scanId) query = query.eq('id', scanId);
+    else if (code) query = query.eq('session_code', code);
+    else return json({ error: 'id or code required' }, 400, headers);
+
+    const { data: scan, error } = await query.maybeSingle();
+    if (error || !scan) return json({ error: 'Scan not found' }, 404, headers);
+    return json({ scan }, 200, headers);
+  }
+
+  if (action === 'delete_scan') {
+    const scanId = String(body.id || '').trim();
+    if (!scanId) return json({ error: 'id required' }, 400, headers);
+    await db.from('scan_sessions').delete().eq('id', scanId);
+    await audit(db, user.id, 'scan.deleted', req, { scanId });
+    return json({ success: true }, 200, headers);
+  }
+
   return json({ error: 'Unknown action' }, 400, headers);
 });
 
