@@ -1075,7 +1075,7 @@ function handleServerMessage(msg) {
         if (startBtn) startBtn.click();
       }, 300);
     }
-    logTerminal('INFO', `Ocean Kontrol Oturumu: ${msg.sessionCode} (Sonuçlar yetkiliye aktarılıyor)`);
+    logTerminal('INFO', `Atlas AC Kontrol Oturumu: ${msg.sessionCode} (Sonuçlar yetkiliye aktarılıyor)`);
   } else if (msg.type === 'UPDATE_RESULT') {
     logTerminal('INFO', msg.message);
   } else if (msg.type === 'SERVER_STATUS') {

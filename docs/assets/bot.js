@@ -43,13 +43,13 @@ const BOT_KNOWLEDGE = [
   {
     id: 'lisans',
     title: 'Lisans & PIN Mimarisi',
-    desc: 'Ocean AC modeli lisans yonetimi',
+    desc: 'Tek kullanımlık PIN ile uzaktan kontrol yönetimi',
     iconColor: '#f59e0b',
     icon: '',
-    answer: `Atlas AC, Ocean AC mimarisini kullanir:<br><br>
-    1. Lisans sadece sitede yetkili tarafindan kullanilir.<br>
-    2. Supheli oyuncudan kesinlikle lisans istenmez.<br>
-    3. Yetkili panelden tek kullanimlik 8 haneli PIN uretir ve oyuncu sadece PIN ile tarama yapar.`
+    answer: `Atlas AC bulut tabanlı uzaktan kontrol mimarisini kullanır:<br><br>
+    1. Lisans sadece sitede yetkili tarafından kullanılır.<br>
+    2. Şüpheli oyuncudan kesinlikle lisans istenmez.<br>
+    3. Yetkili panelden tek kullanımlık 8 haneli PIN üretir ve oyuncu sadece PIN ile tarama yapar.`
   },
   {
     id: 'bypass',

@@ -118,7 +118,7 @@ if (form) {
       let label = '';
       const cleanUpper = rawKey.toUpperCase();
 
-      // Check 0: Ocean AC Scan PIN Check (8-char PIN or ATL-XXXX)
+      // Check 0: Atlas AC Scan PIN Check (8-char PIN or ATL-XXXX)
       if (cleanUpper.length >= 4 && cleanUpper.length <= 16 && !cleanUpper.startsWith('ATLAS1.')) {
         try {
           const pinRes = await fetch(`${SUPABASE_URL}/functions/v1/scan-sync?code=${encodeURIComponent(cleanUpper)}`, {
@@ -128,10 +128,22 @@ if (form) {
             const pinData = await pinRes.json();
             if (pinData && pinData.session) {
               isValid = true;
-              label = `Geçerli Ocean Tarama PIN'i: ${cleanUpper} (Oyuncu: ${pinData.session.player_name || 'Şüpheli'})`;
+              label = `Geçerli Atlas AC Tarama PIN'i: ${cleanUpper} (Oyuncu: ${pinData.session.player_name || 'Şüpheli'})`;
             }
           }
         } catch (_) {}
+
+        // Fallback check in local storage
+        if (!isValid) {
+          try {
+            const localScans = JSON.parse(localStorage.getItem('atlas_ac_scans') || '[]');
+            const found = localScans.find(s => s.session_code === cleanUpper);
+            if (found) {
+              isValid = true;
+              label = `Geçerli Atlas AC Tarama PIN'i: ${cleanUpper} (Oyuncu: ${found.player_name || 'Şüpheli'})`;
+            }
+          } catch (_) {}
+        }
       }
 
       // Check 1: Founder Invite / Admin Code

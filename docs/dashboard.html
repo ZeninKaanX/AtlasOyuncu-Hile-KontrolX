@@ -389,9 +389,9 @@
     <aside class="dash-side" style="width:260px;background:#0d1117;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;z-index:30;">
       <!-- Sidebar Brand Header -->
       <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
-        <span class="brand-glyph" style="font-size:13px;padding:3px 7px;">}&lt;(((◈&gt;</span>
+        <img class="brand-logo-img" src="assets/atlas_logo.png" alt="Atlas AC Logo" style="height:32px;width:auto;object-fit:contain;">
         <a class="brand" href="index.html" style="font-size:16px;">
-          <span>Atlas<span class="brand-sub">anticheat.ac</span></span>
+          <span>Atlas<span class="brand-sub">AC</span></span>
         </a>
       </div>
 
@@ -506,7 +506,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
               Create Pin
             </button>
-            <a href="https://anticheat.ac/docs" target="_blank" rel="noopener" class="button button-small button-secondary">
+            <a href="index.html#capabilities" class="button button-small button-secondary">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
               Learn more
             </a>
@@ -533,15 +533,15 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#10b981;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
               <span>Daily Pins</span>
             </div>
-            <div class="stat-counter-value" style="color:#10b981;">0/3</div>
+            <div class="stat-counter-value" style="color:#10b981;" id="statDailyPins">0/10</div>
             <div style="display:flex;gap:2px;height:12px;align-items:flex-end;">
               <span style="flex:1;height:4px;background:#1e293b;border-radius:2px;"></span>
               <span style="flex:1;height:4px;background:#1e293b;border-radius:2px;"></span>
               <span style="flex:1;height:4px;background:#1e293b;border-radius:2px;"></span>
             </div>
             <div class="stat-counter-sub" style="display:flex;justify-content:space-between;">
-              <span>Resets daily</span>
-              <span>Today</span>
+              <span>Günlük Limit</span>
+              <span>Bugün</span>
             </div>
           </div>
 
@@ -552,14 +552,10 @@
               <span>Total Pins</span>
             </div>
             <div style="display:flex;align-items:baseline;gap:8px;">
-              <div class="stat-counter-value" id="activeScansCount">58</div>
-              <span style="font-size:11px;color:#10b981;font-weight:600;">+11.5%</span>
+              <div class="stat-counter-value" id="activeScansCount">0</div>
+              <span style="font-size:11px;color:#10b981;font-weight:600;">Aktif</span>
             </div>
-            <div class="stat-counter-sub">vs last month</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;padding-top:4px;font-size:11px;color:#64748b;">
-              <div>Last: 52</div>
-              <div>Current: 58</div>
-            </div>
+            <div class="stat-counter-sub">Toplam oluşturulan PIN</div>
           </div>
 
           <!-- 3. Pending -->
@@ -568,9 +564,8 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#f59e0b;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
               <span>Pending</span>
             </div>
-            <div class="stat-counter-value" style="color:#f59e0b;">0</div>
-            <div class="stat-counter-sub">Needs attention</div>
-            <div class="stat-counter-sub" style="padding-top:6px;color:#64748b;">No pins waiting</div>
+            <div class="stat-counter-value" style="color:#f59e0b;" id="statPendingPins">0</div>
+            <div class="stat-counter-sub">Oyuncu bekleniyor</div>
           </div>
 
           <!-- 4. Finished -->
@@ -579,10 +574,8 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#10b981;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
               <span>Finished</span>
             </div>
-            <div class="stat-counter-value" style="color:#10b981;">41</div>
-            <div class="stat-counter-sub">70.7% completion rate</div>
-            <div style="height:4px;background:#10b981;border-radius:2px;margin-top:4px;"></div>
-            <div class="stat-counter-sub" style="padding-top:2px;">+5 completed this week</div>
+            <div class="stat-counter-value" style="color:#10b981;" id="statFinishedPins">0</div>
+            <div class="stat-counter-sub">Tamamlanan taramalar</div>
           </div>
 
           <!-- 5. Expired -->
@@ -591,8 +584,8 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#ef4444;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
               <span>Expired</span>
             </div>
-            <div class="stat-counter-value" style="color:#ef4444;">17</div>
-            <div class="stat-counter-sub">29.3% of all pins</div>
+            <div class="stat-counter-value" style="color:#ef4444;" id="statExpiredPins">0</div>
+            <div class="stat-counter-sub">Süresi dolmuş PIN'ler</div>
             <div style="height:4px;background:#ef4444;border-radius:2px;margin-top:4px;"></div>
             <div class="stat-counter-sub" style="padding-top:2px;color:#ef4444;">+2 more than last month</div>
           </div>
@@ -615,13 +608,12 @@
                 <option>Expired</option>
               </select>
               <select class="dropdown-chip" id="filterGameSelect">
-                <option>All Games</option>
-                <option>Minecraft Java</option>
-                <option>Minecraft Bedrock</option>
-                <option>FiveM</option>
-                <option>Rust</option>
+                <option>Tüm Platformlar</option>
+                <option>Minecraft Java (PC)</option>
+                <option>Minecraft Bedrock (PC)</option>
+                <option>Minecraft Mobil (Yakında)</option>
               </select>
-              <button class="dropdown-chip" type="button">More</button>
+              <button class="dropdown-chip" type="button">Filtrele</button>
             </div>
           </div>
 
@@ -744,7 +736,7 @@
       <div class="selected-game-banner">
         <div class="selected-game-banner-left">
           <div style="width:24px;height:24px;border-radius:4px;background:#10b981;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;">J</div>
-          <span id="selectedGameLabel">Minecraft Java</span>
+          <span id="selectedGameLabel">Minecraft Java (PC)</span>
         </div>
         <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748b;background:rgba(255,255,255,0.04);padding:3px 8px;border-radius:4px;border:1px solid var(--border);">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -753,51 +745,45 @@
       </div>
 
       <form id="formCreateScan">
-        <!-- Game Selection Grid (4 Available) -->
+        <!-- Game Selection Grid (Minecraft Only: PC Java, PC Bedrock, and Mobile Upcoming) -->
         <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;font-family:var(--font-mono);color:#64748b;margin-bottom:8px;">
-          <span>SELECT A GAME</span>
-          <span>4 available</span>
+          <span>SELECT MINECRAFT PLATFORM</span>
+          <span>PC &amp; Mobil</span>
         </div>
 
         <div class="game-grid-select">
-          <button type="button" class="game-grid-btn selected" data-game="Minecraft Java">
+          <button type="button" class="game-grid-btn selected" data-game="Minecraft Java (PC)">
             <div class="game-grid-btn-inner">
               <div style="width:20px;height:20px;border-radius:4px;background:#10b981;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;">J</div>
-              <span>Minecraft Java</span>
+              <span>Minecraft Java (PC)</span>
             </div>
             <svg class="check-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
           </button>
 
-          <button type="button" class="game-grid-btn" data-game="Minecraft Bedrock">
+          <button type="button" class="game-grid-btn" data-game="Minecraft Bedrock (PC)">
             <div class="game-grid-btn-inner">
-              <div style="width:20px;height:20px;border-radius:4px;background:#64748b;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;">B</div>
-              <span>Minecraft Bedrock</span>
+              <div style="width:20px;height:20px;border-radius:4px;background:#0284c7;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;">B</div>
+              <span>Minecraft Bedrock (PC)</span>
             </div>
           </button>
 
-          <button type="button" class="game-grid-btn" data-game="Free Fire">
+          <button type="button" class="game-grid-btn disabled" data-game="Minecraft Mobil" style="opacity:0.6;cursor:not-allowed;" title="Mobil sürüm yakında aktif edilecektir" disabled>
             <div class="game-grid-btn-inner">
-              <div style="width:20px;height:20px;border-radius:4px;background:#ef4444;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;">F</div>
-              <span>Free Fire</span>
+              <div style="width:20px;height:20px;border-radius:4px;background:#64748b;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;">M</div>
+              <span>Minecraft Mobil</span>
             </div>
-          </button>
-
-          <button type="button" class="game-grid-btn" data-game="Hytale">
-            <div class="game-grid-btn-inner">
-              <div style="width:20px;height:20px;border-radius:4px;background:#3b82f6;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;">H</div>
-              <span>Hytale</span>
-            </div>
+            <span style="font-size:9px;font-family:var(--font-mono);background:rgba(255,255,255,0.06);color:#94a3b8;padding:2px 6px;border-radius:4px;">YAKINDA</span>
           </button>
         </div>
 
         <!-- PIN Name Input -->
         <div style="margin-bottom:18px;">
-          <label for="inputScanPlayerName" style="display:block;font-size:11px;font-family:var(--font-mono);color:#64748b;margin-bottom:6px;">PIN NAME (OPTIONAL)</label>
-          <input type="text" id="inputScanPlayerName" class="ocean-input" placeholder="Name to identify the pin" style="font-size:13px;height:42px;">
+          <label for="inputScanPlayerName" style="display:block;font-size:11px;font-family:var(--font-mono);color:#64748b;margin-bottom:6px;">ŞÜPHELİ OYUNCU ADI (OPSİYONEL)</label>
+          <input type="text" id="inputScanPlayerName" class="ocean-input" placeholder="Oyuncu adı (örn: Kaan_Oyuncu)" style="font-size:13px;height:42px;">
         </div>
 
-        <!-- Options: Private Pin Toggle + Locked RUIN / AEGIR -->
-        <div style="font-size:11px;font-family:var(--font-mono);color:#64748b;margin-bottom:8px;">OPTIONS</div>
+        <!-- Options: Private Pin Toggle + AtlasOyuncu Policies -->
+        <div style="font-size:11px;font-family:var(--font-mono);color:#64748b;margin-bottom:8px;">POLİTİKALAR &amp; AYARLAR</div>
 
         <div class="options-box">
           <div style="display:flex;gap:12px;align-items:flex-start;">
@@ -805,8 +791,8 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             </div>
             <div>
-              <strong style="font-size:13px;color:#fff;display:block;">Private Pin</strong>
-              <small style="font-size:11px;color:#64748b;">Only you and people you share with can open this pin.</small>
+              <strong style="font-size:13px;color:#fff;display:block;">Özel PIN (Private Pin)</strong>
+              <small style="font-size:11px;color:#64748b;">Yalnızca siz ve bağlantıyı paylaştığınız yetkililer inceleyebilir.</small>
             </div>
           </div>
           <label class="switch-toggle">
@@ -816,13 +802,13 @@
         </div>
 
         <div class="options-box-sub">
-          <div class="option-locked-card">
-            <span>RUIN</span>
-            <span style="font-size:10px;color:#64748b;">Locked</span>
+          <div class="option-locked-card" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>AutoClicker Serbest (Allowed Policy)</span>
+            <span style="font-size:10px;color:#10b981;font-weight:600;">Atlas Kuralı</span>
           </div>
-          <div class="option-locked-card">
-            <span>ÆGIR</span>
-            <span style="font-size:10px;color:#64748b;">Locked</span>
+          <div class="option-locked-card" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>Derin JVM &amp; Bellek Kancası Taraması</span>
+            <span style="font-size:10px;color:#38bdf8;font-weight:600;">Aktif</span>
           </div>
         </div>
 
