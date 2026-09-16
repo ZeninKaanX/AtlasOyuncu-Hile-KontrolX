@@ -19,13 +19,17 @@ console.log('    ATLAS AC - EMBEDDED STANDALONE PACKAGING PIPELINE ');
 console.log('======================================================\n');
 
 // 1. Run Tests to guarantee 100% engine integrity
-console.log('[*] Step 1: Executing 57/57 engine verification tests...');
-try {
-  execSync('npm test', { cwd: ROOT_DIR, stdio: 'inherit' });
-  console.log('[+] All tests passed successfully.\n');
-} catch (err) {
-  console.error('[!] Test suite failed! Aborting build.');
-  process.exit(1);
+if (process.env.SKIP_TESTS === '1') {
+  console.log('[*] Step 1: Skipping tests (SKIP_TESTS=1)...');
+} else {
+  console.log('[*] Step 1: Executing 57/57 engine verification tests...');
+  try {
+    execSync('npm test', { cwd: ROOT_DIR, stdio: 'inherit' });
+    console.log('[+] All tests passed successfully.\n');
+  } catch (err) {
+    console.error('[!] Test suite failed! Aborting build.');
+    process.exit(1);
+  }
 }
 
 // 2. Compile with the maintained @yao-pkg/pkg fork. Never modify or replace

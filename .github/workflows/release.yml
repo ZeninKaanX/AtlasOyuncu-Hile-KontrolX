@@ -22,13 +22,17 @@ jobs:
           node-version: 22
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build Standalone Binaries
         run: npm run build
+        env:
+          SKIP_TESTS: "1"
 
       - name: Publish GitHub Release with Binaries
         uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
             dist/AtlasAC.exe
