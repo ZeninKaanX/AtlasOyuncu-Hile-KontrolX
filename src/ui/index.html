@@ -763,29 +763,42 @@
   <div class="scan-screen-modal" id="scanModalHud">
     <button class="hud-close-btn" id="btnCloseHud" title="Close">Close</button>
     <div class="hud-container">
-      <!-- Circular Progress Ring (Chromatic Beam & Radar Glow) -->
-      <div class="ocean-radar-wrapper">
-        <div class="radar-glow-disc"></div>
-        <svg class="progress-svg" viewBox="0 0 220 220">
-          <defs>
-            <linearGradient id="snowSpectrumGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#ffffff" />
-              <stop offset="40%" stop-color="#e0f2fe" />
-              <stop offset="70%" stop-color="#00f0ff" />
-              <stop offset="100%" stop-color="#7000ff" />
-            </linearGradient>
-          </defs>
-          <circle class="progress-ring-track" cx="110" cy="110" r="95"></circle>
-          <circle class="progress-ring-circle" id="hudProgressRingCircle" cx="110" cy="110" r="95"></circle>
-        </svg>
-        <div class="radar-center-text">
-          <div class="radar-counter-val"><span id="hudProgressPercent">0</span><span class="radar-counter-unit">%</span></div>
-          <div class="radar-objects-lbl" id="hudObjectsCount">0 objects</div>
+      <!-- Futuristic Cyber Rectangular Progress Module -->
+      <div class="cyber-rect-progress-panel">
+        <div class="rect-hud-top-meta">
+          <div class="rect-status-col">
+            <span class="rect-live-chip"><span class="live-dot"></span> ADLİ BİLİŞİM TARAMASI</span>
+            <div class="hud-header-title">Atlas AC Inspection</div>
+            <div class="hud-active-step-lbl" id="hudActiveStepLabel">Initializing Inspection Engine...</div>
+          </div>
+          <div class="rect-counter-block">
+            <div class="rect-counter-val">
+              <span id="hudProgressPercent">0</span><span class="rect-counter-unit">%</span>
+            </div>
+            <div class="rect-objects-lbl" id="hudObjectsCount">0 objects</div>
+          </div>
+        </div>
+
+        <!-- The Main Rectangular Progress Bar with Cyber Frame & Laser Edge -->
+        <div class="rect-progress-track-wrapper">
+          <div class="rect-progress-track">
+            <div class="rect-progress-fill" id="hudProgressBarFill" style="width: 0%;">
+              <div class="rect-progress-stripes"></div>
+              <div class="rect-progress-laser-lead"></div>
+            </div>
+          </div>
+          <!-- Segmented Tick Marks (0, 25, 50, 75, 100) -->
+          <div class="rect-progress-ticks">
+            <span>0%</span>
+            <span>25%</span>
+            <span>50%</span>
+            <span>75%</span>
+            <span>100%</span>
+          </div>
         </div>
       </div>
-
-      <div class="hud-header-title">Atlas AC Inspection</div>
-      <div class="hud-active-step-lbl" id="hudActiveStepLabel">Initializing Inspection Engine...</div>
+      <!-- Hidden ring placeholder for backward compatibility -->
+      <svg style="display:none;" viewBox="0 0 10 10"><circle id="hudProgressRingCircle" cx="5" cy="5" r="4"></circle></svg>
 
       <!-- 9-Step Interactive Checklist Grid -->
       <div class="checklist-grid">

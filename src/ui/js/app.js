@@ -1154,6 +1154,8 @@ function startProgressAnimation() {
     if (intVal !== lastDrawnPercent) {
       lastDrawnPercent = intVal;
       if (percentEl) percentEl.textContent = intVal;
+      const barFill = document.getElementById('hudProgressBarFill');
+      if (barFill) barFill.style.width = intVal + '%';
       if (ringCircle) {
         const offset = CIRCUMFERENCE - (intVal / 100) * CIRCUMFERENCE;
         ringCircle.style.strokeDashoffset = offset;
@@ -1279,6 +1281,8 @@ function handleScanComplete(data) {
   const objectsEl = document.getElementById('hudObjectsCount');
 
   if (percentEl) percentEl.textContent = '100';
+  const barFill = document.getElementById('hudProgressBarFill');
+  if (barFill) barFill.style.width = '100%';
   if (ringCircle) ringCircle.style.strokeDashoffset = '0';
   if (hudActiveLbl) hudActiveLbl.textContent = t.hud_complete;
   if (tickerText) tickerText.innerHTML = `<span style="color: var(--threat-clean); font-weight: 700;">${t.hud_finished_ticker}</span>`;
@@ -1351,6 +1355,8 @@ function finalizeScanWithError(message) {
   const hudActiveLbl = document.getElementById('hudActiveStepLabel');
   const tickerText = document.getElementById('hudTickerText');
   if (percentEl) percentEl.textContent = '0';
+  const barFill = document.getElementById('hudProgressBarFill');
+  if (barFill) barFill.style.width = '0%';
   if (ringCircle) ringCircle.style.strokeDashoffset = String(CIRCUMFERENCE);
   if (hudActiveLbl) {
     hudActiveLbl.innerHTML = '<span style="color:var(--threat-critical); font-weight:700;">' +
@@ -1586,6 +1592,8 @@ function resetHudCards() {
   const tickerText = document.getElementById('hudTickerText');
 
   if (percentEl) percentEl.textContent = '0';
+  const barFill = document.getElementById('hudProgressBarFill');
+  if (barFill) barFill.style.width = '0%';
   if (ringCircle) ringCircle.style.strokeDashoffset = String(CIRCUMFERENCE);
   if (hudActiveLbl) hudActiveLbl.textContent = t.hud_init;
   if (objectsEl) objectsEl.textContent = `0 ${t.objects}`;
