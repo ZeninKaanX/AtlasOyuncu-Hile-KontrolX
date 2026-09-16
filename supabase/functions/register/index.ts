@@ -4,7 +4,8 @@ Deno.serve(async req => {
   const origin = req.headers.get('Origin') || '';
   const headers = cors(origin);
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers });
-  if (origin !== Deno.env.get('APP_ORIGIN') || req.method !== 'POST') return json({ error: 'Forbidden' }, 403, headers);
+  const isAllowed = !origin || origin === Deno.env.get('APP_ORIGIN') || origin.endsWith('github.io') || origin.includes('localhost') || origin.includes('127.0.0.1');
+  if (!isAllowed || req.method !== 'POST') return json({ error: 'Forbidden' }, 403, headers);
   try {
     const { email = '', username = '', password = '', inviteKey = '' } = await req.json();
     const cleanEmail = String(email).trim().toLowerCase();

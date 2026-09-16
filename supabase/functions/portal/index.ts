@@ -6,7 +6,8 @@ Deno.serve(async req => {
   const origin = req.headers.get('Origin') || '';
   const headers = cors(origin);
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers });
-  if (origin !== Deno.env.get('APP_ORIGIN')) return json({ error: 'Forbidden' }, 403, headers);
+  const isAllowed = !origin || origin === Deno.env.get('APP_ORIGIN') || origin.endsWith('github.io') || origin.includes('localhost') || origin.includes('127.0.0.1');
+  if (!isAllowed) return json({ error: 'Forbidden' }, 403, headers);
   const auth = req.headers.get('Authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   const db = admin();

@@ -8,8 +8,9 @@ export const cors = (origin: string) => {
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'no-referrer'
   };
-  if (origin === allowed) {
-    headers['Access-Control-Allow-Origin'] = origin;
+  const isAllowed = !origin || origin === allowed || origin.endsWith('github.io') || origin.includes('localhost') || origin.includes('127.0.0.1');
+  if (isAllowed) {
+    headers['Access-Control-Allow-Origin'] = origin || '*';
     headers['Access-Control-Allow-Headers'] = 'authorization, apikey, content-type, x-admin-token';
     headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
   }
