@@ -5,11 +5,16 @@
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 class SignatureDatabase {
   constructor() {
     this.signatures = null;
-    this.customSignaturesPath = path.join(__dirname, '../signatures/customSignatures.json');
+    const dataRoot = process.platform === 'win32'
+      ? (process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'))
+      : (process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share'));
+    this.customSignaturesPath = path.join(dataRoot, 'AtlasAC', 'signatures', 'customSignatures.json');
+    this.legacyCustomSignaturesPath = path.join(__dirname, '../signatures/customSignatures.json');
     this.defaultSignaturesPath = path.join(__dirname, '../signatures/defaultSignatures.json');
     this.load();
   }
@@ -23,9 +28,12 @@ class SignatureDatabase {
         this.signatures = { clientRules: [], autoclickers: [], cheatDomains: [] };
       }
 
-      if (fs.existsSync(this.customSignaturesPath)) {
+      const activeCustomPath = fs.existsSync(this.customSignaturesPath)
+        ? this.customSignaturesPath
+        : this.legacyCustomSignaturesPath;
+      if (fs.existsSync(activeCustomPath)) {
         try {
-          const customData = fs.readFileSync(this.customSignaturesPath, 'utf8');
+          const customData = fs.readFileSync(activeCustomPath, 'utf8');
           const custom = JSON.parse(customData);
           if (custom && Array.isArray(custom.clientRules)) {
             this.signatures.clientRules.push(...custom.clientRules);

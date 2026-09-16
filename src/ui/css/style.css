@@ -130,19 +130,6 @@ body {
   animation: floatOrb2 22s ease-in-out infinite alternate;
 }
 
-.glow-center-pulse {
-  position: absolute;
-  top: 35%;
-  left: 40%;
-  width: 550px;
-  height: 550px;
-  border-radius: 50%;
-  filter: blur(140px);
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
-  pointer-events: none;
-  animation: pulseCenter 14s ease-in-out infinite alternate;
-}
-
 @keyframes floatOrb1 {
   0% { transform: translate(0, 0) scale(1); opacity: 0.22; }
   50% { transform: translate(-40px, 30px) scale(1.12); opacity: 0.35; }
@@ -153,12 +140,6 @@ body {
   0% { transform: translate(0, 0) scale(1); opacity: 0.20; }
   50% { transform: translate(45px, -35px) scale(1.15); opacity: 0.32; }
   100% { transform: translate(-30px, 25px) scale(0.92); opacity: 0.22; }
-}
-
-@keyframes pulseCenter {
-  0% { opacity: 0.08; transform: scale(0.9); }
-  50% { opacity: 0.22; transform: scale(1.18); }
-  100% { opacity: 0.08; transform: scale(0.9); }
 }
 
 /* Master Shell Container */
@@ -1671,15 +1652,23 @@ body {
   width: 100%;
 }
 
-.findings-display-panel .findings-cards-stream {
-  max-height: 720px;
+/* Scan-tab findings lists: fixed scrollable area so the page never grows
+   with the number of findings. Direct children of a tab pane only. */
+.tab-pane > .findings-cards-stream {
+  padding: 0;
+  max-height: calc(100vh - 305px);
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
-.tab-pane .findings-cards-stream {
-  padding: 0;
-  max-height: none;
-  overflow: visible;
+/* Dashboard findings list: cap to a viewport-proportional area. Placed AFTER
+   the .tab-pane rule so this (equal-specificity) cap wins for the panel list,
+   which is nested inside #pane-dashboard.tab-pane. */
+.findings-display-panel .findings-cards-stream {
+  max-height: min(720px, calc(100vh - 230px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* Individual Finding Card (Ocean Compact Strip & Click-to-Expand Accordion) */
@@ -1927,6 +1916,7 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
 }
 
 .item-desc-text {

@@ -37,3 +37,8 @@ temp/
 tmp/
 .temp/
 .cache/
+
+# Private signing material (never commit or publish)
+secrets/
+*.private.pem
+backups/

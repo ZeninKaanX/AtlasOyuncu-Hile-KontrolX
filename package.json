@@ -7,9 +7,10 @@
   "scripts": {
     "start": "node src/main/index.js",
     "stop": "node src/main/index.js --stop",
-    "test": "node tests/testFarbenAC.js && node tests/test_all_clients.js && node tests/test_meteor_liquid_wurst_doomsday.js && node tests/test_server_status.js && node tests/allMarketCheats.test.js",
+    "test": "node tests/testFarbenAC.js && node tests/test_all_clients.js && node tests/test_meteor_liquid_wurst_doomsday.js && node tests/test_server_status.js && node tests/allMarketCheats.test.js && node tests/testSecurityHardening.js && node tests/testLicenseManager.js",
     "benchmark": "node scripts/benchmark.js",
-    "build": "node scripts/build.js"
+    "build": "node scripts/build.js",
+    "license:issue": "node scripts/issue_license.js"
   },
   "pkg": {
     "scripts": [
@@ -20,8 +21,8 @@
       "src/signatures/**/*"
     ],
     "targets": [
-      "node18-linux-x64",
-      "node18-win-x64"
+      "node22-linux-x64",
+      "node22-win-x64"
     ],
     "outputPath": "dist"
   },
@@ -42,11 +43,11 @@
   },
   "homepage": "https://github.com/ZeninKaanX/AtlasOyuncu-Hile-KontrolX#readme",
   "dependencies": {
-    "adm-zip": "^0.6.0",
+    "adm-zip": "0.6.1",
     "express": "^5.2.1",
     "ws": "^8.21.3"
   },
   "devDependencies": {
-    "pkg": "^5.8.1"
+    "@yao-pkg/pkg": "6.22.0"
   }
 }

@@ -120,8 +120,26 @@ class MemoryScannerEngine {
 
             // Deep PE analysis if file exists on disk
             let peInfo = null;
-            if (mod.FileName && fs.existsSync(mod.FileName)) {
+            const isSystemModule = /^([a-z]:\\windows)|(^\/)/.test(modPath) && /system32|syswow64|winsxs|servicing|microsoft\.net|drivers|assembly|globalization/i.test(modPath);
+            if (mod.FileName && fs.existsSync(mod.FileName) && !isSystemModule) {
               peInfo = peInspector.inspectFile(mod.FileName);
+            } else if (isSystemModule) {
+              // Windows/system DLL'leri her süreçte yüzlerce kez PE okumak taramayı
+              // dakikalarca uzatır; bunlar kod bütünlüğü motorunda zaten ele alınır.
+              peInfo = peInspector.classifyBinary({
+                filePath: mod.FileName || mod.ModuleName,
+                fileName: mod.ModuleName || path.basename(mod.FileName || ''),
+                extension: path.extname(mod.FileName || mod.ModuleName || '.dll').toLowerCase(),
+                isDll: true,
+                isDisguisedExtension: false,
+                exportedFunctions: [],
+                hasAuthenticode: false,
+                certSigners: [],
+                matchedCheatTokens: [],
+                matchedJvmHooks: [],
+                matchedInjectionApis: [],
+                contentString: ''
+              });
             } else {
               peInfo = peInspector.classifyBinary({
                 filePath: mod.FileName || mod.ModuleName,

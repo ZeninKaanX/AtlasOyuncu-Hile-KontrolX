@@ -32,6 +32,9 @@ class DeepArchiveScanner {
     this.sharedHeaderBuf = Buffer.alloc(4); // Reusable zero-allocation header buffer
     this.maxFileSize = 500 * 1024 * 1024; // Limit archive scan to 500MB (to support 258MB containers & large cheat bundles)
     this.maxInnerFileSize = 135 * 1024 * 1024; // Limit inner file decompression inside archives to 135MB (supports 125MB Nightmare.zip while skipping 420MB binaries)
+    this.maxArchiveEntries = 10000;
+    this.maxTotalExpandedBytes = 512 * 1024 * 1024;
+    this.maxCompressionRatio = 250;
     this.maxDepth = 7; // Recursion depth in user folders (to penetrate deeply hidden subdirectories)
     this.nonExecutableMediaExts = new Set([
       '.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm',
@@ -386,6 +389,37 @@ class DeepArchiveScanner {
       const entries = zip.getEntries();
       const entryNames = entries.map(e => e.entryName);
 
+      let totalExpandedBytes = 0;
+      let archiveLimitReason = '';
+      if (entries.length > this.maxArchiveEntries) {
+        archiveLimitReason = `Girdi sayısı sınırı aşıldı (${entries.length}/${this.maxArchiveEntries})`;
+      }
+      for (const entry of entries) {
+        const expanded = Number(entry.header && entry.header.size) || 0;
+        const compressed = Number(entry.header && entry.header.compressedSize) || 0;
+        totalExpandedBytes += expanded;
+        if (!archiveLimitReason && compressed > 0 && expanded / compressed > this.maxCompressionRatio) {
+          archiveLimitReason = `Aşırı sıkıştırma oranı: ${entry.entryName}`;
+        }
+        if (!archiveLimitReason && totalExpandedBytes > this.maxTotalExpandedBytes) {
+          archiveLimitReason = `Toplam açılmış veri sınırı aşıldı (${this.formatSize(totalExpandedBytes)})`;
+        }
+      }
+      if (archiveLimitReason) {
+        return [{
+          level: 'HIGH',
+          type: 'ARCHIVE_SAFETY_LIMIT_EXCEEDED',
+          name: `Güvenli Analiz Sınırını Aşan Arşiv: ${fileName}`,
+          file: fileName,
+          path: filePath,
+          timestamp: mtimeStr,
+          size: sizeStr,
+          confidence: 'Eksik inceleme — temiz kabul edilemez',
+          description: `Arşiv kaynak tüketimi koruması nedeniyle tamamen açılamadı: ${archiveLimitReason}`,
+          evidence: [`Arşiv: ${filePath}`, archiveLimitReason]
+        }];
+      }
+
       // 0. Extract Mod Metadata (fabric.mod.json, quilt.mod.json, mcmod.info, mods.toml, MANIFEST.MF)
       let modMetadata = null;
       const fabricEntry = entries.find(e => e.entryName === 'fabric.mod.json' || e.entryName.endsWith('/fabric.mod.json'));
@@ -673,7 +707,18 @@ class DeepArchiveScanner {
         }
       }
     } catch (zipErr) {
-      // Archive might be password protected or corrupted; ignore
+      findings.push({
+        level: 'HIGH',
+        type: 'UNINSPECTABLE_ARCHIVE',
+        name: `İncelenemeyen Arşiv: ${fileName}`,
+        file: fileName,
+        path: filePath,
+        timestamp: mtimeStr,
+        size: sizeStr,
+        confidence: 'Eksik inceleme — temiz kabul edilemez',
+        description: `Arşiv bozuk, şifreli veya okunamıyor: ${zipErr.message}`,
+        evidence: [`Arşiv: ${filePath}`, `Hata: ${zipErr.message}`]
+      });
     }
 
     return findings;

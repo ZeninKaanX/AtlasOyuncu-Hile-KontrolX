@@ -1,6 +1,6 @@
 /**
  * Atlas AC - Client Integrity Inspection Reporter Engine
- * Generates cryptographic, tamper-evident HTML and JSON scan reports
+ * Generates self-contained HTML scan reports.
  * in the signature Ocean Anti-Cheat layout for server administrators.
  */
 
@@ -39,7 +39,10 @@ class ForensicReporter {
     const isOnline = sStatus.online !== false;
     const onlineBadgeText = isOnline ? "ONLINE" : "OFFLINE";
     const onlineBadgeClass = isOnline ? "widget-online-pill" : "widget-online-pill offline";
-    const faviconSrc = sStatus.favicon || `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="12" fill="%230f172a"/><path d="M24 8l16 8v16l-16 8-16-8V16l16-8z" fill="%230284c7" stroke="%2338bdf8" stroke-width="2"/><path d="M24 24l16-8M24 24v16M24 24L8 16" stroke="%23bae6fd" stroke-width="2"/></svg>`;
+    const fallbackFavicon = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="12" fill="%230f172a"/><path d="M24 8l16 8v16l-16 8-16-8V16l16-8z" fill="%230284c7" stroke="%2338bdf8" stroke-width="2"/><path d="M24 24l16-8M24 24v16M24 24L8 16" stroke="%23bae6fd" stroke-width="2"/></svg>`;
+    const faviconSrc = /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(String(sStatus.favicon || ''))
+      ? String(sStatus.favicon)
+      : fallbackFavicon;
     const serverMotd = sStatus.motd || "TR atlasoyuncu.com 1.21.11 | 26.2 GERCEK KALITE 👑 SKYBLOCK | TOWNY | BOXPVP | PVP | SMP | PILLARS 👑";
 
     const allFindings = scanData.allFindings || [];
@@ -68,7 +71,7 @@ class ForensicReporter {
     let riskLabel = "0% Player Risk History";
 
     if (criticalCount > 0) {
-      verdictText = "CRITICAL CHEATS DETECTED";
+      verdictText = "CRITICAL CHEAT DETECTED";
       verdictTr = "HİLE TESPİT EDİLDİ";
       verdictState = "critical";
       riskPercent = 100;
@@ -1508,7 +1511,7 @@ class ForensicReporter {
     <section class="hero-verdict-banner verdict-${verdictState}">
       <div class="hero-info-col">
         <div>
-          <h1 class="hero-main-title">Scan Results</h1>
+          <h1 class="hero-main-title">ATLAS AC INSPECTION REPORT</h1>
           <p class="hero-subtitle">
             Detailed forensic breakdown and logic analysis of the requested execution context.
           </p>
@@ -1544,15 +1547,11 @@ class ForensicReporter {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             Modrinth: 13,321 Clean Mods
           </span>
-          <span class="hero-tag-pill" style="background: rgba(0, 240, 255, 0.08); border-color: rgba(0, 240, 255, 0.35); color: #00f0ff;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-            Threat Matrix: 22/22 Market Cheats Verified (%100 Detection)
-          </span>
         </div>
       </div>
 
       <div class="hero-verdict-visual">
-        <div class="verdict-large-badge">${verdictTr}</div>
+        <div class="verdict-large-badge">${escapeHtml(verdictText)} / ${escapeHtml(verdictTr)}</div>
         <div class="risk-pill">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           ${riskLabel}
@@ -1633,11 +1632,11 @@ class ForensicReporter {
         <div class="pc-data-list">
           <div class="pc-row">
             <span class="row-lbl">İşletim Sistemi</span>
-            <span class="row-val">${platform}</span>
+            <span class="row-val">${escapeHtml(platform)}</span>
           </div>
           <div class="pc-row">
             <span class="row-lbl">Denetim Tarihi</span>
-            <span class="row-val">${timestamp}</span>
+            <span class="row-val">${escapeHtml(timestamp)}</span>
           </div>
           <div class="pc-row">
             <span class="row-lbl">Ülke</span>
@@ -1645,11 +1644,11 @@ class ForensicReporter {
           </div>
           <div class="pc-row">
             <span class="row-lbl">Bağlı Sunucu</span>
-            <span class="row-val" style="color: var(--threat-info);">${serverHost}${serverLatency}</span>
+            <span class="row-val" style="color: var(--threat-info);">${escapeHtml(serverHost)}${escapeHtml(serverLatency)}</span>
           </div>
           <div class="pc-row">
             <span class="row-lbl">Pencere Başlığı</span>
-            <span class="row-val">Minecraft ${sStatus.version || "1.21.11"}</span>
+            <span class="row-val">Minecraft ${escapeHtml(sStatus.version || "1.21.11")}</span>
           </div>
         </div>
 
@@ -1659,7 +1658,7 @@ class ForensicReporter {
             <div class="widget-avatar-col">
               <div class="server-avatar-box">
                 <div class="avatar-ring-glow"></div>
-                <img src="${faviconSrc}" alt="Minecraft Server" class="server-avatar-img">
+                <img src="${escapeHtml(faviconSrc)}" alt="Minecraft Server" class="server-avatar-img">
               </div>
               <span class="${onlineBadgeClass}">${onlineBadgeText}</span>
             </div>
@@ -1678,14 +1677,14 @@ class ForensicReporter {
               <div class="widget-stat-lbl">
                 <span>VERSION</span>
               </div>
-              <div class="widget-stat-val">${serverVersion}</div>
+              <div class="widget-stat-val">${escapeHtml(serverVersion)}</div>
             </div>
           </div>
 
           <!-- Active In-Game Inspection Detection Banner -->
           <div class="active-game-indicator-bar ${activeStateClass}">
             <span class="active-indicator-dot ${activeDotClass}"></span>
-            <span class="active-indicator-text">${activeStatusText}</span>
+            <span class="active-indicator-text">${escapeHtml(activeStatusText)}</span>
             <span class="active-indicator-ping">${sStatus.latency ? `${sStatus.latency} ms` : '126 ms'}</span>
           </div>
 
@@ -1696,7 +1695,7 @@ class ForensicReporter {
             </div>
             <div class="widget-motd-container">
               <p class="motd-text-line">
-                ${serverMotd}
+                ${escapeHtml(serverMotd)}
               </p>
             </div>
           </div>

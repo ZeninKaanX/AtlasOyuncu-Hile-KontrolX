@@ -55,21 +55,18 @@ const serverStatus = require('./serverStatus');
 
 function isAutoClickerFinding(f) {
   if (!f) return false;
-  if (f.badge === 'ALLOWED_POLICY' && /autoclicker|clicker|makro|macro|opautoclick/i.test(`${f.name || ''} ${f.type || ''} ${f.description || ''}`)) return true;
-  if (f.type && (
-    f.type === 'ALLOWED_UTILITY_AUTOCLICKER' ||
-    f.type === 'AUTOCLICKER_PREFETCH' ||
-    f.type === 'ALLOWED_AUTOCLICKER_RECORD' ||
-    f.type === 'AUTOCLICKER_BINARY' ||
-    f.type === 'PCA_EXECUTED_ALLOWED_TOOL' ||
-    f.type === 'DEFENDER_AUTOCLICKER_ALLOWED' ||
-    f.type === 'AUTOCLICKER_REGISTRY_RECORD' ||
-    f.type === 'AUTOCLICKER_ALLOWED_POLICY' ||
-    f.type === 'ALLOWED_POLICY_AUTOCLICKER_SUMMARY' ||
-    f.type.includes('AUTOCLICKER')
-  )) return true;
-  const text = `${f.name || ''} ${f.type || ''} ${f.description || ''} ${f.file || ''} ${f.path || ''}`.toLowerCase();
-  return /autoclicker|op\s*auto\s*clicker|murgee|speedclicker|fastclick|opautoclick/i.test(text);
+  const policyTypes = new Set([
+    'ALLOWED_UTILITY_AUTOCLICKER',
+    'AUTOCLICKER_PREFETCH',
+    'ALLOWED_AUTOCLICKER_RECORD',
+    'AUTOCLICKER_BINARY',
+    'PCA_EXECUTED_ALLOWED_TOOL',
+    'DEFENDER_AUTOCLICKER_ALLOWED',
+    'AUTOCLICKER_REGISTRY_RECORD',
+    'AUTOCLICKER_ALLOWED_POLICY',
+    'ALLOWED_POLICY_AUTOCLICKER_SUMMARY'
+  ]);
+  return policyTypes.has(f.type) || (f.badge === 'ALLOWED_POLICY' && policyTypes.has(f.type));
 }
 
 class ScannerCore {
@@ -102,6 +99,11 @@ class ScannerCore {
       }
       return Math.floor(currentPercent);
     };
+
+    // A timeout must never masquerade as a completed clean scan. Individual
+    // engines own their command-level timeouts; the orchestrator waits until
+    // each engine has produced a definitive SUCCESS/ERROR result.
+    const withBudget = async (_ms, _label, factory) => Promise.resolve().then(factory);
 
     let lastProgressTime = 0;
     const reportProgress = (stage, targetPercent, log, finding = null, target = null, countDelta = 0) => {
@@ -157,7 +159,15 @@ class ScannerCore {
       // PHASE 0: Init — signature DB check (0% -> 4%)
       // ─────────────────────────────────────────────────────────────────────────
       reportProgress('INITIALIZING', 2, 'İmza veritabanı ve güvenlik modülleri doğrulanıyor...', null, 'Signature Database', 12);
-      const updateResult = await updater.checkForUpdates();
+      // Guncelleme kontrolu ag tabanli oldugundan asla taramanin ilk adimini
+      // kilitlemesin: 8 saniyede cozulmezse lokale devam edilir.
+      const updateResult = await Promise.race([
+        updater.checkForUpdates(),
+        new Promise((r) => setTimeout(() => r({
+          updated: false,
+          message: 'Güncelleme kontrolü zaman aşımına uğradı (8 sn). Lokal imza veritabanı kullanılıyor.'
+        }), 5000))
+      ]);
       reportProgress('INITIALIZING', 4, updateResult.message || 'İmza veritabanı güncel.', null, 'Custom Signature Registry', 1);
 
       // ─────────────────────────────────────────────────────────────────────────
@@ -184,9 +194,9 @@ class ScannerCore {
         // 1A. Bypass & Injection Analysis
         (async () => {
           reportProgress('BYPASS_ANALIZI', 8, 'Bypass vektörleri taranıyor (Spotify, Kernel BYOVD, DNS, JVM, ADS)...', null, 'Bypass Subsystem', 5);
-          const res = await bypassDetector.scanAllBypasses((subTarget, count) => {
+          const res = await withBudget(60000, 'BYPASS ANALIZI', () => bypassDetector.scanAllBypasses((subTarget, count) => {
             reportProgress('BYPASS_ANALIZI', 12, `Bypass: ${path.basename(subTarget)}`, null, subTarget, count);
-          });
+          }));
           const bypassList = [
             ...(res.spotifyInjection || []),
             ...(res.kernelBypass || []),
@@ -209,9 +219,9 @@ class ScannerCore {
         // 1B. Memory & Process Analysis
         (async () => {
           reportProgress('BELLEK_TARAMASI', 8, 'Süreç belleği ve DLL modülleri paralel taranıyor...', null, 'Memory Subsystem', 5);
-          const res = await memoryScanner.scanProcesses((targetName, count) => {
+          const res = await withBudget(60000, 'BELLEK TARAMASI', () => memoryScanner.scanProcesses((targetName, count) => {
             reportProgress('BELLEK_TARAMASI', 12, `Bellek: ${targetName}`, null, targetName, count);
-          });
+          }));
           pushFindings(res && res.findings, 'BELLEK_TARAMASI', 'MEMORY');
           advancePhase1();
           return res;
@@ -231,12 +241,12 @@ class ScannerCore {
         // 1D. Minecraft Deep Scan
         (async () => {
           reportProgress('MINECRAFT_MODLARI', 8, 'Minecraft mod, kütüphane ve bytecode trojan taraması çalışıyor...', null, 'Minecraft Subsystem', 5);
-          const res = await minecraftInspector.scanMinecraft(
+          const res = await withBudget(90000, 'MINECRAFT MOD ANALIZI', () => minecraftInspector.scanMinecraft(
             (msg, target, objDelta) => {
               reportProgress('MINECRAFT_MODLARI', 15, msg, null, target || msg, objDelta || 1);
             },
             (f) => onLiveFinding(f, 'MINECRAFT_MODLARI', 'MOD DETECTED')
-          );
+          ));
           pushFindings(res && res.findings, 'MINECRAFT_MODLARI', 'MOD DETECTED');
           advancePhase1();
           return res;
@@ -262,7 +272,7 @@ class ScannerCore {
       setPercent(38);
       reportProgress('ADLI_TARAMA', 38, 'Aşama 2: 25+ adli bilişim motoru eş zamanlı çalışıyor...', null, 'Parallel Forensic Group 2', 0);
 
-      const totalPhase2Engines = 29;
+      const totalPhase2Engines = 33;
       let phase2Done = 0;
       const advancePhase2 = () => {
         phase2Done++;
@@ -271,7 +281,7 @@ class ScannerCore {
 
       const wrapPhase2 = async (stage, label, scanFn) => {
         try {
-          const res = await scanFn();
+          const res = await Promise.resolve().then(scanFn);
           const findings = Array.isArray(res) ? res : (res && res.findings ? res.findings : []);
           if (findings.length > 0) {
             pushFindings(findings, stage, label);
@@ -279,6 +289,16 @@ class ScannerCore {
           advancePhase2();
           return res;
         } catch (err) {
+          pushFindings([{
+            level: 'HIGH',
+            severity: 'HIGH',
+            type: 'SCAN_ENGINE_ERROR',
+            name: `Tarama Motoru Tamamlanamadı: ${label}`,
+            category: 'INTEGRITY',
+            confidence: 'Eksik inceleme',
+            description: `${stage} motoru hata verdi; bu alan temiz olarak kabul edilemez.`,
+            evidence: [`Motor: ${label}`, `Aşama: ${stage}`, `Hata: ${err.message}`]
+          }], stage, 'ENGINE ERROR');
           advancePhase2();
           return { status: 'ERROR', error: err.message, findings: [] };
         }
@@ -313,7 +333,11 @@ class ScannerCore {
         ldPreloadResults,
         psScriptResults,
         recycleResults,
-        netResults
+        netResults,
+        zoneIdentifierResults,
+        dnsCacheResults,
+        jvmAttachResults,
+        dpsResults
       ] = await Promise.all([
 
         // 2A. NTFS USN Journal
@@ -559,7 +583,10 @@ class ScannerCore {
       // Smart Anti-Forensics Correlation (Cheat Activity + USN Journal / Evidence Wiping)
       const usnWipeFinding = allFindings.find(f =>
         f.type && (
-          f.type.startsWith('USN_JOURNAL_') ||
+          f.type === 'USN_JOURNAL_PURGED' ||
+          f.type === 'USN_JOURNAL_WIPED_ANTI_FORENSICS' ||
+          f.type === 'USN_JOURNAL_RECREATED_DURING_SESSION' ||
+          f.type === 'USN_JOURNAL_DELETE_COMMAND_DETECTED' ||
           f.type === 'USN_JOURNAL_DELETION_COMMAND' ||
           f.type === 'ACTIVE_CLEANER_TOOL_RUNNING' ||
           f.type === 'CLEANER_TOOL_HISTORY'
@@ -665,7 +692,11 @@ class ScannerCore {
         lnkFindings,
         hollowingResults,
         ldPreloadResults,
-        psScriptResults
+        psScriptResults,
+        zoneIdentifierResults,
+        dnsCacheResults,
+        jvmAttachResults,
+        dpsResults
       };
 
       // Automatic report generation

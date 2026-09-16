@@ -456,19 +456,8 @@ class SemanticCheatClassifier {
     // Determine whether this is a trojanized clean mod or an outright homemade cheat
     const isClaimingWhitelisted = whitelistResult && whitelistResult.isWhitelisted;
 
-    // Strict 0-False-Flag Whitelist Protection:
-    // If a mod is whitelisted, gameplay mechanics like extended interaction reach
-    // (ForgeMod.REACH_DISTANCE in Create, Supplementaries, ItemPhysic, etc.) must NEVER be treated as a trojan!
-    if (isClaimingWhitelisted) {
-      allVectors = allVectors.filter(v => v.vector !== 'REACH_EXPANSION_SEMANTICS');
-      if (allVectors.length === 0) {
-        return findings; // 100% Clean whitelisted mod!
-      }
-    }
-
-    if (allVectors.length === 0) {
-      return findings;
-    }
+    // A whitelist match is provenance context, never an analysis bypass. A
+    // trojanized archive can copy a trusted filename, mod id or namespace.
 
     const alertType = isClaimingWhitelisted
       ? 'TROJAN_WHITELIST_BYPASS_ATTEMPT'
@@ -492,7 +481,7 @@ class SemanticCheatClassifier {
       category: 'MINECRAFT_MODS',
       file: fileName,
       path: filePath,
-      confidence: '100% (Somut Kanıt: Yapay Zeka Semantik Baytkod Analizi)',
+      confidence: `Yüksek (Sezgisel semantik baytkod korelasyonu, skor: ${totalScore})`,
       description: description,
       whyFlagged: whyFlagged,
       semanticVectors: allVectors.map(v => v.vector),

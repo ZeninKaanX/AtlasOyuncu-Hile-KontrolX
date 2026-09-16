@@ -9,18 +9,65 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
+const crypto = require('crypto');
 const { exec, execSync } = require('child_process');
 const scannerCore = require('../engine/scannerCore');
 const updater = require('../engine/updater');
 const serverStatus = require('../engine/serverStatus');
+const licenseManager = require('../engine/licenseManager');
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server, path: '/ws' });
+const SESSION_TOKEN = crypto.randomBytes(32).toString('hex');
+const wss = new WebSocket.Server({ noServer: true, maxPayload: 64 * 1024 });
 
 const PORT = process.env.PORT || 3317;
 
 const fs = require('fs');
+
+app.use(express.json({ limit: '16kb', strict: true }));
+
+function parseCookies(header = '') {
+  const cookies = {};
+  for (const part of String(header).split(';')) {
+    const idx = part.indexOf('=');
+    if (idx === -1) continue;
+    cookies[part.slice(0, idx).trim()] = decodeURIComponent(part.slice(idx + 1).trim());
+  }
+  return cookies;
+}
+
+function isLoopbackRequest(req) {
+  const addr = req.socket && req.socket.remoteAddress;
+  return addr === '127.0.0.1' || addr === '::1' || addr === '::ffff:127.0.0.1';
+}
+
+function isTrustedOrigin(origin) {
+  if (!origin) return false;
+  try {
+    const parsed = new URL(origin);
+    return parsed.protocol === 'http:' && (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1' || parsed.hostname === '[::1]');
+  } catch (_) {
+    return false;
+  }
+}
+
+function hasValidSession(req) {
+  const cookies = parseCookies(req.headers.cookie || '');
+  if (!cookies.atlas_session || cookies.atlas_session.length !== SESSION_TOKEN.length) return false;
+  try {
+    return crypto.timingSafeEqual(Buffer.from(cookies.atlas_session), Buffer.from(SESSION_TOKEN));
+  } catch (_) {
+    return false;
+  }
+}
+
+function requireLocalSession(req, res, next) {
+  if (!isLoopbackRequest(req) || !hasValidSession(req)) {
+    return res.status(403).json({ success: false, error: 'Forbidden' });
+  }
+  next();
+}
 
 // Resolve static UI assets directory (handles both raw node and pkg /snapshot)
 const uiPath = path.resolve(__dirname, '../ui');
@@ -59,6 +106,11 @@ function serveStaticFile(req, res, filePath) {
           const parts = range.replace(/bytes=/, '').split('-');
           const start = parseInt(parts[0], 10);
           const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+          if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || end < start || end >= fileSize) {
+            res.setHeader('Content-Range', `bytes */${fileSize}`);
+            res.status(416).end();
+            return true;
+          }
           const chunksize = (end - start) + 1;
           const buf = Buffer.alloc(chunksize);
           const fd = fs.openSync(filePath, 'r');
@@ -86,17 +138,26 @@ function serveStaticFile(req, res, filePath) {
 
 // Root route handler
 app.get('/', (req, res) => {
+  if (!isLoopbackRequest(req)) return res.status(403).send('Forbidden');
+  res.setHeader('Set-Cookie', `atlas_session=${SESSION_TOKEN}; HttpOnly; SameSite=Strict; Path=/`);
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
   const indexPath = path.join(uiPath, 'index.html');
   if (serveStaticFile(req, res, indexPath)) return;
   res.status(404).send('Atlas AC UI not found.');
 });
+
+// Every endpoint exposing forensic data or changing process state requires the
+// unguessable session cookie minted only by the loopback root page.
+app.use('/api', requireLocalSession);
 
 // Custom static middleware that intercepts UI assets safely
 app.use((req, res, next) => {
   const safeRelative = req.path.replace(/^\/+/, '');
   if (!safeRelative) return next();
   const candidatePath = path.join(uiPath, safeRelative);
-  if (candidatePath.startsWith(uiPath) && serveStaticFile(req, res, candidatePath)) {
+  const relative = path.relative(uiPath, candidatePath);
+  if (relative && !relative.startsWith('..') && !path.isAbsolute(relative) && serveStaticFile(req, res, candidatePath)) {
     return;
   }
   next();
@@ -198,6 +259,38 @@ app.get('/api/server-status', async (req, res) => {
   }
 });
 
+// License operations remain loopback/session protected. Only signed license
+// documents are accepted; no secret signing material exists in the client.
+app.get('/api/license/status', (req, res) => {
+  const status = licenseManager.getStatus();
+  res.json({
+    success: true,
+    valid: status.valid,
+    error: status.valid ? null : status.error,
+    machineId: status.machineId,
+    license: status.valid ? {
+      licenseId: status.payload.licenseId,
+      customer: status.payload.customer,
+      expiresAt: status.payload.expiresAt
+    } : null
+  });
+});
+
+app.post('/api/license/activate', (req, res) => {
+  const submitted = req.body && (req.body.license || req.body);
+  const result = licenseManager.activate(submitted);
+  if (!result.valid) return res.status(400).json({ success: false, error: result.error, machineId: result.machineId });
+  res.json({
+    success: true,
+    valid: true,
+    license: {
+      licenseId: result.payload.licenseId,
+      customer: result.payload.customer,
+      expiresAt: result.payload.expiresAt
+    }
+  });
+});
+
 // Fallback to standard express.static
 app.use(express.static(uiPath));
 
@@ -226,6 +319,20 @@ wss.on('connection', (ws) => {
     } catch (e) {}
   }).catch(() => {});
 
+  try {
+    const license = licenseManager.getStatus();
+    ws.send(JSON.stringify({
+      type: 'LICENSE_STATUS',
+      valid: license.valid,
+      error: license.valid ? null : license.error,
+      machineId: license.machineId,
+      license: license.valid ? {
+        customer: license.payload.customer,
+        expiresAt: license.payload.expiresAt
+      } : null
+    }));
+  } catch (_) {}
+
   ws.on('message', async (message) => {
     try {
       const data = JSON.parse(message);
@@ -237,6 +344,23 @@ wss.on('connection', (ws) => {
           data: status
         }));
       } else if (data.action === 'START_SCAN') {
+        const license = licenseManager.getStatus();
+        if (!license.valid) {
+          ws.send(JSON.stringify({
+            type: 'LICENSE_REQUIRED',
+            message: license.error,
+            machineId: license.machineId
+          }));
+          return;
+        }
+        // Emit exactly one terminal event. Engine-level command timeouts are
+        // handled inside scanners so a still-running scan is never called done.
+        let scanSettled = false;
+        const finishScan = (type, payload) => {
+          if (scanSettled) return;
+          scanSettled = true;
+          try { ws.send(JSON.stringify({ type, ...payload })); } catch (e) {}
+        };
         try {
           const results = await scannerCore.runFullScan((stage, percent, log, finding, target, objectsCount) => {
             ws.send(JSON.stringify({
@@ -249,11 +373,7 @@ wss.on('connection', (ws) => {
               objectsCount
             }));
           });
-
-          ws.send(JSON.stringify({
-            type: 'SCAN_COMPLETE',
-            data: results
-          }));
+          finishScan('SCAN_COMPLETE', { data: results });
         } catch (err) {
           ws.send(JSON.stringify({
             type: 'PROGRESS',
@@ -261,6 +381,7 @@ wss.on('connection', (ws) => {
             percent: 100,
             log: `Scan error: ${err.message}`
           }));
+          finishScan('SCAN_ERROR', { message: err.message });
         }
       } else if (data.action === 'CHECK_UPDATES') {
         const updateRes = await updater.checkForUpdates();
@@ -306,6 +427,17 @@ wss.on('connection', (ws) => {
   });
 });
 
+server.on('upgrade', (req, socket, head) => {
+  let pathname = '';
+  try { pathname = new URL(req.url, 'http://localhost').pathname; } catch (_) {}
+  if (pathname !== '/ws' || !isLoopbackRequest(req) || !isTrustedOrigin(req.headers.origin) || !hasValidSession(req)) {
+    socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');
+    socket.destroy();
+    return;
+  }
+  wss.handleUpgrade(req, socket, head, (ws) => wss.emit('connection', ws, req));
+});
+
 // Launch server with graceful port retry & collision recovery
 function startServer(portToUse = PORT) {
   wss.on('error', () => {});
@@ -345,7 +477,7 @@ function startServer(portToUse = PORT) {
 
         setTimeout(() => {
           try {
-            server.listen(portToUse);
+            server.listen(portToUse, '127.0.0.1');
           } catch (listenErr) {
             console.error('[Atlas AC] Port bağlanma hatası:', listenErr.message);
           }
@@ -358,7 +490,7 @@ function startServer(portToUse = PORT) {
     }
   });
 
-  server.listen(portToUse, () => {
+  server.listen(portToUse, '127.0.0.1', () => {
     const activePort = server.address().port;
     const url = `http://localhost:${activePort}`;
     console.log(`\n======================================================`);
@@ -367,9 +499,11 @@ function startServer(portToUse = PORT) {
     console.log(`  Sunucu aktif: ${url}`);
     console.log(`  Arayüz açılıyor...\n`);
 
-    // Auto-open browser
-    const openCmd = process.platform === 'win32' ? `start "" "${url}"` : (process.platform === 'darwin' ? `open "${url}"` : `xdg-open "${url}"`);
-    exec(openCmd, { windowsHide: true }, () => {});
+    // Auto-open browser outside automated/headless verification.
+    if (process.env.ATLAS_NO_BROWSER !== '1') {
+      const openCmd = process.platform === 'win32' ? `start "" "${url}"` : (process.platform === 'darwin' ? `open "${url}"` : `xdg-open "${url}"`);
+      exec(openCmd, { windowsHide: true }, () => {});
+    }
   });
 }
 

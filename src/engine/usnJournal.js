@@ -55,27 +55,32 @@ class UsnJournalEngine {
     try {
       // 1. Verify USN Journal existence and state
       const checkCmd = `fsutil usn queryjournal ${driveLetter}`;
-      const { stdout: queryOut } = await execPromise(checkCmd, { windowsHide: true, timeout: 5000 }).catch(() => ({ stdout: '' }));
+      let queryError = null;
+      const { stdout: queryOut, stderr: queryErrOut } = await execPromise(checkCmd, { windowsHide: true, timeout: 5000 })
+        .catch((err) => {
+          queryError = err;
+          return { stdout: err.stdout || '', stderr: err.stderr || '' };
+        });
 
       if (!queryOut || queryOut.toLowerCase().includes('error')) {
         findings.push({
-          level: 'CRITICAL',
-          type: 'USN_JOURNAL_PURGED',
-          name: 'NTFS USN Günlüğü Devre Dışı Bırakılmış / Silinmiş (Wiped)',
+          level: 'HIGH',
+          type: 'USN_JOURNAL_UNAVAILABLE',
+          name: 'NTFS USN Günlüğü Doğrulanamadı',
           path: `${driveLetter}:\\$Extend\\$UsnJrnl`,
           timestamp: this.formatTimestamp(new Date()),
-          confidence: '100% (Journal Missing / Deleted)',
-          description: `Sürücü ${driveLetter} üzerindeki NTFS USN Değişiklik Günlüğü kapatılmış veya 'fsutil usn deletejournal' ile silinmiştir! Dosya silinme kanıtları karartılmış.`,
+          confidence: 'Belirsiz — yetki, dosya sistemi ve komut hatası ayrıca incelenmeli',
+          description: `Sürücü ${driveLetter} için USN günlüğü sorgulanamadı. Bu durum tek başına delil silindiğini kanıtlamaz.`,
           evidence: [
             `Sorgu Komutu: ${checkCmd}`,
-            `Çıktı / Hata: ${queryOut.trim() || 'Günlük bulunamadı'}`,
+            `Çıktı / Hata: ${(queryOut || queryErrOut || (queryError && queryError.message) || 'Yanıt yok').trim()}`,
             `Hedef Sürücü: ${driveLetter}`
           ]
         });
 
         return {
-          journalStatus: 'TAMPERED_OR_DISABLED',
-          warning: `USN Journal on ${driveLetter} is disabled or deleted! Suspect may have run 'fsutil usn deletejournal'.`,
+          journalStatus: 'UNAVAILABLE',
+          warning: `USN Journal on ${driveLetter} could not be verified.`,
           findings,
           rawEvents: []
         };

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Atlas AC — Minecraft istemci bütünlüğü ve adli hile kontrol platformu.">
+  <meta name="theme-color" content="#070a12">
+  <title>Atlas AC — Client Integrity Platform</title>
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <header class="nav wrap">
+    <a class="brand" href="#top" aria-label="Atlas AC ana sayfa"><span class="mark">A</span><span>ATLAS <b>AC</b></span></a>
+    <nav aria-label="Ana menü">
+      <a href="#engines">Motorlar</a><a href="#security">Güvenlik</a><a href="#license">Lisans</a>
+    </nav>
+    <a class="button small ghost" href="#license">Erişim iste</a>
+  </header>
+
+  <main id="top">
+    <section class="hero wrap">
+      <div class="eyebrow"><i></i> CLIENT INTEGRITY / FORENSICS</div>
+      <h1>Şüpheyi değil,<br><span>kanıtı</span> raporlar.</h1>
+      <p class="lead">Minecraft istemcilerini süreç belleğinden silinmiş dosya izlerine kadar inceleyen, lisanslı personel erişimine sahip bütünlük platformu.</p>
+      <div class="actions"><a class="button" href="#license">Lisans talep et <span>→</span></a><a class="text-link" href="#engines">Mimarinin içine bak</a></div>
+      <div class="signal-card" aria-label="Sistem durumu">
+        <div class="radar"><span></span><span></span><span></span><b></b></div>
+        <div class="signal-copy"><small>ATLAS SENSOR GRID</small><strong>9 analiz katmanı</strong><p>Canlı süreçler, Minecraft modları, USN, Prefetch, BAM, tarayıcı, USB ve enjeksiyon izleri.</p></div>
+        <div class="status"><i></i> OPERATIONAL</div>
+      </div>
+    </section>
+
+    <section class="metrics wrap" aria-label="Öne çıkan özellikler">
+      <article><strong>SHA-256</strong><span>Kanıt bütünlüğü</span></article>
+      <article><strong>Ed25519</strong><span>İmzalı lisans</span></article>
+      <article><strong>Local-only</strong><span>Adli veri mahremiyeti</span></article>
+      <article><strong>HTML</strong><span>Taşınabilir rapor</span></article>
+    </section>
+
+    <section class="section wrap" id="engines">
+      <div class="section-head"><div><span class="kicker">DETECTION FABRIC</span><h2>Tek ekranda derin inceleme</h2></div><p>Her bulgu kaynağı, zaman damgası ve güven seviyesiyle kayıt altına alınır. Otomatik karar, personelin inceleyebileceği kanıtlarla birlikte sunulur.</p></div>
+      <div class="grid">
+        <article class="feature featured"><span class="num">01</span><h3>Minecraft &amp; Bytecode</h3><p>JAR, mod klasörleri, gömülü sınıflar ve şüpheli giriş/enjeksiyon davranışları.</p><div class="code-line"><i></i> archive → class → heuristic</div></article>
+        <article class="feature"><span class="num">02</span><h3>Bellek &amp; Süreç</h3><p>Çalışan süreçler, JVM parametreleri, DLL kancaları ve şüpheli araç zincirleri.</p></article>
+        <article class="feature"><span class="num">03</span><h3>Silinme İzleri</h3><p>NTFS USN, Prefetch, BAM ve yakın zamanda kaldırılmış çalıştırılabilir dosyalar.</p></article>
+        <article class="feature"><span class="num">04</span><h3>Çevresel Kanıt</h3><p>Tarayıcı indirmeleri, Zone.Identifier, USB geçmişi, makro ve tıklayıcı izleri.</p></article>
+      </div>
+    </section>
+
+    <section class="section wrap security" id="security">
+      <div class="lock" aria-hidden="true"><div>◆</div></div>
+      <div><span class="kicker">ZERO-SECRET CLIENT</span><h2>Anahtar istemcide değil.</h2><p>Uygulama yalnızca herkese açık doğrulama anahtarını taşır. Lisanslar çevrimdışı Ed25519 imzasıyla doğrulanır; imza üreten özel anahtar siteye, uygulamaya veya GitHub Pages’a yüklenmez.</p>
+        <ul><li>Makineye bağlı, süreli lisans</li><li>Her tarama başlangıcında yeniden doğrulama</li><li>Adli veriler yalnızca yerel cihazda</li></ul>
+      </div>
+    </section>
+
+    <section class="section wrap license" id="license">
+      <div><span class="kicker">CONTROLLED ACCESS</span><h2>Yetkili kullanım başvurusu</h2><p>Atlas AC herkese açık indirime sunulmaz. Sunucu bilgilerinizi ve uygulamanın gösterdiği 64 karakterli Makine Kimliği’ni iletin; onaylanan cihaz için imzalı lisans hazırlanır.</p></div>
+      <form id="licenseForm">
+        <label>Ad / Sunucu adı<input id="customer" maxlength="100" required placeholder="Örn. Atlas Oyuncu"></label>
+        <label>Makine Kimliği<input id="machine" minlength="64" maxlength="64" pattern="[A-Fa-f0-9]{64}" required placeholder="64 karakterli kimlik"></label>
+        <label>İletişim bilgisi<input id="contact" maxlength="120" required placeholder="Discord veya e-posta"></label>
+        <button class="button" type="submit">GitHub üzerinden talep oluştur <span>→</span></button>
+        <small>Form herkese açık olabilecek bir GitHub Issue taslağı açar. E-posta yerine herkese açık Discord kullanıcı adınızı yazın; parola veya özel anahtar paylaşmayın.</small>
+      </form>
+    </section>
+  </main>
+
+  <footer class="wrap"><a class="brand" href="#top"><span class="mark">A</span><span>ATLAS <b>AC</b></span></a><p>Client Integrity &amp; Anti-Cheat Forensics</p><span>© <span id="year"></span> Atlas AC</span></footer>
+  <script src="assets/site.js" defer></script>
+</body>
+</html>

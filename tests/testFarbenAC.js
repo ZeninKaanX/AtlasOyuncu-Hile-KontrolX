@@ -236,6 +236,7 @@ runTest('Launcher Keşfi: PrismLauncher instance dizinleri otomatik bulunmalı',
 console.log(`\n====================================================`);
 console.log(`   SONUC: ${passedTests} / ${totalTests} TEST BASARILI!`);
 console.log(`====================================================\n`);
+if (passedTests !== totalTests) process.exitCode = 1;
 
 // Run PE Binary Inspector Test Suite
 require('./testBinaryInspector');
@@ -303,4 +304,3 @@ require('./testAutoClickerAndUsnFixes');
 
 // Run Modrinth 1000+ Clean Mod Whitelist & AI Semantic Bytecode Cheat Test Suite
 require('./testModrinthAndSemanticCheats');
-

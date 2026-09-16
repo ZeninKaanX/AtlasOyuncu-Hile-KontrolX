@@ -9,25 +9,13 @@
 require('../engine/silentProcess');
 const { startServer } = require('./server');
 const http = require('http');
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 
 const args = process.argv.slice(2);
 
 if (args.includes('--stop') || args.includes('--kill') || args.includes('-k') || args.includes('stop')) {
   console.log('[*] Atlas AC kapatma sinyali gönderiliyor...');
-
-  const req = http.request({
-    hostname: '127.0.0.1',
-    port: 3317,
-    path: '/api/shutdown',
-    method: 'POST',
-    timeout: 2000
-  }, (res) => {
-    console.log('[+] Atlas AC süreci başarıyla sonlandırıldı.');
-    process.exit(0);
-  });
-
-  req.on('error', () => {
+  const fallbackStop = () => {
     // If HTTP request fails or server is unresponsive, force kill by process name
     try {
       if (process.platform === 'win32') {
@@ -40,9 +28,25 @@ if (args.includes('--stop') || args.includes('--kill') || args.includes('-k') ||
       console.log('[-] Atlas AC şu anda çalışmıyor.');
     }
     process.exit(0);
-  });
+  };
 
-  req.end();
+  // Obtain the loopback-only session cookie before invoking the protected API.
+  const bootstrap = http.request({ hostname: '127.0.0.1', port: 3317, path: '/', method: 'GET', timeout: 2000 }, (rootRes) => {
+    const cookie = (rootRes.headers['set-cookie'] || [])[0];
+    rootRes.resume();
+    if (!cookie) return fallbackStop();
+    const req = http.request({
+      hostname: '127.0.0.1', port: 3317, path: '/api/shutdown', method: 'POST', timeout: 2000,
+      headers: { Cookie: cookie.split(';')[0] }
+    }, () => {
+      console.log('[+] Atlas AC süreci başarıyla sonlandırıldı.');
+      process.exit(0);
+    });
+    req.on('error', fallbackStop);
+    req.end();
+  });
+  bootstrap.on('error', fallbackStop);
+  bootstrap.end();
 } else if (args.includes('--status') || args.includes('status')) {
   const req = http.request({
     hostname: '127.0.0.1',
@@ -71,10 +75,12 @@ if (args.includes('--stop') || args.includes('--kill') || args.includes('-k') ||
       execSync('fsutil dirty query %systemdrive%', { stdio: 'ignore', windowsHide: true });
     } catch (adminErr) {
       try {
-        const exePath = process.execPath;
-        const passArgs = ['--no-elevate', ...cleanArgs].join(' ');
-        const psCmd = `powershell -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath '${exePath}' -ArgumentList '${passArgs}' -Verb RunAs"`;
-        execSync(psCmd, { stdio: 'ignore', windowsHide: true });
+        const exePath = process.execPath.replace(/'/g, "''");
+        const psScript = `Start-Process -FilePath '${exePath}' -ArgumentList '--no-elevate' -Verb RunAs`;
+        const elevated = spawnSync('powershell.exe', [
+          '-WindowStyle', 'Hidden', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', psScript
+        ], { stdio: 'ignore', windowsHide: true });
+        if (elevated.error || elevated.status !== 0) throw elevated.error || new Error('UAC elevation failed');
         process.exit(0);
       } catch (elevateErr) {
         // User declined UAC or system restriction; continue with standard permissions

@@ -10,7 +10,6 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const zlib = require('zlib');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
@@ -29,14 +28,18 @@ try {
   process.exit(1);
 }
 
-// 2. Compile binaries with pkg
-console.log('[*] Step 2: Compiling V8 bytecode standalone binaries with pkg...');
+// 2. Compile with the maintained @yao-pkg/pkg fork. Never modify or replace
+// downloaded runtime bases: their upstream integrity checks must remain intact.
+console.log('[*] Step 2: Compiling standalone binaries with verified runtime bases...');
 if (!fs.existsSync(DIST_DIR)) {
   fs.mkdirSync(DIST_DIR, { recursive: true });
 }
 
 try {
-  const pkgCmd = `npx --yes pkg . --targets node18-linux-x64,node18-win-x64 --out-path dist`;
+  // Some hosts cannot generate V8 bytecode for every dependency. Explicitly
+  // retain source as a fallback so pkg never emits a "successful" but
+  // unbootable executable when bytecode generation fails.
+  const pkgCmd = `npx --no-install pkg . --targets node22-linux-x64,node22-win-x64 --out-path dist --fallback-to-source`;
   console.log(`[>] Running: ${pkgCmd}`);
   execSync(pkgCmd, { cwd: ROOT_DIR, stdio: 'inherit' });
   console.log('[+] Pkg compilation complete.\n');

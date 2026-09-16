@@ -216,19 +216,7 @@ class MinecraftInspectorEngine {
   inspectJarFile(filePath, isDeepModCheck = true) {
     const findings = [];
     const fileName = path.basename(filePath);
-
-    if (serverPolicy.isFreecamAllowed() && fileName.toLowerCase().includes('freecam')) {
-      return [{
-        level: 'INFO',
-        type: 'ALLOWED_UTILITY_FREECAM',
-        name: `Freecam Modu (${fileName}) (Sunucu Kuralı: İzinli)`,
-        file: fileName,
-        path: filePath,
-        confidence: 'Doğrulandı (İzinli Yardımcı Mod)',
-        description: `Sistemde Freecam modu tespit edildi (${fileName}). Sunucu kuralları gereği Freecam kullanımı serbesttir ve ceza gerektirmez.`,
-        evidence: [`Dosya: ${filePath}`]
-      }];
-    }
+    const isAllowedFreecamCandidate = serverPolicy.isFreecamAllowed() && fileName.toLowerCase().includes('freecam');
 
     try {
       const zip = new AdmZip(filePath);
@@ -293,7 +281,36 @@ class MinecraftInspectorEngine {
         }
       }
 
-    } catch (e) {}
+    } catch (e) {
+      findings.push({
+        level: 'HIGH',
+        type: 'UNINSPECTABLE_MOD_ARCHIVE',
+        name: `İncelenemeyen Mod Arşivi: ${fileName}`,
+        file: fileName,
+        path: filePath,
+        confidence: 'Belirsiz — manuel inceleme gerekli',
+        description: `Mod arşivi açılamadı veya tamamen analiz edilemedi: ${e.message}`,
+        evidence: [`Dosya: ${filePath}`, `Analiz hatası: ${e.message}`]
+      });
+    }
+
+    // Policy exemptions change the verdict only after the full archive,
+    // signature, trojan and semantic analysis has completed successfully.
+    if (isAllowedFreecamCandidate && findings.length === 0) {
+      findings.push({
+        level: 'INFO',
+        type: 'ALLOWED_UTILITY_FREECAM',
+        name: `Freecam Modu (${fileName}) (Sunucu Kuralı: İzinli)`,
+        file: fileName,
+        path: filePath,
+        confidence: 'Analiz edildi (Sunucu politikasına göre izinli)',
+        isSafe: true,
+        isThreat: false,
+        badge: 'ALLOWED_POLICY',
+        description: `Dosya tam imza ve baytkod analizinden geçti. Freecam kullanımı sunucu politikasına göre izinlidir.`,
+        evidence: [`Dosya: ${filePath}`, 'Tam arşiv ve baytkod analizi tamamlandı']
+      });
+    }
 
     return findings;
   }

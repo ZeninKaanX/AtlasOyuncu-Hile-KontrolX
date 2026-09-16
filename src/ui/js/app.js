@@ -116,7 +116,6 @@ const translations = {
     nav_dns_zone: 'DNS & Zone.Identifier',
     nav_hollowing_ps: 'Hollowing & Scripts',
     nav_dps_deep: 'DPS & Deep Archive',
-    tag_threat_matrix: 'Threat Matrix: 22/22 Market Cheats Verified (%100 Detection)',
     subfilter_all: 'All',
     subfilter_critical: 'Critical',
     subfilter_warning: 'Warning',
@@ -243,7 +242,6 @@ const translations = {
     nav_dns_zone: 'DNS & Zone.Identifier',
     nav_hollowing_ps: 'Hollowing & Scriptler',
     nav_dps_deep: 'DPS & Derin Arşiv',
-    tag_threat_matrix: 'Tehdit Matrisi: 22/22 Hile Test Edildi (%100 Tespit)',
     subfilter_all: 'Tümü',
     subfilter_critical: 'Kritik',
     subfilter_warning: 'Uyarı',
@@ -295,6 +293,8 @@ let currentScanData = null;
 let currentServerStatusData = null;
 let scanStartTime = 0;
 let scanDurationTimer = null;
+let scanRetryTimer = null;
+let scanRetryCount = 0;
 const flaggedStages = new Set();
 
 // Filtering state
@@ -1007,6 +1007,12 @@ function handleServerMessage(msg) {
     logTerminal('INFO', msg.message);
   } else if (msg.type === 'SERVER_STATUS') {
     renderServerStatus(msg.data);
+  } else if (msg.type === 'SCAN_ERROR') {
+    finalizeScanWithError(msg.message || 'Bilinmeyen tarama hatası');
+  } else if (msg.type === 'LICENSE_REQUIRED') {
+    handleLicenseRequired(msg);
+  } else if (msg.type === 'LICENSE_STATUS') {
+    window.atlasLicenseStatus = msg;
   } else if (msg.type === 'EXPORT_RESULT') {
     const isTr = currentLang === 'tr';
     logTerminal('SUCCESS', isTr ? `Rapor İndirilenler klasörüne kaydedildi: ${msg.path}` : `Report saved to Downloads: ${msg.path}`);
@@ -1016,6 +1022,43 @@ function handleServerMessage(msg) {
       'success',
       6000
     );
+  }
+}
+
+async function handleLicenseRequired(msg) {
+  const isTr = currentLang === 'tr';
+  const machineId = String(msg.machineId || 'UNKNOWN');
+  const copied = await copyTextQuietly(machineId);
+  const promptText = isTr
+    ? `Bu cihaz için geçerli Atlas AC lisansı gerekli.\n\nMakine Kimliği:\n${machineId}\n\n${copied ? 'Kimlik panoya kopyalandı. ' : ''}Yetkiliden aldığınız license.json içeriğini buraya yapıştırın:`
+    : `A valid Atlas AC license is required for this device.\n\nMachine ID:\n${machineId}\n\n${copied ? 'The ID was copied to your clipboard. ' : ''}Paste the license.json content supplied by your administrator:`;
+  const licenseText = window.prompt(promptText, '');
+  if (!licenseText) {
+    showToast(isTr ? 'Lisans Gerekli' : 'License Required', msg.message || (isTr ? 'Tarama kilitli.' : 'Scanning is locked.'), 'error', 7000);
+    return;
+  }
+  try {
+    const license = JSON.parse(licenseText);
+    const response = await fetch('/api/license/activate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ license })
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success) throw new Error(result.error || 'License rejected');
+    showToast(isTr ? 'Lisans Etkinleştirildi' : 'License Activated', isTr ? 'Tarama şimdi başlatılıyor.' : 'The scan will start now.', 'success', 4000);
+    requestScanStart();
+  } catch (error) {
+    showToast(isTr ? 'Lisans Reddedildi' : 'License Rejected', error.message, 'error', 7000);
+  }
+}
+
+async function copyTextQuietly(value) {
+  try {
+    await navigator.clipboard.writeText(value);
+    return true;
+  } catch (_) {
+    return false;
   }
 }
 
@@ -1273,6 +1316,73 @@ function handleScanComplete(data) {
     }, 1200);
 }
 
+// Scan sunucu tarafinda hata verdiginde UI'yi "sonsuz tarama" durumundan
+// kurtarir: donguleri durdurur, butonu tekrar aktif eder, hatayi bildirir.
+function finalizeScanWithError(message) {
+  isScanActive = false;
+  const t = translations[currentLang] || translations.en;
+  if (scanDurationTimer) { clearInterval(scanDurationTimer); scanDurationTimer = null; }
+  if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
+  if (scanRetryTimer) { clearInterval(scanRetryTimer); scanRetryTimer = null; scanRetryCount = 0; }
+  if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+
+  const percentEl = document.getElementById('hudProgressPercent');
+  const ringCircle = document.getElementById('hudProgressRingCircle');
+  const hudActiveLbl = document.getElementById('hudActiveStepLabel');
+  const tickerText = document.getElementById('hudTickerText');
+  if (percentEl) percentEl.textContent = '0';
+  if (ringCircle) ringCircle.style.strokeDashoffset = String(CIRCUMFERENCE);
+  if (hudActiveLbl) {
+    hudActiveLbl.innerHTML = '<span style="color:var(--threat-critical); font-weight:700;">' +
+      ((currentLang === 'tr' ? 'Tarama hatası: ' : 'Scan error: ')) + escapeHtml(message) + '</span>';
+  }
+  if (tickerText) tickerText.textContent = (currentLang === 'tr' ? 'Tarama sonlandırıldı.' : 'Scan terminated.');
+
+  ALL_HUD_KEYS.forEach(key => {
+    const state = document.getElementById(`stepState-${key}`);
+    if (state) state.textContent = t.hud_standby;
+  });
+
+  const btnScan = document.getElementById('btnStartScan');
+  if (btnScan) {
+    btnScan.disabled = false;
+    btnScan.textContent = currentLang === 'tr' ? 'Yeniden Tara' : 'Scan Again';
+  }
+  const btnShowHud = document.getElementById('btnShowHud');
+  if (btnShowHud) btnShowHud.classList.remove('scanning-active');
+
+  logTerminal('WARN', (currentLang === 'tr' ? 'Tarama hatayla sonlandı: ' : 'Scan failed: ') + message);
+  showToast(currentLang === 'tr' ? 'Tarama Hatası' : 'Scan Error', message, 'error', 6000);
+}
+
+// WS henuz acilmadan "Tara"ya basilmis olabilir (uygulama yeni acildiysa). Bu
+// durumda UI'yi hemen baslatip istegi baglanti acilinca otomatik tekrar yollar.
+function requestScanStart() {
+  if (scanRetryTimer) { clearInterval(scanRetryTimer); scanRetryTimer = null; scanRetryCount = 0; }
+  const sendIfOpen = () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      try { ws.send(JSON.stringify({ action: 'START_SCAN' })); } catch (e) {}
+      if (scanRetryTimer) { clearInterval(scanRetryTimer); scanRetryTimer = null; }
+      scanRetryCount = 0;
+      return true;
+    }
+    return false;
+  };
+  if (sendIfOpen()) return;
+  scanRetryTimer = setInterval(() => {
+    scanRetryCount++;
+    if (sendIfOpen()) return;
+    if (scanRetryCount >= 24) { // ~12 saniye bekledi, sunucuya ulasilamadi
+      clearInterval(scanRetryTimer);
+      scanRetryTimer = null;
+      scanRetryCount = 0;
+      finalizeScanWithError(currentLang === 'tr'
+        ? 'Sunucuya bağlanılamadı; tarama başlatılamadı.'
+        : 'Could not connect to server; scan could not be started.');
+    }
+  }, 500);
+}
+
 function openHud() {
   const hudModal = document.getElementById('scanModalHud');
   if (hudModal) {
@@ -1303,9 +1413,7 @@ function initActionButtons() {
       startProgressAnimation();
 
       logTerminal('INFO', 'Full client integrity inspection initiated...');
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ action: 'START_SCAN' }));
-      }
+      requestScanStart();
     });
   }
 

@@ -7,12 +7,18 @@
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
+const crypto = require('crypto');
 const sigDb = require('./signatureDb');
 
 class SignatureUpdater {
   constructor() {
     this.remoteManifestUrl = 'https://raw.githubusercontent.com/FarbenAC/signatures/main/signatures.json';
-    this.customSignaturesPath = path.join(__dirname, '../signatures/customSignatures.json');
+    const dataRoot = process.platform === 'win32'
+      ? (process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'))
+      : (process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share'));
+    this.customSignaturesPath = path.join(dataRoot, 'AtlasAC', 'signatures', 'customSignatures.json');
+    this.maxManifestBytes = 5 * 1024 * 1024;
   }
 
   /**
@@ -21,6 +27,14 @@ class SignatureUpdater {
   async checkForUpdates() {
     return new Promise((resolve) => {
       const currentVersion = sigDb.getVersion();
+      const publicKey = process.env.ATLAS_SIGNATURE_PUBLIC_KEY_PEM;
+      if (!publicKey) {
+        return resolve({
+          updated: false,
+          currentVersion,
+          message: 'Güvenli güncelleme anahtarı yapılandırılmamış. Yerel imza veritabanı kullanılıyor.'
+        });
+      }
 
       https.get(this.remoteManifestUrl, { timeout: 5000 }, (res) => {
         if (res.statusCode !== 200) {
@@ -32,13 +46,38 @@ class SignatureUpdater {
         }
 
         let rawData = '';
-        res.on('data', (chunk) => { rawData += chunk; });
+        let received = 0;
+        res.on('error', (err) => resolve({
+          updated: false,
+          currentVersion,
+          message: `Güncelleme aktarımı reddedildi: ${err.message}. Yerel veritabanı kullanılıyor.`
+        }));
+        res.on('data', (chunk) => {
+          received += chunk.length;
+          if (received > this.maxManifestBytes) {
+            res.destroy(new Error('Signature manifest exceeds size limit'));
+            return;
+          }
+          rawData += chunk;
+        });
         res.on('end', () => {
           try {
-            const remoteSignatures = JSON.parse(rawData);
+            const envelope = JSON.parse(rawData);
+            if (!envelope || !envelope.payload || typeof envelope.signature !== 'string') {
+              throw new Error('Unsigned signature manifest');
+            }
+            const canonicalPayload = JSON.stringify(envelope.payload);
+            const valid = crypto.verify(null, Buffer.from(canonicalPayload), publicKey, Buffer.from(envelope.signature, 'base64'));
+            if (!valid) throw new Error('Signature manifest verification failed');
+            const remoteSignatures = envelope.payload;
+            if (!Array.isArray(remoteSignatures.clientRules) || typeof remoteSignatures.version !== 'string') {
+              throw new Error('Invalid signature manifest schema');
+            }
             if (remoteSignatures.version && remoteSignatures.version !== currentVersion) {
-              // Save update
-              fs.writeFileSync(this.customSignaturesPath, JSON.stringify(remoteSignatures, null, 2), 'utf8');
+              fs.mkdirSync(path.dirname(this.customSignaturesPath), { recursive: true, mode: 0o700 });
+              const tempPath = `${this.customSignaturesPath}.${process.pid}.tmp`;
+              fs.writeFileSync(tempPath, JSON.stringify(remoteSignatures, null, 2), { encoding: 'utf8', mode: 0o600 });
+              fs.renameSync(tempPath, this.customSignaturesPath);
               sigDb.load(); // Hot-reload signatures in memory
               return resolve({
                 updated: true,
@@ -57,7 +96,7 @@ class SignatureUpdater {
             return resolve({
               updated: false,
               currentVersion,
-              message: 'Failed to parse remote signature payload. Using local signatures.'
+              message: `İmza güncellemesi reddedildi: ${e.message}. Yerel veritabanı kullanılıyor.`
             });
           }
         });
