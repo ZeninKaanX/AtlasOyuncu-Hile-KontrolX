@@ -489,7 +489,7 @@ async function fetchServerStatus(force = false) {
         players: { online: 571, max: 2026 },
         latency: 126,
         version: '1.21.11',
-        motd: 'TR ᴀᴛʟᴀsᴏʏᴜɴᴄᴜ.ᴄᴏᴍ 1.21.11 | 26.2 ɢᴇʀᴄᴇᴋ ᴋᴀʟɪᴛᴇ 👑 sᴋʏʙʟᴏᴄᴋ | ᴛᴏᴡɴʏ | ʙᴏxᴘᴠᴘ | ᴘᴠᴘ | sᴍᴘ 👑'
+        motd: 'TR ᴀᴛʟᴀsᴏʏᴜɴᴄᴜ.ᴄᴏᴍ 1.21.11 | 26.2 ɢᴇʀᴄᴇᴋ ᴋᴀʟɪᴛᴇ | sᴋʏʙʟᴏᴄᴋ | ᴛᴏᴡɴʏ | ʙᴏxᴘᴠᴘ | ᴘᴠᴘ | sᴍᴘ'
       });
     }
   }
@@ -569,8 +569,8 @@ function renderServerStatus(data) {
       if (dotEl) dotEl.className = 'active-indicator-dot';
       if (statusTextEl) {
         statusTextEl.textContent = isTr
-          ? `🟢 AKTİF OYUN BAĞLANTISI: ${activeMc.server.host}:${activeMc.server.port} (${procName} PID: ${pid})`
-          : `🟢 IN-GAME CONNECTION: ${activeMc.server.host}:${activeMc.server.port} (${procName} PID: ${pid})`;
+          ? `[ONLINE] AKTİF OYUN BAĞLANTISI: ${activeMc.server.host}:${activeMc.server.port} (${procName} PID: ${pid})`
+          : `[ONLINE] IN-GAME CONNECTION: ${activeMc.server.host}:${activeMc.server.port} (${procName} PID: ${pid})`;
       }
       if (serverAddressEl) {
         serverAddressEl.textContent = `${activeMc.server.host}:${activeMc.server.port} (AKTİF OYUNDA)`;
@@ -580,8 +580,8 @@ function renderServerStatus(data) {
       if (dotEl) dotEl.className = 'active-indicator-dot dot-warn';
       if (statusTextEl) {
         statusTextEl.textContent = isTr
-          ? `🟡 MİNECRAFT AÇIK: Ana Menü veya Tek Oyunculu (${procName} PID: ${pid})`
-          : `🟡 MINECRAFT RUNNING: Main Menu / Singleplayer (${procName} PID: ${pid})`;
+          ? `[STANDBY] MİNECRAFT AÇIK: Ana Menü veya Tek Oyunculu (${procName} PID: ${pid})`
+          : `[STANDBY] MINECRAFT RUNNING: Main Menu / Singleplayer (${procName} PID: ${pid})`;
       }
       if (serverAddressEl) {
         serverAddressEl.textContent = isTr ? 'Ana Menü / Tek Oyunculu' : 'Main Menu / Singleplayer';

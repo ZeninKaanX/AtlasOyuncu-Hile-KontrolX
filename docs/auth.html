@@ -1,2 +1,159 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#06080d"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; connect-src 'self' https://*.supabase.co; img-src 'self' data:; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"><title>Giriş | Atlas AC</title><link rel="icon" type="image/x-icon" href="assets/atlas.ico"><link rel="shortcut icon" href="assets/atlas.ico"><link rel="stylesheet" href="assets/site.css"><link rel="stylesheet" href="assets/bot.css"></head>
-<body class="auth-page"><div class="ambient"></div><header class="nav shell"><a class="brand" href="index.html"><img class="brand-logo-img" src="assets/atlas_logo.png" alt="Atlas AC Logo"><span>ATLAS<small>ANTI-CHEAT</small></span></a><a class="button button-sm button-ghost" href="index.html">Ana sayfa</a></header><main class="auth-main"><section class="auth-card"><div class="auth-symbol"><img class="auth-logo-img" src="assets/atlas_icon_full.png" alt="Atlas AC"></div><span class="eyebrow"><span class="live-dot"></span> SECURE ACCOUNT ACCESS</span><h1 id="authTitle">Tekrar hoş geldiniz.</h1><p id="authSubtitle">Lisanslarınıza ve güvenli indirme alanına erişin.</p><div id="configWarning" class="config-warning hidden">Supabase bağlantısı henüz yapılandırılmadı.</div><div class="auth-tabs"><button id="loginTab" class="active" type="button">Giriş yap</button><button id="registerTab" type="button">Kayıt ol</button></div><form id="loginForm" class="form"><label>E-posta<input id="loginEmail" type="email" autocomplete="email" required placeholder="mail@sunucu.com"></label><label>Şifre<input id="loginPassword" type="password" autocomplete="current-password" minlength="10" required placeholder="••••••••••"></label><div id="loginStatus" class="form-status"></div><button class="button" type="submit">Kontrol paneline gir <span>→</span></button></form><form id="registerForm" class="form hidden"><label>Kullanıcı adı<input id="registerUsername" autocomplete="username" minlength="3" maxlength="32" pattern="[A-Za-z0-9_.-]+" required placeholder="yetkili_adı"></label><label>E-posta<input id="registerEmail" type="email" autocomplete="email" required placeholder="mail@sunucu.com"></label><label>Şifre<input id="registerPassword" type="password" autocomplete="new-password" minlength="10" required placeholder="En az 10 karakter"></label><label>Yönetici davet anahtarı<input id="inviteKey" autocomplete="off" minlength="12" required placeholder="ATLAS-••••••••••••"></label><div id="registerStatus" class="form-status"></div><button class="button" type="submit">Hesabımı oluştur <span>→</span></button><small class="form-note">Kayıt yalnızca Atlas yöneticisinin verdiği geçerli davet anahtarıyla tamamlanır.</small></form></section></main><script type="module" src="assets/auth.js"></script><script src="assets/bot.js" defer></script></body></html>
+<!doctype html>
+<html lang="tr" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+  <meta name="theme-color" content="#090b10">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; connect-src 'self' https://*.supabase.co; img-src 'self' data: https:; base-uri 'none'; form-action 'self'; frame-ancestors 'none'">
+  <title>Giriş &amp; Kayıt | Atlas AC</title>
+  <meta name="description" content="Atlas AC hesabınıza giriş yapın veya davet anahtarınızla kayıt olun.">
+  <link rel="icon" type="image/x-icon" href="assets/atlas.ico">
+  <link rel="shortcut icon" href="assets/atlas.ico">
+  <link rel="stylesheet" href="assets/ocean.css">
+  <link rel="stylesheet" href="assets/bot.css">
+</head>
+<body class="auth-page">
+  <div class="ocean-ambient"></div>
+
+  <!-- SITE HEADER -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Atlas AC Ana Sayfa">
+        <span class="brand-glyph">}&lt;(((◈&gt;</span>
+        <img class="brand-logo-img" src="assets/atlas_logo.png" alt="Atlas AC Logo">
+        <span>Atlas<span class="brand-sub">anticheat.ac</span></span>
+      </a>
+
+      <div class="header-actions">
+        <a class="button button-small button-secondary" href="index.html">
+          Ana Sayfa
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content" class="auth-wrapper">
+    <div class="auth-card-ocean">
+      <div class="border-beam"><span class="border-beam-glow"></span></div>
+
+      <div class="auth-mark">
+        <span class="auth-mark-badge">}&lt;(((◈&gt;</span>
+      </div>
+
+      <p class="eyebrow">HESAP ERİŞİMİ</p>
+      <h2 id="authTitle">Tekrar hoş geldiniz.</h2>
+      <p class="auth-sub" id="authSubtitle">Panelinizi açmak, tarama PIN'leri oluşturmak ve raporları incelemek için giriş yapın.</p>
+
+      <div id="configWarning" class="config-warning hidden" style="margin-bottom:16px;padding:10px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:#fbbf24;border-radius:8px;font-size:12px;">
+        Supabase bağlantısı henüz yapılandırılmadı.
+      </div>
+
+      <!-- Mode Switch Tabs -->
+      <div style="display:flex;gap:6px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:20px;">
+        <button id="loginTab" type="button" class="active" style="flex:1;padding:8px;border:none;background:#181d27;color:#fff;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .15s;">
+          Giriş Yap
+        </button>
+        <button id="registerTab" type="button" style="flex:1;padding:8px;border:none;background:transparent;color:#94a3b8;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .15s;">
+          Davetle Kayıt
+        </button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm" class="auth-form-ocean">
+        <div class="input-group">
+          <label for="loginEmail">E-posta veya Kullanıcı Adı</label>
+          <input id="loginEmail" type="text" class="ocean-input" autocomplete="username" required placeholder="yetkili@sunucu.com">
+        </div>
+
+        <div class="input-group">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <label for="loginPassword">Şifre</label>
+            <a href="#" style="font-size:11px;color:#64748b;" onclick="alert('Şifre sıfırlama için sunucu yöneticinize veya Discord desteğe başvurun.'); return false;">Şifremi unuttum?</a>
+          </div>
+          <div class="input-with-eye">
+            <input id="loginPassword" type="password" class="ocean-input" autocomplete="current-password" required placeholder="••••••••••••">
+            <button type="button" class="toggle-eye" id="toggleLoginPass" aria-label="Şifreyi göster">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="loginStatus" class="form-status" style="display:none;padding:10px;border-radius:8px;font-size:12px;margin-top:4px;"></div>
+
+        <button class="button button-primary shimmer-button" type="submit" style="width:100%;height:46px;margin-top:8px;">
+          <span class="shimmer-spark"></span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+          Kontrol Paneline Giriş Yap
+        </button>
+
+        <div class="auth-divider">
+          <span>Veya şununla devam et</span>
+        </div>
+
+        <div class="oauth-row">
+          <button type="button" class="oauth-btn" onclick="alert('Discord entegrasyonu için giriş sonrası panelden hesap bağlayabilirsiniz.');">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.07.07 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.07.07 0 0 0-.078-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.08.08 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.08.08 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.08.08 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"></path></svg>
+            Discord
+          </button>
+          <a href="download.html" class="oauth-btn" style="text-decoration:none;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"></path><path d="M2 12a10 10 0 0 1 18-6"></path></svg>
+            PIN ile İndir
+          </a>
+        </div>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form id="registerForm" class="auth-form-ocean hidden">
+        <div class="input-group">
+          <label for="registerUsername">Kullanıcı Adı</label>
+          <input id="registerUsername" autocomplete="username" minlength="3" maxlength="32" pattern="[A-Za-z0-9_.-]+" required placeholder="yetkili_kullanici" class="ocean-input">
+        </div>
+
+        <div class="input-group">
+          <label for="registerEmail">Yetkili E-posta Adresi</label>
+          <input id="registerEmail" type="email" autocomplete="email" required placeholder="yetkili@sunucu.com" class="ocean-input">
+        </div>
+
+        <div class="input-group">
+          <label for="registerPassword">Güçlü Şifre</label>
+          <input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="En az 8 karakter" class="ocean-input">
+        </div>
+
+        <div class="input-group">
+          <label for="inviteKey">Yönetici Davet Anahtarı</label>
+          <input id="inviteKey" autocomplete="off" minlength="8" required placeholder="ATLAS-••••••••••••" class="ocean-input" style="font-family:var(--font-mono);letter-spacing:0.05em;">
+        </div>
+
+        <div id="registerStatus" class="form-status" style="display:none;padding:10px;border-radius:8px;font-size:12px;margin-top:4px;"></div>
+
+        <button class="button button-primary shimmer-button" type="submit" style="width:100%;height:46px;margin-top:8px;">
+          <span class="shimmer-spark"></span>
+          Hesabımı Oluştur
+        </button>
+        <p style="font-size:11px;color:#64748b;line-height:1.4;margin-top:4px;">
+          Kayıt işlemi yalnızca Atlas AC yöneticisinin ürettiği geçerli davet anahtarıyla tamamlanır. Şüpheli oyuncuların hesap açmasına gerek yoktur.
+        </p>
+      </form>
+
+      <p class="auth-switch">
+        Atlas AC'de yeni misiniz?
+        <a href="https://discord.gg/atlasac" target="_blank" rel="noopener">Yetkili erişimi talep edin</a>
+      </p>
+    </div>
+  </main>
+
+  <script>
+    // Eye toggle for password
+    document.getElementById('toggleLoginPass').addEventListener('click', function() {
+      const pass = document.getElementById('loginPassword');
+      if (pass.type === 'password') {
+        pass.type = 'text';
+      } else {
+        pass.type = 'password';
+      }
+    });
+  </script>
+  <script type="module" src="assets/auth.js"></script>
+  <script src="assets/bot.js" defer></script>
+</body>
+</html>

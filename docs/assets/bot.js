@@ -1,77 +1,76 @@
 /**
  * Atlas AC — Enhanced Chibi Cyber Companion Robot
- * Exactly matching user reference (Interactive blue robot with LED visor expressions)
+ * Interactive blue robot with LED visor expressions (Zero emojis version)
  */
 
 const BOT_KNOWLEDGE = [
   {
     id: 'indir',
-    title: 'İstemciyi İndir (Download)',
-    desc: 'Windows (.exe) ve Linux için güvenli indirme linki',
+    title: 'Istemciyi Indir (Download)',
+    desc: 'Windows (.exe) ve Linux icin guvenli indirme baglantisi',
     iconColor: '#3b82f6',
-    icon: '📥',
-    answer: `Atlas AC istemcisini indirmek için özel indirme portalımız hazırdır:<br><br>
-    👉 <a href="download.html" style="color:#00f0ff;font-weight:700;text-decoration:underline;">[Yetkili İndirme Sayfası: download.html]</a><br><br>
-    • Bu sayfaya giderek yöneticinizden aldığınız <strong>Davet Kodunu</strong> (örn: <code>ATLAS-KURUCU-2026</code>) veya <strong>Lisans Anahtarınızı</strong> giriniz.<br>
-    • Anahtarınız doğrulandığı anda <strong>Windows x64</strong> (<code>AtlasAC.exe</code>) veya <strong>Linux x64</strong> (<code>AtlasAC-Linux</code>) indirmesi anında başlayacaktır.`
+    icon: '',
+    answer: `Atlas AC istemcisini indirmek icin ozel indirme portalimiz hazirdir:<br><br>
+    <a href="download.html" style="color:#0ea5e9;font-weight:700;text-decoration:underline;">[Yetkili Indirme Sayfasi: download.html]</a><br><br>
+    • Bu sayfaya giderek yetkilinizden veya panelden olusturulan <strong>8 Haneli PIN Kodunu</strong> (orn: <code>8F3C21A9</code>) giriniz.<br>
+    • PIN dogrulandigi anda <strong>Windows x64</strong> (<code>AtlasAC.exe</code>) veya <strong>Linux x64</strong> (<code>AtlasAC-Linux</code>) indirmesi Cloudflare Turbo CDN uzerinden aninda baslayacaktir.`
   },
   {
     id: 'kont',
-    title: 'Ekran Kontrolü (Kont) Nasıl Yapılır?',
-    desc: 'Siteden canlı izleme ve oyuncunun bilgisayarını tarama',
+    title: 'Ekran Kontrolu Nasil Yapilir?',
+    desc: 'Siteden canli izleme ve oyuncunun bilgisayarini tarama',
     iconColor: '#ef4444',
-    icon: '🛡️',
-    answer: `Şüpheli oyuncuyu ekran kontrolüne çektiğinizde adımlar şöyledir:<br><br>
-    1. <a href="dashboard.html#screencheck" style="color:#00f0ff;font-weight:700;text-decoration:underline;">Web Dashboard</a>'a girin ve <strong>🛡️ Canlı Kontrol</strong> sekmesinden <em>"Yeni Kontrol Başlat"</em> butonuna basın.<br>
-    2. Sistem size bir kod verir: <strong>ATL-XXXX</strong> (Örn: <code>ATL-7842</code>).<br>
-    3. Bu kodu oyuncuya verin: <em>"Atlas AC'yi aç ve bu kodu girip taramayı başlat."</em><br>
-    4. Oyuncu taramayı başlattığında fütüristik <strong>siber dikdörtgen yüzdelik bar</strong> oyuncunun ekranında akar, <strong>tüm bulgular anında sizin web panelinize canlı yansır!</strong><br>
-    5. Tarama bittiğinde tek tıkla <em>"Ban Komutunu Kopyala"</em> butonuna basabilirsiniz.`
+    icon: '',
+    answer: `Supheli oyuncuyu ekran kontrolune aldiginizda adimlar soyledir:<br><br>
+    1. <a href="dashboard.html" style="color:#0ea5e9;font-weight:700;text-decoration:underline;">Dashboard Paneline</a> girin ve <strong>+ Yeni Tarama PIN'i</strong> butonuna basin.<br>
+    2. Sistem size 8 haneli bir PIN kodu uretir (Orn: <code>8F3C21A9</code>).<br>
+    3. Bu kodu oyuncuya iletin: <em>"Atlas AC'yi ac ve bu PIN kodunu gir."</em><br>
+    4. Oyuncunun ekraninda yalinizca minimal ilerleme cubugu calisirken, <strong>tum bulgular aninda web panelinize canli olarak akar!</strong><br>
+    5. Oyuncudan asla lisans veya kayit istenmez.`
   },
   {
     id: 'linux',
-    title: 'Linux Desteği & Kurulum',
-    desc: 'Ubuntu, Arch, Debian üzerinde tek tıkla çalıştırma',
+    title: 'Linux Destegi & Kurulum',
+    desc: 'Ubuntu, Arch, Debian uzerinde tek tikla calistirma',
     iconColor: '#10b981',
-    icon: '🐧',
-    answer: `Evet! <strong>Atlas AC tam Linux uyumludur!</strong><br><br>
-    • İndirme sayfasından (<code>download.html</code>) <strong>Linux x64</strong> binary dosyasını indirin.<br>
-    • Terminalde şu komutla doğrudan çalıştırın:<br>
-    <code style="display:block;padding:6px;background:rgba(0,0,0,0.5);border-radius:4px;margin:6px 0;font-size:11px;color:#00f0ff;">chmod +x AtlasAC-Linux && ./AtlasAC-Linux</code>
-    • Veya arşivdeki <code>./baslat.sh</code> betiğini kullanabilirsiniz. Ekstra Node.js veya kütüphane kurulumu gerektirmez.`
+    icon: '',
+    answer: `Atlas AC tam Linux uyumludur.<br><br>
+    • Indirme sayfasindan (<code>download.html</code>) <strong>Linux x64</strong> binary dosyasini indirin.<br>
+    • Terminalde calistirma izni verip baslatin:<br>
+    <code style="display:block;padding:6px;background:rgba(0,0,0,0.5);border-radius:4px;margin:6px 0;font-size:11px;color:#38bdf8;">chmod +x AtlasAC-Linux && ./AtlasAC-Linux</code><br>
+    • Ekstra kutuphane veya runtime kurulumu gerektirmez.`
   },
   {
     id: 'lisans',
-    title: 'Lisans & Kayıt Sistemi',
-    desc: 'Davet koduyla hesap açma ve Ed25519 lisans alma',
+    title: 'Lisans & PIN Mimarisi',
+    desc: 'Ocean AC modeli lisans yonetimi',
     iconColor: '#f59e0b',
-    icon: '🔑',
-    answer: `Atlas AC herkese açık bir indirme değildir; <strong>kontrollü davet modeli</strong> ile korunur.<br><br>
-    1. Yöneticinizden tek kullanımlık bir <strong>Davet Kodu</strong> (örn: <code>ATLAS-KURUCU-2026</code>) alın.<br>
-    2. <a href="auth.html" style="color:#00f0ff;font-weight:700;">Giriş / Kayıt sayfasından</a> hesabınızı açın.<br>
-    3. Bilgisayarınızdaki Atlas AC'nin gösterdiği 64 haneli <strong>Makine Kimliği (Machine ID)</strong>'ni panele girin.<br>
-    4. Saniyeler içinde yalnızca o cihaz için geçerli <strong>Ed25519 imzalı lisansınız</strong> üretilir.`
+    icon: '',
+    answer: `Atlas AC, Ocean AC mimarisini kullanir:<br><br>
+    1. Lisans sadece sitede yetkili tarafindan kullanilir.<br>
+    2. Supheli oyuncudan kesinlikle lisans istenmez.<br>
+    3. Yetkili panelden tek kullanimlik 8 haneli PIN uretir ve oyuncu sadece PIN ile tarama yapar.`
   },
   {
     id: 'bypass',
-    title: 'Bypass Koruması & Tespit Edilenler',
-    desc: 'Vape V4, Raven, silinen hileler ve 13.321 Modrinth koruması',
+    title: 'Tespit Motorlari & Adli Derinlik',
+    desc: 'Vape V4, Drip Lite, silinen hileler ve bellek analizi',
     iconColor: '#06b6d4',
-    icon: '🚫',
-    answer: `Atlas AC, piyasadaki bilinen tüm atlatma taktiklerini engeller:<br><br>
-    • <strong>USN Journal:</strong> Kontrolden 5 dakika önce silinmiş hileleri (Shift+Delete dahil) dosya adıyla tespit eder.<br>
-    • <strong>BAM & Prefetch:</strong> Çalıştırılıp kapatılmış hilelerin kesin saat damgasını yakalar.<br>
-    • <strong>Bellek / JVM Dökümü:</strong> Aktif Java sürecindeki gizli dize ve DLL enjeksiyonlarını bulur.<br>
-    • <strong>Sıfır Sahte Ban:</strong> 13.321 girdili resmi Modrinth temiz listesi ile masum modlar (Sodium, Iris vb.) asla banlanmaz.`
+    icon: '',
+    answer: `Atlas AC su motorlarla tarama gerceklestirir:<br><br>
+    • <strong>Bellek (JVM Strings & Injection):</strong> Enjekte edilmis DLL'ler ve gizli combat paketleri.<br>
+    • <strong>USN Journal:</strong> Tarama oncesi silinmis dosya kayitlari.<br>
+    • <strong>Windows Forensics:</strong> Prefetch, Amcache, BAM, ShimCache, DPS loglari.<br>
+    • <strong>DNS Cache:</strong> Hile sunucularina yapilan ag istekleri.`
   },
   {
     id: 'hwid',
-    title: 'Makine Kimliği (HWID) Nedir?',
-    desc: '64 karakterli cihaz kimliği nereden öğrenilir?',
+    title: 'Makine Kimligi (Machine ID) Nedir?',
+    desc: '64 karakterli cihaz kimligi ve yan hesap tespiti',
     iconColor: '#8b5cf6',
-    icon: '💻',
-    answer: `Atlas AC uygulamasını bilgisayarınızda açtığınızda ekranda 64 karakterli SHA-256 tabanlı <strong>Makine Kimliği</strong> (Machine GUID) görüntülenir.<br><br>
-    Bu kimliği kopyalayıp web panelindeki kutuya yapıştırdığınızda o bilgisayara özel lisansınız üretilir.`
+    icon: '',
+    answer: `Atlas AC uygulamasinda donanim bilesenleri baz alinarak 64 karakterli benzersiz bir SHA-256 donanim parmak izi uretilir.<br><br>
+    Bu kimlik sayesinde oyuncunun daha once tarandigi yan hesaplar (alts) otomatik olarak tespit edilir.`
   }
 ];
 
@@ -84,10 +83,10 @@ function initAtlasMascotBot() {
 
   wrapper.innerHTML = `
     <!-- Speech Prompt above Mascot -->
-    <div class="mascot-speech-bubble" id="mascotBubble">Selam! İstemciyi indirmek için tıkla 🤖</div>
+    <div class="mascot-speech-bubble" id="mascotBubble">Istemciyi indirmek veya soru sormak icin tiklayin</div>
 
-    <!-- The Animated Chibi Cyber Robot (Matching User Reference Image) -->
-    <div class="mascot-avatar-stage" id="mascotStage" title="Atlas Bot — Tıklayarak sohbeti veya indirmeyi aç">
+    <!-- The Animated Chibi Cyber Robot -->
+    <div class="mascot-avatar-stage" id="mascotStage" title="Atlas Robot - Tiklayarak yardim penceresini acin">
       <svg class="mascot-body-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="cloudHeadGrad" x1="20" y1="10" x2="80" y2="75" gradientUnits="userSpaceOnUse">
@@ -114,7 +113,7 @@ function initAtlasMascotBot() {
           </filter>
         </defs>
 
-        <!-- Cute Chibi Limbs & Feet -->
+        <!-- Limbs & Feet -->
         <rect x="36" y="80" width="10" height="13" rx="5" fill="#1d4ed8" />
         <rect x="54" y="80" width="10" height="13" rx="5" fill="#1d4ed8" />
         <ellipse cx="41" cy="92" rx="7" ry="4" fill="#60a5fa" />
@@ -126,78 +125,63 @@ function initAtlasMascotBot() {
         <rect x="23" y="68" width="9" height="15" rx="4.5" fill="#2563eb" transform="rotate(18 23 68)" />
         <rect x="68" y="71" width="9" height="15" rx="4.5" fill="#2563eb" transform="rotate(-18 68 71)" />
 
-        <!-- Puffy Cloud Head (Exact Silhouette of Reference Image) -->
-        <!-- Center top lobe -->
+        <!-- Puffy Cloud Head -->
         <circle cx="50" cy="32" r="20" fill="url(#cloudHeadGrad)" />
-        <!-- Left lobe -->
         <circle cx="31" cy="40" r="17" fill="url(#cloudHeadGrad)" />
-        <!-- Right lobe -->
         <circle cx="69" cy="40" r="17" fill="url(#cloudHeadGrad)" />
-        <!-- Lower left cheek -->
         <circle cx="27" cy="54" r="15" fill="url(#cloudCheekGrad)" />
-        <!-- Lower right cheek -->
         <circle cx="73" cy="54" r="15" fill="url(#cloudCheekGrad)" />
-        <!-- Chin base bridge -->
-        <rect x="30" y="44" width="40" height="24" rx="10" fill="url(#cloudHeadGrad)" />
+        <rect x="30" y="44" width="40" height="20" rx="10" fill="url(#cloudCheekGrad)" />
 
-        <!-- Ear Nubbins / Antennas -->
-        <path d="M44 16C44 11 48 8 50 8C52 8 56 11 56 16Z" fill="#93c5fd" />
+        <!-- Dark Curved LED Screen -->
+        <rect x="25" y="40" width="50" height="24" rx="12" fill="url(#visorGrad)" stroke="#1e3a8a" stroke-width="1.2" />
 
-        <!-- Dark Curved Robot Visor Screen -->
-        <rect x="25" y="38" width="50" height="25" rx="12" fill="url(#visorGrad)" stroke="#38bdf8" stroke-width="1.5" />
-
-        <!-- Dynamic Visor LED Eyes (Exact > = < match from screenshot) -->
-        <g id="mascotEyesG" class="eye-glow">
-          <text id="mascotEyesText" x="50" y="55" font-family="'JetBrains Mono', monospace, sans-serif" font-size="13" font-weight="900" fill="#00f0ff" text-anchor="middle" letter-spacing="2">&gt; = &lt;</text>
-        </g>
+        <!-- LED Cyan Eyes -->
+        <text id="mascotEyesText" x="50" y="56" fill="#38bdf8" font-family="'Courier New', monospace" font-size="11" font-weight="900" text-anchor="middle" letter-spacing="2" filter="url(#softGlow)">&gt; = &lt;</text>
       </svg>
-      <div class="mascot-shadow"></div>
     </div>
 
-    <!-- Dropdown Topic & Chat Drawer (Exact Match from Reference Screenshot) -->
+    <!-- Interactive Chat Drawer -->
     <div class="companion-drawer hidden" id="companionDrawer">
       <div class="drawer-header">
-        <strong><span>🤖</span> Atlas AC Canlı Asistan &amp; İndirme</strong>
-        <button class="drawer-close" id="btnDrawerClose">✕</button>
+        <div class="drawer-header-left">
+          <span class="drawer-status-dot"></span>
+          <strong>Atlas Asistani</strong>
+          <small>Cevrimici</small>
+        </div>
+        <button type="button" class="drawer-close" id="btnDrawerClose" title="Kapat">&times;</button>
       </div>
 
       <div class="drawer-chat-area" id="drawerChatArea">
         <div class="drawer-chat-msg bot">
           <div class="drawer-bubble">
-            Selam! Ben <strong>Atlas AC Robotu</strong> 🤖<br>
-            İstemci indirme, anahtar doğrulama, siteden canlı ekran kontrolü veya Linux hakkında bana her şeyi sorabilir veya <strong>anahtarını buraya yazabilirsin!</strong>
+            Merhaba! Ben <strong>Atlas AC Robot Yardimcisiyim</strong>.<br>
+            Sorularinizi sorabilir, PIN olusturma rehberine ulasabilir veya 8 haneli PIN'inizi buraya yapistirarak indirmeyi baslatabilirsiniz.
           </div>
         </div>
       </div>
 
-      <!-- Quick Topics List (Eklentiler Menu matching user reference) -->
+      <!-- Quick Topics Pills -->
       <div class="drawer-topics-list" id="drawerTopicsList">
-        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin:4px 8px 8px;letter-spacing:.06em;">
-          EKLENTİLER &amp; HIZLI İŞLEMLER:
-        </div>
         ${BOT_KNOWLEDGE.map(k => `
-          <button class="drawer-topic-item" data-id="${k.id}">
-            <div class="topic-icon" style="background:${k.iconColor}22;border-color:${k.iconColor}55;">${k.icon}</div>
-            <div class="topic-text">
-              <span class="topic-title">${k.title}</span>
-              <span class="topic-desc">${k.desc}</span>
-            </div>
+          <button type="button" class="drawer-topic-item" data-id="${k.id}">
+            <span class="topic-dot" style="background:${k.iconColor};"></span>
+            <span>${k.title}</span>
           </button>
         `).join('')}
       </div>
     </div>
 
-    <!-- Floating Input Pill Bar (Exact Match from User Screenshot: [+] Soru sor veya Key gir... [↑]) -->
+    <!-- Floating Input Pill Bar -->
     <form class="companion-pill-bar" id="companionPillForm">
-      <button type="button" class="btn-pill-action" id="btnPillToggle" title="Hızlı Menü &amp; Eklentiler">+</button>
-      <input type="text" class="companion-input" id="companionInput" placeholder="Yeni sohbet başlat veya Key gir..." autocomplete="off">
-      <button type="submit" class="btn-pill-send" id="btnPillSend" title="Gönder">↑</button>
+      <button type="button" class="btn-pill-action" id="btnPillToggle" title="Hizli Menu">+</button>
+      <input type="text" class="companion-input" id="companionInput" placeholder="Soru sorun veya PIN girin..." autocomplete="off">
+      <button type="submit" class="btn-pill-send" id="btnPillSend" title="Gonder">&uarr;</button>
     </form>
   `;
 
   document.body.appendChild(wrapper);
 
-  // Element Handles
   const stage = document.getElementById('mascotStage');
   const drawer = document.getElementById('companionDrawer');
   const btnToggle = document.getElementById('btnPillToggle');
@@ -209,7 +193,6 @@ function initAtlasMascotBot() {
   const eyesText = document.getElementById('mascotEyesText');
   const bubble = document.getElementById('mascotBubble');
 
-  // Eye Expressions
   const EXPRESSIONS = ['> = <', '>_<', '^‿^', '•‿•', 'o_O', '•_•', '(★‿★)'];
   let currentExprIdx = 0;
 
@@ -217,13 +200,11 @@ function initAtlasMascotBot() {
     if (eyesText) eyesText.textContent = expr;
   }
 
-  // Hover animations
   stage.addEventListener('mouseenter', () => setMascotExpression('^‿^'));
   stage.addEventListener('mouseleave', () => {
     if (drawer.classList.contains('hidden')) setMascotExpression('> = <');
   });
 
-  // Idle cycle
   setInterval(() => {
     if (!drawer.classList.contains('hidden')) return;
     setMascotExpression('--');
@@ -233,13 +214,12 @@ function initAtlasMascotBot() {
     }, 250);
   }, 5000);
 
-  // Speech bubble cycle
   const TIPS = [
-    "İstemciyi indirmek için tıkla! 📥",
-    "Anahtarını buraya yapıştırıp indirebilirsin! ⚡",
-    "Yeni ekran kontrolü nasıl yapılır? 🛡️",
-    "Linux için ./AtlasAC-Linux hazır! 🐧",
-    "Soru sormak için yazmaya başla 🤖"
+    "Istemciyi indirmek icin tiklayin",
+    "PIN kodunuzu buraya yapistirip indirebilirsiniz",
+    "Ekran kontrolu nasil yapilir?",
+    "Linux icin ./AtlasAC-Linux hazir",
+    "Soru sormak icin yazmaya baslayin"
   ];
   let tipIdx = 0;
   setInterval(() => {
@@ -304,50 +284,47 @@ function initAtlasMascotBot() {
 
     const upper = rawTrim.toUpperCase();
 
-    // 1. Direct Key Validation right inside Robot!
-    if (upper === 'ATLAS-KURUCU-2026' || upper.startsWith('ATLAS-KURUCU') || upper.startsWith('ATLAS-ADMIN') || rawTrim.startsWith('ATLAS1.')) {
+    // Direct Key / PIN Validation
+    if (upper.length === 8 || upper === 'DEMO8PIN' || upper.startsWith('ATL-') || upper.startsWith('ATLAS-')) {
       setMascotExpression('(★‿★)');
-      const keyType = upper.startsWith('ATLAS-KURUCU') ? 'Yetkili Kurucu / Yönetici Anahtarı' : 'İmzalı Cihaz Lisansı';
       simulateBotAnswer(`
-        🎉 <strong>Tebrikler! Anahtarınız Başarıyla Doğrulandı!</strong><br>
-        <span style="color:#4ade80;">✓ ${keyType} Onaylandı.</span><br><br>
-        İstemcinizi hemen indirmek için platformunuzu seçin:<br><br>
+        <strong>Tarama PIN Kodu Algilandi!</strong><br>
+        <span style="color:#34d399;">Gecerli Kod: ${escapeHtml(upper)}</span><br><br>
+        Istemcinizi Turbo CDN ile hemen indirmek icin platform secin:<br><br>
         <div style="display:grid;gap:8px;margin:8px 0;">
-          <a href="https://github.com/ZeninKaanX/AtlasOyuncu-Hile-KontrolX/releases/download/v1.0.0/AtlasAC.exe" download="AtlasAC.exe" style="display:flex;align-items:center;justify-content:space-between;background:#0d111a;border:1px solid #00f0ff;color:#00f0ff;padding:10px 14px;border-radius:8px;font-weight:700;text-decoration:none;">
-            <span>🪟 Windows x64 İndir (AtlasAC.exe)</span>
-            <span>↓</span>
+          <a href="download.html?pin=${encodeURIComponent(upper)}" style="display:flex;align-items:center;justify-content:space-between;background:#0d111a;border:1px solid #0ea5e9;color:#0ea5e9;padding:10px 14px;border-radius:8px;font-weight:700;text-decoration:none;">
+            <span>Windows x64 Indir (AtlasAC.exe)</span>
+            <span>&darr;</span>
           </a>
-          <a href="https://github.com/ZeninKaanX/AtlasOyuncu-Hile-KontrolX/releases/download/v1.0.0/AtlasAC-Linux" download="AtlasAC-Linux" style="display:flex;align-items:center;justify-content:space-between;background:#0d111a;border:1px solid #38bdf8;color:#38bdf8;padding:10px 14px;border-radius:8px;font-weight:700;text-decoration:none;">
-            <span>🐧 Linux x64 İndir (AtlasAC-Linux)</span>
-            <span>↓</span>
+          <a href="download.html?pin=${encodeURIComponent(upper)}&platform=linux" style="display:flex;align-items:center;justify-content:space-between;background:#0d111a;border:1px solid #38bdf8;color:#38bdf8;padding:10px 14px;border-radius:8px;font-weight:700;text-decoration:none;">
+            <span>Linux x64 Indir (AtlasAC-Linux)</span>
+            <span>&darr;</span>
           </a>
         </div>
-        <small style="color:#94a3b8;">Ayrıca anahtarınız girilmiş şekilde özel indirme portalını açmak için: <a href="download.html?key=${encodeURIComponent(rawTrim)}" style="color:#00f0ff;text-decoration:underline;">[download.html Portalını Aç]</a></small>
       `);
       return;
     }
 
-    // 2. 404 or Download Query Dispatcher
+    // 404 or Download Query Dispatcher
     if (clean.includes('404') || clean.includes('indir') || clean.includes('download') || clean.includes('link') || clean.includes('exe')) {
       simulateBotAnswer(`
-        🚀 <strong>Atlas AC İstemci İndirme &amp; Doğrulama Portalı</strong><br><br>
-        Atlas AC doğrudan herkese açık dosya olarak sunulmaz; 404 almamak ve güvenli indirmek için özel indirme sayfamız hazırlanmıştır:<br><br>
-        👉 <a href="download.html" style="color:#00f0ff;font-weight:700;font-size:13px;text-decoration:underline;">[Yetkili İndirme Sayfası: download.html]</a><br><br>
-        1. Sayfaya gidin ve Windows veya Linux seçin.<br>
-        2. Davet anahtarınızı (örn: <code>ATLAS-KURUCU-2026</code>) kutuya girin.<br>
-        3. <em>"Anahtarı Doğrula &amp; İndirmeyi Başlat"</em> butonuna basın. Dosya anında inecektir!
+        <strong>Atlas AC Istemci Indirme Portali</strong><br><br>
+        Guvenli ve yuksek hizli indirme icin indirme portalimiz hazirdir:<br><br>
+        <a href="download.html" style="color:#0ea5e9;font-weight:700;font-size:13px;text-decoration:underline;">[Indirme Portali: download.html]</a><br><br>
+        1. Sayfaya gidin ve Windows veya Linux secin.<br>
+        2. 8 haneli PIN kodunuzu girin.<br>
+        3. Dosya Cloudflare Turbo CDN uzerinden aninda inecektir.
       `);
       return;
     }
 
     // Smart Keyword Dispatcher
     let match = null;
-
     if (clean.includes('kont') || clean.includes('ekran') || clean.includes('tarama') || clean.includes('ss') || clean.includes('adli')) {
       match = BOT_KNOWLEDGE.find(k => k.id === 'kont');
     } else if (clean.includes('linux') || clean.includes('ubuntu') || clean.includes('arch') || clean.includes('sh')) {
       match = BOT_KNOWLEDGE.find(k => k.id === 'linux');
-    } else if (clean.includes('lisans') || clean.includes('key') || clean.includes('ücret') || clean.includes('fiyat') || clean.includes('davet')) {
+    } else if (clean.includes('lisans') || clean.includes('key') || clean.includes('ucret') || clean.includes('fiyat') || clean.includes('davet')) {
       match = BOT_KNOWLEDGE.find(k => k.id === 'lisans');
     } else if (clean.includes('bypass') || clean.includes('hile') || clean.includes('vape') || clean.includes('raven') || clean.includes('yakala')) {
       match = BOT_KNOWLEDGE.find(k => k.id === 'bypass');
@@ -358,9 +335,9 @@ function initAtlasMascotBot() {
     if (match) {
       simulateBotAnswer(match.answer);
     } else if (clean.includes('selam') || clean.includes('merhaba') || clean.includes('sa') || clean.includes('hey') || clean.includes('naber')) {
-      simulateBotAnswer('Aleykümselam! Hoş geldin. Sana Atlas AC hile kontrol sistemi, istemci indirme portalı veya canlı adli kontrol hakkında yardımcı olmaktan mutluluk duyarım 🤖 Bir soru sorabilir veya lisans anahtarını yazabilirsin!');
+      simulateBotAnswer('Aleykumselam, hos geldiniz. Size Atlas AC hile kontrol sistemi, PIN olusturma veya indirme portalinda yardimci olabilirim. Bir soru sorabilir veya PIN kodunuzu yazabilirsiniz.');
     } else {
-      simulateBotAnswer(`Sorduğun soruyu anladım! Hızlı işlem yapmak için doğrudan <a href="download.html" style="color:#00f0ff;font-weight:700;">İndirme Sayfası</a>'na gidebilir veya <a href="dashboard.html" style="color:#00f0ff;font-weight:700;">Yetkili Paneli</a>'nden Canlı Kontrol başlatabilirsin 🤖`);
+      simulateBotAnswer(`Sorunuzu anladim. Hizli islem yapmak icin <a href="download.html" style="color:#0ea5e9;font-weight:700;">Indirme Portali</a>'na gidebilir veya <a href="dashboard.html" style="color:#0ea5e9;font-weight:700;">Yetkili Paneli</a>'nden canli kontrol baslatabilirsiniz.`);
     }
   }
 

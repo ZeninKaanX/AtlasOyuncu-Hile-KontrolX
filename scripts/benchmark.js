@@ -140,7 +140,7 @@ async function main() {
   const nodeVersion = process.version;
   const v8Version = process.versions.v8;
 
-  console.log(`${C.yellow}📋 TEST ORTAMI VE DONANIM BİLGİLERİ:${C.reset}`);
+  console.log(`${C.yellow}[INFO] TEST ORTAMI VE DONANIM BILGILERI:${C.reset}`);
   console.log(`   • ${C.bright}İşlemci (CPU):${C.reset}       ${cpuModel} (${cpuCores} Mantıksal Çekirdek)`);
   console.log(`   • ${C.bright}Sistem Belleği:${C.reset}      ${totalRamGb} GB Toplam (Boş: ${freeRamGb} GB)`);
   console.log(`   • ${C.bright}İşletim Sistemi:${C.reset}     ${osType}`);
@@ -276,7 +276,7 @@ async function main() {
   console.log(`   • ${C.green}Ortalama Analiz Gecikmesi:${C.reset} ${semanticStats.p50.toFixed(2)} μs/sınıf (p95: ${semanticStats.p95.toFixed(2)} μs | p99: ${semanticStats.p99.toFixed(2)} μs)`);
   console.log(`   • ${C.green}Hile Tespit Doğruluğu:${C.reset}     %${cheatDetectRate} (${detectedCheats}/${expectedCheatChecks} hile sınıfı yakalandı)`);
   console.log(`   • ${C.green}Yanlış Alarm (False-Flag):${C.reset} ${falsePositives === 0 ? '%0.00 (TAM SIFIR)' : falsePositives}`);
-  console.log(`   • ${C.bright}${C.green}Değerlendirme:${C.reset}             🧠 HIGH-PRECISION HEURISTIC (Derin baytkod analizi mikrosaniye seviyesinde)\n`);
+  console.log(`   • ${C.bright}${C.green}Değerlendirme:${C.reset}             [AI] HIGH-PRECISION HEURISTIC (Derin baytkod analizi mikrosaniye seviyesinde)\n`);
 
   benchmarkReportData.benchmarks.semantic = {
     iterations: SEMANTIC_ITERATIONS,
@@ -332,7 +332,7 @@ async function main() {
   console.log(`   • ${C.green}Tamamlanma Süresi:${C.reset}         ${peDurationMs.toFixed(2)} ms`);
   console.log(`   • ${C.bright}${C.yellow}Denetim Hızı:${C.reset}              ${C.bright}${formatNumber(peOpsPerSec)} dosya/s${C.reset}`);
   console.log(`   • ${C.green}Ortalama Dosya Gecikmesi:${C.reset}  ${(peDurationMs / PE_ITERATIONS).toFixed(3)} ms (${peStats.p50.toFixed(1)} μs/dosya)`);
-  console.log(`   • ${C.bright}${C.green}Değerlendirme:${C.reset}             🛡️ INSTANT PE PARSING (Doğrudan C/C++ hızında sıfır bağımlılık)\n`);
+  console.log(`   • ${C.bright}${C.green}Değerlendirme:${C.reset}             [OK] INSTANT PE PARSING (Doğrudan C/C++ hızında sıfır bağımlılık)\n`);
 
   benchmarkReportData.benchmarks.peInspector = {
     iterations: PE_ITERATIONS,
@@ -536,7 +536,7 @@ async function main() {
   console.log(`   • ${C.green}Başlangıç Heap RAM:${C.reset}                ${baseMem.heapUsed} MB (RSS: ${baseMem.rss} MB)`);
   console.log(`   • ${C.green}5 Tarama Sonrası Heap RAM:${C.reset}         ${finalMem.heapUsed} MB (RSS: ${finalMem.rss} MB)`);
   console.log(`   • ${C.bright}${C.yellow}Net Bellek Sızıntısı (Leak Delta):${C.reset} ${memoryDeltaMb > 5 ? C.red + '+' + memoryDeltaMb + ' MB' : C.green + (memoryDeltaMb >= 0 ? '+' : '') + memoryDeltaMb + ' MB (SIFIR SIZINTI)'}${C.reset}`);
-  console.log(`   • ${C.bright}${C.green}Değerlendirme:${C.reset}                     🛡️ BULLETPROOF STABILITY (100% Deterministic GC Cleanup)\n`);
+  console.log(`   • ${C.bright}${C.green}Değerlendirme:${C.reset}                     [OK] BULLETPROOF STABILITY (100% Deterministic GC Cleanup)\n`);
 
   benchmarkReportData.benchmarks.pipeline = {
     coldDurationMs,
@@ -567,13 +567,13 @@ async function main() {
   console.log(` ${C.bright}Bellek Sızıntısı Delta:${C.reset}     ${C.green}${memoryDeltaMb} MB (Temiz ve Kararlı)${C.reset}\n`);
 
   // Save Markdown Report to artifacts directory or repo
-  const mdReport = `# ⚡ Atlas AC - Detaylı Performans & Benchmark Raporu
+  const mdReport = `# [PERF] Atlas AC - Detaylı Performans & Benchmark Raporu
 
 Bu rapor, **Atlas AC (Client Integrity & Anti-Cheat Forensics Engine)** yazılımının mimari bileşenleri, bellek yönetimi, adli bilişim motorları ve Yapay Zeka Semantik baytkod analiz hızını ölçen kapsamlı testlerin sonuçlarını içerir.
 
 ---
 
-## 🖥️ 1. Test Ortamı ve Donanım Özellikleri
+## 1. Test Ortamı ve Donanım Özellikleri
 
 | Parametre | Değer |
 | :--- | :--- |
@@ -585,7 +585,7 @@ Bu rapor, **Atlas AC (Client Integrity & Anti-Cheat Forensics Engine)** yazılı
 
 ---
 
-## 📊 2. Motor Bazlı Benchmark Sonuçları
+## 2. Motor Bazlı Benchmark Sonuçları
 
 ### A. Modrinth 13.321 Temiz Mod Beyaz Listesi ($O(1)$ Hash Set)
 Modrinth, CurseForge, Fabric ve Forge ekosistemindeki 13.321 doğrulanmış temiz modun bellek içi arama hızı:
@@ -644,7 +644,7 @@ ${reportResults.map(r => `| **${r.label}** | ${r.count} | \`${r.durationMs} ms\`
 
 ---
 
-## 📈 3. Uçtan Uca Tarama & Bellek Yönetimi (Memory Stability)
+## 3. Uçtan Uca Tarama & Bellek Yönetimi (Memory Stability)
 
 * **Soğuk Başlangıç Taraması (Cold Run):** \`${coldDurationMs} ms\`
 * **Sıcak Başlangıç Taraması (Warm Run):** \`${warmDurationMs} ms\` (\`${speedup}x\` JIT Hızlanması)
@@ -654,7 +654,7 @@ ${reportResults.map(r => `| **${r.label}** | ${r.count} | \`${r.durationMs} ms\`
 
 ---
 
-## 🏆 4. Sektörel Karşılaştırma Özeti
+## 4. Sektörel Karşılaştırma Özeti
 
 | Kriter | Atlas AC | Tipik Ekran Paylaşımı AC Araçları (Echo / Paladin / Avenge) |
 | :--- | :--- | :--- |
@@ -668,7 +668,7 @@ ${reportResults.map(r => `| **${r.label}** | ${r.count} | \`${r.durationMs} ms\`
 
   const reportPath = path.join(__dirname, '..', 'benchmark_results.md');
   fs.writeFileSync(reportPath, mdReport, 'utf8');
-  console.log(`${C.green}✅ Ayrıntılı Markdown Raporu oluşturuldu:${C.reset} ${reportPath}\n`);
+  console.log(`${C.green}[OK] Ayrıntılı Markdown Raporu oluşturuldu:${C.reset} ${reportPath}\n`);
   process.exit(0);
 }
 

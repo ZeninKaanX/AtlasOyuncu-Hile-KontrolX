@@ -17,7 +17,12 @@
       "src/**/*.js"
     ],
     "assets": [
-      "src/ui/**/*",
+      "src/ui/css/**/*",
+      "src/ui/js/**/*",
+      "src/ui/index.html",
+      "src/ui/assets/*.png",
+      "src/ui/assets/*.svg",
+      "src/ui/assets/*.ico",
       "src/signatures/**/*"
     ],
     "targets": [

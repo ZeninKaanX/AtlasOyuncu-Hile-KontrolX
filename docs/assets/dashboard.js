@@ -107,9 +107,9 @@ function renderScansTable(scans) {
     } else if (s.status === 'scanning') {
       statusPill = `<span class="status-pill status-scanning"><span class="live-radar-dot"></span> Taranıyor (%${s.progress || 0})</span>`;
     } else if (s.verdict === 'banned') {
-      statusPill = `<span class="status-pill status-banned">🔴 HİLE TESPİT EDİLDİ</span>`;
+      statusPill = `<span class="status-pill status-banned"><span class="h-1.5 w-1.5 rounded-full bg-red-400"></span> CHEATING</span>`;
     } else if (s.verdict === 'clean') {
-      statusPill = `<span class="status-pill status-clean">🟢 TEMİZ</span>`;
+      statusPill = `<span class="status-pill status-clean"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> TEMİZ</span>`;
     } else {
       statusPill = `<span class="status-pill status-pending">Tamamlandı</span>`;
     }
@@ -118,7 +118,7 @@ function renderScansTable(scans) {
       ? `<strong style="color:#ef4444;">${s.findings_count} İhlal</strong>`
       : `<span style="color:#22c55e;">0 Bulgu</span>`;
 
-    const platformBadge = (s.client_platform === 'linux') ? '🐧 Linux' : '🪟 Windows';
+    const platformBadge = (s.client_platform === 'linux') ? 'Linux' : 'Windows';
     const dateStr = new Date(s.created_at).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' });
 
     return `
@@ -135,7 +135,7 @@ function renderScansTable(scans) {
         <td><small style="color:#64748b;">${dateStr}</small></td>
         <td style="text-align:right;">
           <button class="button button-sm btn-inspect" data-code="${escapeHtml(s.session_code)}">
-            🔍 İncele
+            İncele
           </button>
         </td>
       </tr>
@@ -236,22 +236,22 @@ function renderInspectionView(scan) {
   verdictBanner.className = 'verdict-banner';
   if (scan.status === 'pending') {
     verdictBanner.classList.add('verdict-banner-suspicious');
-    verdictIcon.textContent = '⏳';
+    verdictIcon.textContent = '';
     verdictTitle.textContent = 'OYUNCU BAĞLANTISI BEKLENİYOR';
     verdictDesc.textContent = `Oyuncunun Atlas AC uygulamasını açıp ${scan.session_code} kodunu girmesi bekleniyor...`;
   } else if (scan.verdict === 'banned' || (scan.findings_count > 0)) {
     verdictBanner.classList.add('verdict-banner-banned');
-    verdictIcon.textContent = '🔴';
+    verdictIcon.textContent = '';
     verdictTitle.textContent = 'HİLE TESPİT EDİLDİ (KRİTİK İHLAL)';
     verdictDesc.textContent = `Bu bilgisayarda ${scan.findings_count} adet doğrulanmış hile izi, kalıntı veya gizleme girişimi bulundu!`;
   } else if (scan.status === 'completed' && scan.verdict === 'clean') {
     verdictBanner.classList.add('verdict-banner-clean');
-    verdictIcon.textContent = '🟢';
+    verdictIcon.textContent = '';
     verdictTitle.textContent = 'BİLGİSAYAR TEMİZ';
     verdictDesc.textContent = 'Yapılan 33 motorlu adli bilişim taramasında herhangi bir hile izine veya tahrifata rastlanmadı.';
   } else {
     verdictBanner.classList.add('verdict-banner-suspicious');
-    verdictIcon.textContent = '⚡';
+    verdictIcon.textContent = '';
     verdictTitle.textContent = 'TARAMA SÜRÜYOR...';
     verdictDesc.textContent = 'Adli bilişim motorları oyuncunun belleğini ve dosya kütüklerini canlı inceliyor.';
   }
@@ -327,7 +327,7 @@ function renderFindingsList(findings, filter) {
           <span class="finding-title">${escapeHtml(f.title || 'Tespit Edilen Nesne')}</span>
           <span class="finding-badge ${badgeClass}">${escapeHtml(sev)}</span>
         </div>
-        ${f.path ? `<div class="finding-path">📍 ${escapeHtml(f.path)}</div>` : ''}
+        ${f.path ? `<div class="finding-path"><span style="color:var(--brand-light);font-family:var(--font-mono);font-size:11px;">[DOSYA]</span> ${escapeHtml(f.path)}</div>` : ''}
         ${f.details ? `<div class="finding-details">${escapeHtml(f.details)}</div>` : ''}
       </div>
     `;
@@ -387,16 +387,16 @@ byId('btnCopyCreatedLink')?.addEventListener('click', async () => {
   const link = `https://zeninkaanx.github.io/AtlasOyuncu-Hile-KontrolX/download.html?pin=${encodeURIComponent(code)}`;
   await navigator.clipboard.writeText(link);
   byId('btnCopyCreatedLink').textContent = 'Link Kopyalandı!';
-  setTimeout(() => { byId('btnCopyCreatedLink').textContent = '🔗 İndirme Linkini Kopyala'; }, 1500);
+  setTimeout(() => { byId('btnCopyCreatedLink').textContent = 'İndirme Linkini Kopyala'; }, 1500);
 });
 
 byId('btnCopyCreatedMsg')?.addEventListener('click', async () => {
   const code = byId('createdScanCodeDisplay').textContent;
   const link = `https://zeninkaanx.github.io/AtlasOyuncu-Hile-KontrolX/download.html?pin=${encodeURIComponent(code)}`;
-  const msg = `🛡️ Atlas AC ile ekran kontrolüne alındınız.\nLütfen 5 dakika içinde istemciyi indirip PIN kodunu giriniz:\nİndirme Bağlantısı: ${link}\nTarama PIN: ${code}\n(İstemci açıldığında PIN'i girmeniz yeterlidir, lisans gerekmez.)`;
+  const msg = `Atlas AC ile ekran kontrolüne alındınız.\nLütfen 5 dakika içinde istemciyi indirip PIN kodunu giriniz:\nİndirme Bağlantısı: ${link}\nTarama PIN: ${code}\n(İstemci açıldığında PIN'i girmeniz yeterlidir, lisans gerekmez.)`;
   await navigator.clipboard.writeText(msg);
   byId('btnCopyCreatedMsg').textContent = 'Mesaj Kopyalandı!';
-  setTimeout(() => { byId('btnCopyCreatedMsg').textContent = '💬 Kontrol Mesajını Kopyala'; }, 1500);
+  setTimeout(() => { byId('btnCopyCreatedMsg').textContent = 'Kontrol Mesajını Kopyala'; }, 1500);
 });
 
 // Inspector Close
@@ -445,12 +445,12 @@ byId('btnCopyDiscordReport').addEventListener('click', async () => {
   if (!currentInspectedScan) return;
   const s = currentInspectedScan;
   const reportText = `**[ATLAS AC ADLİ BİLİŞİM RAPORU]**\n` +
-    `👤 **Oyuncu:** \`${s.player_name}\`\n` +
-    `🔑 **Kontrol Kodu:** \`${s.session_code}\`\n` +
-    `⚖️ **Karar:** ${s.verdict === 'banned' ? '🔴 **HİLE TESPİT EDİLDİ**' : '🟢 **TEMİZ**'}\n` +
-    `📊 **Risk Skoru:** %${s.risk_score || 0} (${s.findings_count || 0} İhlal)\n` +
-    `📅 **Tarih:** ${new Date(s.created_at).toLocaleString('tr-TR')}\n` +
-    `🔗 **Rapor Linki:** ${location.origin + location.pathname}?scan=${s.session_code}`;
+    `**Oyuncu:** \`${s.player_name}\`\n` +
+    `**Kontrol Kodu:** \`${s.session_code}\`\n` +
+    `**Karar:** ${s.verdict === 'banned' ? '**CHEATING (HİLE TESPİT EDİLDİ)**' : '**CLEAN (TEMİZ)**'}\n` +
+    `**Risk Skoru:** %${s.risk_score || 0} (${s.findings_count || 0} İhlal)\n` +
+    `**Tarih:** ${new Date(s.created_at).toLocaleString('tr-TR')}\n` +
+    `**Rapor Linki:** ${location.origin + location.pathname}?scan=${s.session_code}`;
   await navigator.clipboard.writeText(reportText);
   showAlert('Discord raporu panoya kopyalandı!');
 });

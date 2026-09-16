@@ -43,7 +43,7 @@ try {
   // Some hosts cannot generate V8 bytecode for every dependency. Explicitly
   // retain source as a fallback so pkg never emits a "successful" but
   // unbootable executable when bytecode generation fails.
-  const pkgCmd = `npx --no-install pkg . --targets node22-linux-x64,node22-win-x64 --out-path dist --fallback-to-source`;
+  const pkgCmd = `npx --no-install pkg . --targets node22-linux-x64,node22-win-x64 --out-path dist --compress GZip --fallback-to-source`;
   console.log(`[>] Running: ${pkgCmd}`);
   execSync(pkgCmd, { cwd: ROOT_DIR, stdio: 'inherit' });
   console.log('[+] Pkg compilation complete.\n');

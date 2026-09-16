@@ -43,7 +43,7 @@ class ForensicReporter {
     const faviconSrc = /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(String(sStatus.favicon || ''))
       ? String(sStatus.favicon)
       : fallbackFavicon;
-    const serverMotd = sStatus.motd || "TR atlasoyuncu.com 1.21.11 | 26.2 GERCEK KALITE 👑 SKYBLOCK | TOWNY | BOXPVP | PVP | SMP | PILLARS 👑";
+    const serverMotd = sStatus.motd || "TR atlasoyuncu.com 1.21.11 | 26.2 GERCEK KALITE | SKYBLOCK | TOWNY | BOXPVP | PVP | SMP | PILLARS";
 
     const allFindings = scanData.allFindings || [];
     
