@@ -487,15 +487,9 @@ byId('copyKey').addEventListener('click', async () => {
 });
 
 async function handleDownload(btn, platform) {
-  btn.disabled = true;
-  try {
-    const result = await portal('download', { platform });
-    location.href = result.url;
-  } catch (error) {
-    showAlert(error.message);
-  } finally {
-    btn.disabled = false;
-  }
+  const key = byId('licenseKey')?.textContent?.trim() || '';
+  const keyParam = key ? `&key=${encodeURIComponent(key)}` : '';
+  location.href = `download.html?platform=${platform}${keyParam}`;
 }
 
 const btnWin = byId('downloadWindowsButton');
