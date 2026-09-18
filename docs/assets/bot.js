@@ -13,7 +13,7 @@ const BOT_KNOWLEDGE = [
     answer: `Atlas AC istemcisini indirmek icin ozel indirme portalimiz hazirdir:<br><br>
     <a href="download.html" style="color:#0ea5e9;font-weight:700;text-decoration:underline;">[Yetkili Indirme Sayfasi: download.html]</a><br><br>
     • Bu sayfaya giderek yetkilinizden veya panelden olusturulan <strong>8 Haneli PIN Kodunu</strong> (orn: <code>8F3C21A9</code>) giriniz.<br>
-    • PIN dogrulandigi anda <strong>Windows x64</strong> (<code>AtlasAC.exe</code>) veya <strong>Linux x64</strong> (<code>AtlasAC-Linux</code>) indirmesi Cloudflare Turbo CDN uzerinden aninda baslayacaktir.`
+    • PIN dogrulandigi anda <strong>Windows x64</strong> (<code>AtlasAC.exe</code>) veya <strong>Linux x64</strong> (<code>AtlasAC-Linux</code>) icin 90 saniyelik ozel indirme baglantisi olusturulur.`
   },
   {
     id: 'kont',
@@ -284,13 +284,14 @@ function initAtlasMascotBot() {
 
     const upper = rawTrim.toUpperCase();
 
-    // Direct Key / PIN Validation
-    if (upper.length === 8 || upper === 'DEMO8PIN' || upper.startsWith('ATL-') || upper.startsWith('ATLAS-')) {
+    // Format recognition only; the protected download endpoint performs the
+    // actual server-side PIN validation.
+    if (/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8}$/.test(upper)) {
       setMascotExpression('(★‿★)');
       simulateBotAnswer(`
-        <strong>Tarama PIN Kodu Algilandi!</strong><br>
-        <span style="color:#34d399;">Gecerli Kod: ${escapeHtml(upper)}</span><br><br>
-        Istemcinizi Turbo CDN ile hemen indirmek icin platform secin:<br><br>
+        <strong>PIN biçimi algılandı.</strong><br>
+        <span style="color:#34d399;">Kod: ${escapeHtml(upper)}</span><br><br>
+        Geçerlilik kontrolü ve özel indirme bağlantısı için platform seçin:<br><br>
         <div style="display:grid;gap:8px;margin:8px 0;">
           <a href="download.html?pin=${encodeURIComponent(upper)}" style="display:flex;align-items:center;justify-content:space-between;background:#0d111a;border:1px solid #0ea5e9;color:#0ea5e9;padding:10px 14px;border-radius:8px;font-weight:700;text-decoration:none;">
             <span>Windows x64 Indir (AtlasAC.exe)</span>
@@ -313,7 +314,7 @@ function initAtlasMascotBot() {
         <a href="download.html" style="color:#0ea5e9;font-weight:700;font-size:13px;text-decoration:underline;">[Indirme Portali: download.html]</a><br><br>
         1. Sayfaya gidin ve Windows veya Linux secin.<br>
         2. 8 haneli PIN kodunuzu girin.<br>
-        3. Dosya Cloudflare Turbo CDN uzerinden aninda inecektir.
+        3. Sistem 90 saniye gecerli ozel indirme baglantisini olusturacaktir.
       `);
       return;
     }

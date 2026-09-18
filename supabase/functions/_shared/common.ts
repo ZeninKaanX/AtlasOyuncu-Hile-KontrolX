@@ -1,14 +1,25 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 export const cors = (origin: string) => {
-  const allowed = Deno.env.get('APP_ORIGIN') || '';
+  const configuredOrigin = Deno.env.get('APP_ORIGIN') || '';
+  const allowedOrigins = new Set([
+    configuredOrigin,
+    'https://zeninkaanx.github.io',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000'
+  ].filter(Boolean));
   const headers: Record<string, string> = {
     'Content-Type': 'application/json; charset=utf-8',
     'Vary': 'Origin',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'no-referrer'
   };
-  const isAllowed = !origin || origin === allowed || origin.endsWith('github.io') || origin.includes('localhost') || origin.includes('127.0.0.1');
+  let isLocalDevelopment = false;
+  try {
+    const parsed = new URL(origin);
+    isLocalDevelopment = parsed.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname);
+  } catch (_) {}
+  const isAllowed = !origin || allowedOrigins.has(origin) || isLocalDevelopment;
   if (isAllowed) {
     headers['Access-Control-Allow-Origin'] = origin || '*';
     headers['Access-Control-Allow-Headers'] = 'authorization, apikey, content-type, x-admin-token';

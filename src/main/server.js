@@ -14,7 +14,6 @@ const { exec, execSync } = require('child_process');
 const scannerCore = require('../engine/scannerCore');
 const updater = require('../engine/updater');
 const serverStatus = require('../engine/serverStatus');
-const licenseManager = require('../engine/licenseManager');
 const cloudSync = require('../engine/cloudSync');
 
 const app = express();
@@ -260,38 +259,6 @@ app.get('/api/server-status', async (req, res) => {
   }
 });
 
-// License operations remain loopback/session protected. Only signed license
-// documents are accepted; no secret signing material exists in the client.
-app.get('/api/license/status', (req, res) => {
-  const status = licenseManager.getStatus();
-  res.json({
-    success: true,
-    valid: status.valid,
-    error: status.valid ? null : status.error,
-    machineId: status.machineId,
-    license: status.valid ? {
-      licenseId: status.payload.licenseId,
-      customer: status.payload.customer,
-      expiresAt: status.payload.expiresAt
-    } : null
-  });
-});
-
-app.post('/api/license/activate', (req, res) => {
-  const submitted = req.body && (req.body.license || req.body);
-  const result = licenseManager.activate(submitted);
-  if (!result.valid) return res.status(400).json({ success: false, error: result.error, machineId: result.machineId });
-  res.json({
-    success: true,
-    valid: true,
-    license: {
-      licenseId: result.payload.licenseId,
-      customer: result.payload.customer,
-      expiresAt: result.payload.expiresAt
-    }
-  });
-});
-
 // Fallback to standard express.static
 app.use(express.static(uiPath));
 
@@ -321,20 +288,6 @@ wss.on('connection', (ws) => {
   }).catch(() => {});
 
   try {
-    const license = licenseManager.getStatus();
-    ws.send(JSON.stringify({
-      type: 'LICENSE_STATUS',
-      valid: license.valid,
-      error: license.valid ? null : license.error,
-      machineId: license.machineId,
-      license: license.valid ? {
-        customer: license.payload.customer,
-        expiresAt: license.payload.expiresAt
-      } : null
-    }));
-  } catch (_) {}
-
-  try {
     if (process.env.ATLAS_INITIAL_PIN) {
       ws.send(JSON.stringify({
         type: 'SESSION_CODE',
@@ -356,52 +309,22 @@ wss.on('connection', (ws) => {
         }));
       } else if (data.action === 'START_SCAN') {
         let sessionCode = (data.sessionCode || process.env.ATLAS_INITIAL_PIN || '').trim().toUpperCase();
-        const playerName = (data.playerName || 'Şüpheli Oyuncu').trim();
-
-        // OCEAN AC ARCHITECTURE:
-        // A suspect player is running a remote screen check authorized by staff.
-        // If an 8-character PIN or session code is provided, the scan is authorized by the session PIN.
-        // NO machine license is required from the suspect player!
-        const isSessionScan = Boolean(sessionCode && sessionCode.length >= 4);
-
-        if (!isSessionScan) {
-          // If no PIN provided, check local machine license for standalone inspection
-          const license = licenseManager.getStatus();
-          if (!license.valid) {
-            ws.send(JSON.stringify({
-              type: 'LICENSE_REQUIRED',
-              message: 'Tarama için yetkilinizin verdiği 8 haneli PIN kodunu girin veya geçerli bir lisans anahtarı tanımlayın.',
-              machineId: license.machineId
-            }));
-            return;
-          }
+        if (!/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8}$/.test(sessionCode)) {
+          ws.send(JSON.stringify({ type: 'SCAN_ERROR', message: 'Yetkilinizin verdiği sekiz karakterli PIN kodunu girin.' }));
+          return;
+        }
+        if (scannerCore.isScanning) {
+          ws.send(JSON.stringify({ type: 'SCAN_ERROR', message: 'Bu cihazda zaten bir tarama çalışıyor.' }));
+          return;
         }
 
         try {
-          const syncRes = await cloudSync.initSession(sessionCode, playerName);
-          if (syncRes && syncRes.sessionCode) {
-            sessionCode = syncRes.sessionCode;
-            try {
-              ws.send(JSON.stringify({
-                type: 'SESSION_CODE',
-                sessionCode: sessionCode
-              }));
-            } catch (_) {}
-          } else if (isSessionScan) {
-            ws.send(JSON.stringify({
-              type: 'SCAN_ERROR',
-              message: 'Girilen Tarama PIN kodu geçersiz veya süresi dolmuş. Lütfen yetkilinizden yeni bir PIN isteyiniz.'
-            }));
-            return;
-          }
+          const syncRes = await cloudSync.initSession(sessionCode);
+          sessionCode = syncRes.sessionCode;
+          ws.send(JSON.stringify({ type: 'SESSION_CODE', sessionCode }));
         } catch (err) {
-          if (isSessionScan) {
-            ws.send(JSON.stringify({
-              type: 'SCAN_ERROR',
-              message: 'Sunucuyla bağlantı kurulamadı: ' + err.message
-            }));
-            return;
-          }
+          ws.send(JSON.stringify({ type: 'SCAN_ERROR', message: err.message || 'PIN doğrulanamadı.' }));
+          return;
         }
 
         // Emit exactly one terminal event. Engine-level command timeouts are
@@ -427,11 +350,10 @@ wss.on('connection', (ws) => {
               objectsCount
             }));
           });
-          try {
-            await cloudSync.completeSession(results);
-          } catch (_) {}
+          await cloudSync.completeSession(results);
           finishScan('SCAN_COMPLETE', { data: results, sessionCode });
         } catch (err) {
+          await cloudSync.failSession(err.message);
           ws.send(JSON.stringify({
             type: 'PROGRESS',
             stage: 'ERROR',

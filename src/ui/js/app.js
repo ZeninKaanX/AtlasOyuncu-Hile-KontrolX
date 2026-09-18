@@ -270,17 +270,9 @@ try {
   }
 } catch (e) {}
 
-// Global Session Identity Pin (Ocean-Style)
-let sessionPin = '';
-function generateSessionPin() {
-  const chars = '0123456789ABCDEF';
-  let pin = '';
-  for (let i = 0; i < 8; i++) {
-    pin += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return pin;
-}
-sessionPin = generateSessionPin();
+// The UI never invents a PIN. Staff create it in the web panel and the cloud
+// confirms it before any local scan can start.
+let sessionPin = '--------';
 
 // State management
 let ws = null;
@@ -412,9 +404,9 @@ function initOceanScannerWindow() {
   if (btnStart && pinInput) {
     btnStart.addEventListener('click', () => {
       const pin = pinInput.value.trim().toUpperCase();
-      if (!pin) {
+      if (!/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8}$/.test(pin)) {
         pinInput.focus();
-        showToast(currentLang === 'tr' ? 'PIN Gerekli' : 'PIN Required', currentLang === 'tr' ? 'Lütfen yetkilinizin verdiği 8 haneli PIN kodunu giriniz.' : 'Please enter the 8-character PIN provided by your reviewer.', 'warning', 4000);
+        showToast(currentLang === 'tr' ? 'Geçersiz PIN' : 'Invalid PIN', currentLang === 'tr' ? 'Yetkilinizin verdiği sekiz karakterli PIN kodunu girin.' : 'Enter the eight-character PIN supplied by staff.', 'warning', 4000);
         return;
       }
       window.activeSessionCode = pin;
@@ -1056,6 +1048,7 @@ function handleServerMessage(msg) {
     handleScanComplete(msg.data, msg.sessionCode);
   } else if (msg.type === 'SESSION_CODE') {
     window.activeSessionCode = msg.sessionCode;
+    sessionPin = msg.sessionCode;
     const badge = document.getElementById('hudSessionCodeBadge');
     if (badge) {
       badge.textContent = `PIN: ${msg.sessionCode}`;
@@ -1082,10 +1075,6 @@ function handleServerMessage(msg) {
     renderServerStatus(msg.data);
   } else if (msg.type === 'SCAN_ERROR') {
     finalizeScanWithError(msg.message || 'Bilinmeyen tarama hatası');
-  } else if (msg.type === 'LICENSE_REQUIRED') {
-    handleLicenseRequired(msg);
-  } else if (msg.type === 'LICENSE_STATUS') {
-    window.atlasLicenseStatus = msg;
   } else if (msg.type === 'EXPORT_RESULT') {
     const isTr = currentLang === 'tr';
     logTerminal('SUCCESS', isTr ? `Rapor İndirilenler klasörüne kaydedildi: ${msg.path}` : `Report saved to Downloads: ${msg.path}`);
@@ -1095,42 +1084,6 @@ function handleServerMessage(msg) {
       'success',
       6000
     );
-  }
-}
-
-async function handleLicenseRequired(msg) {
-  const isTr = currentLang === 'tr';
-  const machineId = String(msg.machineId || 'UNKNOWN');
-  const copied = await copyTextQuietly(machineId);
-  const promptText = isTr
-    ? `Bu cihaz için geçerli Atlas AC lisansı gerekli.\n\nMakine Kimliği:\n${machineId}\n\n${copied ? 'Kimlik panoya kopyalandı. ' : ''}Yetkiliden aldığınız license.json içeriğini buraya yapıştırın:`
-    : `A valid Atlas AC license is required for this device.\n\nMachine ID:\n${machineId}\n\n${copied ? 'The ID was copied to your clipboard. ' : ''}Paste the license.json content supplied by your administrator:`;
-  const licenseText = window.prompt(promptText, '');
-  if (!licenseText) {
-    showToast(isTr ? 'Lisans Gerekli' : 'License Required', msg.message || (isTr ? 'Tarama kilitli.' : 'Scanning is locked.'), 'error', 7000);
-    return;
-  }
-  try {
-    const response = await fetch('/api/license/activate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ license: licenseText.trim() })
-    });
-    const result = await response.json();
-    if (!response.ok || !result.success) throw new Error(result.error || 'License rejected');
-    showToast(isTr ? 'Lisans Etkinleştirildi' : 'License Activated', isTr ? 'Tarama şimdi başlatılıyor.' : 'The scan will start now.', 'success', 4000);
-    requestScanStart();
-  } catch (error) {
-    showToast(isTr ? 'Lisans Reddedildi' : 'License Rejected', error.message, 'error', 7000);
-  }
-}
-
-async function copyTextQuietly(value) {
-  try {
-    await navigator.clipboard.writeText(value);
-    return true;
-  } catch (_) {
-    return false;
   }
 }
 
@@ -1491,6 +1444,12 @@ function requestScanStart() {
   if (scanRetryTimer) { clearInterval(scanRetryTimer); scanRetryTimer = null; scanRetryCount = 0; }
   const codeInput = document.getElementById('inputClientSessionCode');
   const sessionCode = (codeInput?.value || window.activeSessionCode || '').trim().toUpperCase();
+  if (!/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8}$/.test(sessionCode)) {
+    finalizeScanWithError(currentLang === 'tr'
+      ? 'Yetkilinizin verdiği sekiz karakterli PIN kodunu girin.'
+      : 'Enter the eight-character PIN supplied by staff.');
+    return;
+  }
 
   const sendIfOpen = () => {
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -2316,7 +2275,7 @@ function copyFindingsReport(triggerBtn) {
   const findings = currentScanData.allFindings;
   const filtered = filterFindingsArray(findings, currentCategoryFilter, currentSubFilter, currentSearchQuery);
   const textLines = [
-    `=== ATLAS AC INSPECTION REPORT [PIN: ${sessionPin}] ===`,
+    `=== ATLAS AC INSPECTION REPORT [PIN: ${window.activeSessionCode || sessionPin}] ===`,
     `Date: ${new Date().toISOString()}`,
     `Total Findings: ${filtered.length}`,
     ''

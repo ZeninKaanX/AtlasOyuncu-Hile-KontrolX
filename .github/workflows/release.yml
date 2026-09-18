@@ -1,4 +1,4 @@
-name: Release Standalone Binaries
+name: Build Private Scanner Binaries
 
 on:
   push:
@@ -7,11 +7,13 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -29,18 +31,33 @@ jobs:
         env:
           SKIP_TESTS: "1"
 
-      - name: Publish GitHub Release with Binaries
-        uses: softprops/action-gh-release@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload private build artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: |
+          name: atlas-ac-private-binaries
+          retention-days: 7
+          if-no-files-found: error
+          path: |
             dist/AtlasAC.exe
             dist/AtlasAC-Linux
-            dist/AtlasAC-Windows.exe
-            dist/baslat.sh
+            dist/AtlasAC-Windows.zip
+            dist/AtlasAC-Linux.zip
             dist/SHA256SUMS.txt
-          name: "Atlas AC v1.0.0 — Standalone Release"
-          draft: false
-          prerelease: false
-          generate_release_notes: true
+
+      - name: Publish to private Supabase Storage
+        if: ${{ env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: |
+          curl --fail-with-body --request POST \
+            --header "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            --header "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            --header "Content-Type: application/octet-stream" \
+            --header "x-upsert: true" \
+            --data-binary @dist/AtlasAC-Windows.zip \
+            "https://grxcdtcalukzhlqisbgr.supabase.co/storage/v1/object/atlas-downloads/AtlasAC-Windows.zip"
+          curl --fail-with-body --request POST \
+            --header "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            --header "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            --header "Content-Type: application/octet-stream" \
+            --header "x-upsert: true" \
+            --data-binary @dist/AtlasAC-Linux.zip \
+            "https://grxcdtcalukzhlqisbgr.supabase.co/storage/v1/object/atlas-downloads/AtlasAC-Linux.zip"

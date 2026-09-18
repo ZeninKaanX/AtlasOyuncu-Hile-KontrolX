@@ -12,6 +12,7 @@ const byId = id => document.getElementById(id);
 let activePollingTimer = null;
 let currentInspectedScan = null;
 let currentFindingsFilter = 'all';
+let cachedScans = [];
 
 // Universal Portal API Caller
 async function portal(action, extra = {}) {
@@ -50,30 +51,12 @@ function escapeHtml(value) {
   }[ch]));
 }
 
-// --------------------------------------------------------------------------
-// 1. ACCOUNT & LICENSE DATA
-// --------------------------------------------------------------------------
-function renderLicenses(licenses) {
-  byId('deviceCount').textContent = licenses.length;
-  if (!licenses.length) return;
-  byId('licenseRows').innerHTML = licenses.map(item => `
-    <div class="device-row">
-      <code>${escapeHtml(item.machine_id.slice(0, 16))}••••${escapeHtml(item.machine_id.slice(-8))}</code>
-      <span>${new Date(item.expires_at).toLocaleDateString('tr-TR')}</span>
-    </div>
-  `).join('');
-}
-
 async function loadAccount() {
   try {
     const data = await portal('me');
     byId('username').textContent = data.user.username;
     byId('userEmail').textContent = data.user.email;
-    byId('accountStatus').textContent = data.entitlement.status === 'active' ? 'Aktif' : data.entitlement.status;
-    byId('deviceLimit').textContent = data.entitlement.max_devices;
-    const expiry = new Date(data.entitlement.expires_at);
-    byId('daysLeft').textContent = `${Math.max(0, Math.ceil((expiry - Date.now()) / 86400000))} gün`;
-    renderLicenses(data.licenses || []);
+    byId('btnCreateStaffInvite').classList.toggle('hidden', data.user.role !== 'admin');
   } catch (error) {
     showAlert(error.message);
   }
@@ -82,59 +65,28 @@ async function loadAccount() {
 // --------------------------------------------------------------------------
 // 2. REMOTE SCREEN CHECK (KONTROL) MANAGEMENT
 // --------------------------------------------------------------------------
-function getLocalScans() {
-  try {
-    return JSON.parse(localStorage.getItem('atlas_ac_scans') || '[]');
-  } catch (_) {
-    return [];
-  }
-}
-
-function saveLocalScan(scan) {
-  const list = getLocalScans();
-  const existingIdx = list.findIndex(s => s.session_code === scan.session_code);
-  if (existingIdx >= 0) {
-    list[existingIdx] = { ...list[existingIdx], ...scan };
-  } else {
-    list.unshift(scan);
-  }
-  localStorage.setItem('atlas_ac_scans', JSON.stringify(list));
-}
-
 async function loadScans() {
-  let serverScans = [];
   try {
     const res = await portal('list_scans');
-    serverScans = res.scans || [];
+    const allScans = res.scans || [];
+    cachedScans = allScans;
+
+    const total = allScans.length;
+    const pending = allScans.filter(s => s.status === 'pending' || s.status === 'scanning').length;
+    const finished = allScans.filter(s => s.status === 'completed').length;
+    const expired = allScans.filter(s => ['expired', 'cancelled', 'failed'].includes(s.status)).length;
+
+    if (byId('activeScansCount')) byId('activeScansCount').textContent = pending;
+    if (byId('statPendingPins')) byId('statPendingPins').textContent = pending;
+    if (byId('statFinishedPins')) byId('statFinishedPins').textContent = finished;
+    if (byId('statExpiredPins')) byId('statExpiredPins').textContent = expired;
+    if (byId('statDailyPins')) byId('statDailyPins').textContent = total;
+    if (byId('myPinsCountBadge')) byId('myPinsCountBadge').textContent = total;
+    renderScansTable(allScans);
   } catch (err) {
-    console.warn('Scans portal loading warning (using local store):', err);
+    showAlert(err.message);
+    renderScansTable([]);
   }
-
-  const localScans = getLocalScans();
-  const map = new Map();
-  serverScans.forEach(s => map.set(s.session_code, s));
-  localScans.forEach(s => {
-    if (!map.has(s.session_code)) {
-      map.set(s.session_code, s);
-    }
-  });
-
-  const allScans = Array.from(map.values()).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-
-  // Update 5 Stat Counters
-  const total = allScans.length;
-  const pending = allScans.filter(s => s.status === 'pending').length;
-  const finished = allScans.filter(s => s.status === 'completed' || s.status === 'finished' || s.verdict === 'clean' || s.verdict === 'banned').length;
-  const expired = allScans.filter(s => s.status === 'expired').length;
-
-  if (byId('activeScansCount')) byId('activeScansCount').textContent = total;
-  if (byId('statPendingPins')) byId('statPendingPins').textContent = pending;
-  if (byId('statFinishedPins')) byId('statFinishedPins').textContent = finished;
-  if (byId('statExpiredPins')) byId('statExpiredPins').textContent = expired;
-  if (byId('statDailyPins')) byId('statDailyPins').textContent = `${Math.min(total, 10)}/10`;
-  if (byId('myPinsCountBadge')) byId('myPinsCountBadge').textContent = total;
-
-  renderScansTable(allScans);
 }
 
 function renderScansTable(scans) {
@@ -150,8 +102,10 @@ function renderScansTable(scans) {
       statusPill = `<span class="status-pill status-pending"><span class="live-radar-dot"></span> Bekleniyor</span>`;
     } else if (s.status === 'scanning') {
       statusPill = `<span class="status-pill status-scanning"><span class="live-radar-dot"></span> Taranıyor (%${s.progress || 0})</span>`;
+    } else if (s.status === 'completed') {
+      statusPill = `<span class="status-pill status-finished">Tamamlandı</span>`;
     } else {
-      statusPill = `<span class="status-pill status-finished"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> Tamamlandı</span>`;
+      statusPill = `<span class="status-pill">${escapeHtml(s.status === 'expired' ? 'Süresi doldu' : s.status === 'cancelled' ? 'İptal' : 'Başarısız')}</span>`;
     }
 
     let resultPill = '';
@@ -181,7 +135,7 @@ function renderScansTable(scans) {
         <td>
           <div style="display:flex;align-items:center;gap:10px;">
             <div style="width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--border);">
-              <img src="${avatarUrl}" style="width:24px;height:24px;border-radius:4px;" onerror="this.src='assets/atlas_logo.png'">
+              <img class="player-avatar" src="${avatarUrl}" alt="" style="width:24px;height:24px;border-radius:4px;">
             </div>
             <div>
               <strong style="color:#f8fafc;font-size:13px;display:block;">${escapeHtml(playerName)}</strong>
@@ -229,6 +183,11 @@ function renderScansTable(scans) {
       inspectScan(code);
     });
   });
+  tbody.querySelectorAll('.player-avatar').forEach(image => {
+    image.addEventListener('error', () => {
+      if (!image.src.endsWith('/assets/atlas_logo.png')) image.src = 'assets/atlas_logo.png';
+    }, { once: true });
+  });
 }
 
 // --------------------------------------------------------------------------
@@ -250,10 +209,6 @@ async function inspectScan(codeOrId) {
       scan = res.scan;
     } catch (err) {
       console.warn('Portal get_scan fallback to local storage:', err.message);
-    }
-
-    if (!scan) {
-      scan = getLocalScans().find(s => s.session_code === codeOrId);
     }
 
     if (!scan) {
@@ -376,7 +331,7 @@ function updateFindingsTabs(findings) {
 }
 
 function renderFindingsList(findings, filter) {
-  const container = byId('inspectFindingsList');
+  const container = byId('findingsContainer');
   let list = findings;
 
   if (filter === 'critical') {
@@ -419,15 +374,40 @@ function renderFindingsList(findings, filter) {
 // --------------------------------------------------------------------------
 
 // Create Scan Modal Triggers
-byId('btnOpenCreateScanModal').addEventListener('click', () => {
+function openCreateModal() {
   byId('createScanResultBox').classList.add('hidden');
   byId('formCreateScan').classList.remove('hidden');
   byId('inputScanPlayerName').value = '';
   byId('modalCreateScan').classList.remove('hidden');
+}
+
+byId('btnOpenCreateScanModal').addEventListener('click', openCreateModal);
+byId('btnOpenCreateScanModalAlt').addEventListener('click', openCreateModal);
+byId('btnCreateStaffInvite').addEventListener('click', async () => {
+  const button = byId('btnCreateStaffInvite');
+  button.disabled = true;
+  try {
+    const result = await portal('create_invite', { label: 'Panel Yetkilisi', days: 7 });
+    await navigator.clipboard.writeText(result.inviteKey);
+    showAlert(`Tek kullanımlık davet anahtarı panoya kopyalandı: ${result.inviteKey}`);
+  } catch (error) {
+    showAlert(error.message);
+  } finally {
+    button.disabled = false;
+  }
 });
 
 byId('btnCloseCreateModal').addEventListener('click', () => {
   byId('modalCreateScan').classList.add('hidden');
+});
+byId('btnCancelCreateModal').addEventListener('click', () => byId('btnCloseCreateModal').click());
+
+document.querySelectorAll('.game-grid-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('.game-grid-btn').forEach(item => item.classList.remove('selected'));
+    button.classList.add('selected');
+    byId('selectedGameLabel').textContent = button.getAttribute('data-game');
+  });
 });
 
 byId('formCreateScan').addEventListener('submit', async (e) => {
@@ -438,49 +418,22 @@ byId('formCreateScan').addEventListener('submit', async (e) => {
   const selectedGameBtn = document.querySelector('.game-grid-btn.selected');
   const selectedGame = selectedGameBtn ? selectedGameBtn.getAttribute('data-game') : 'Minecraft Java (PC)';
 
-  function generateSecurePin() {
-    const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-    let p = '';
-    for (let i = 0; i < 8; i++) p += chars[Math.floor(Math.random() * chars.length)];
-    return p;
-  }
-
-  let session = null;
   try {
     const result = await portal('create_scan', { playerName, game: selectedGame });
-    session = result.session;
-  } catch (err) {
-    console.warn('Portal create_scan notice (using instant local session):', err.message);
-  }
-
-  if (!session || !session.session_code) {
-    const localCode = generateSecurePin();
-    session = {
-      session_code: localCode,
-      player_name: playerName,
-      game: selectedGame,
-      status: 'pending',
-      created_at: new Date().toISOString(),
-      findings_count: 0,
-      risk_score: 0,
-      system_info: { osName: 'Windows 11 64-bit (x64)' },
-      findings: []
+    const session = result.session;
+    byId('createdScanCodeDisplay').textContent = session.session_code;
+    byId('formCreateScan').classList.add('hidden');
+    byId('createScanResultBox').classList.remove('hidden');
+    await loadScans();
+    byId('btnWatchLiveScan').onclick = () => {
+      byId('modalCreateScan').classList.add('hidden');
+      inspectScan(session.session_code);
     };
-  } else {
-    session.game = selectedGame;
+  } catch (err) {
+    showAlert(`PIN oluşturulamadı: ${err.message}`);
+  } finally {
+    btn.disabled = false;
   }
-
-  saveLocalScan(session);
-  byId('createdScanCodeDisplay').textContent = session.session_code;
-  byId('formCreateScan').classList.add('hidden');
-  byId('createScanResultBox').classList.remove('hidden');
-  await loadScans();
-
-  byId('btnWatchLiveScan').onclick = () => {
-    byId('modalCreateScan').classList.add('hidden');
-    inspectScan(session.session_code);
-  };
-  btn.disabled = false;
 });
 
 byId('btnCopyCreatedCode').addEventListener('click', async () => {
@@ -501,7 +454,7 @@ byId('btnCopyCreatedLink')?.addEventListener('click', async () => {
 byId('btnCopyCreatedMsg')?.addEventListener('click', async () => {
   const code = byId('createdScanCodeDisplay').textContent;
   const link = `https://zeninkaanx.github.io/AtlasOyuncu-Hile-KontrolX/download.html?pin=${encodeURIComponent(code)}`;
-  const msg = `Atlas AC ile ekran kontrolüne alındınız.\nLütfen 5 dakika içinde istemciyi indirip PIN kodunu giriniz:\nİndirme Bağlantısı: ${link}\nTarama PIN: ${code}\n(İstemci açıldığında PIN'i girmeniz yeterlidir, lisans gerekmez.)`;
+  const msg = `Atlas AC kontrol bağlantınız hazır.\n20 dakika içinde indirin ve uygulamada PIN'i girin:\n${link}\nPIN: ${code}\nBaşka bir lisans veya cihaz kodu gerekmez.`;
   await navigator.clipboard.writeText(msg);
   byId('btnCopyCreatedMsg').textContent = 'Mesaj Kopyalandı!';
   setTimeout(() => { byId('btnCopyCreatedMsg').textContent = 'Kontrol Mesajını Kopyala'; }, 1500);
@@ -516,10 +469,8 @@ byId('btnCloseInspectModal').addEventListener('click', () => {
   byId('modalInspectScan').classList.add('hidden');
 });
 
-// Search Scan by Code
-byId('btnSearchScan').addEventListener('click', () => {
-  const code = byId('scanSearchInput').value.trim().toUpperCase();
-  if (code) inspectScan(code);
+byId('btnRefreshInspection').addEventListener('click', () => {
+  if (currentInspectedScan) inspectScan(currentInspectedScan.session_code);
 });
 
 byId('scanSearchInput').addEventListener('keydown', (e) => {
@@ -528,6 +479,24 @@ byId('scanSearchInput').addEventListener('keydown', (e) => {
     if (code) inspectScan(code);
   }
 });
+
+function applyTableFilters() {
+  const query = byId('scanSearchTableInput').value.trim().toLocaleLowerCase('tr-TR');
+  const statusLabel = byId('filterStatusSelect').value.toLowerCase();
+  const game = byId('filterGameSelect').value;
+  const statusMap = { finished: 'completed', scanning: 'scanning', pending: 'pending', expired: 'expired' };
+  const filtered = cachedScans.filter(scan => {
+    const matchesQuery = !query || `${scan.session_code} ${scan.player_name}`.toLocaleLowerCase('tr-TR').includes(query);
+    const matchesStatus = statusLabel === 'all status' || scan.status === statusMap[statusLabel];
+    const matchesGame = game === 'Tüm Platformlar' || scan.game === game;
+    return matchesQuery && matchesStatus && matchesGame;
+  });
+  renderScansTable(filtered);
+}
+
+byId('scanSearchTableInput').addEventListener('input', applyTableFilters);
+byId('filterStatusSelect').addEventListener('change', applyTableFilters);
+byId('filterGameSelect').addEventListener('change', applyTableFilters);
 
 // Evidence Tab Switching
 document.querySelectorAll('.evidence-tab-btn').forEach(btn => {
@@ -580,48 +549,10 @@ byId('btnDownloadHtmlReport').addEventListener('click', () => {
   a.click();
 });
 
-// --------------------------------------------------------------------------
-// 5. DOWNLOAD & LOGOUT
-// --------------------------------------------------------------------------
 byId('logoutButton').addEventListener('click', async () => {
   await supabase.auth.signOut();
   location.replace('auth.html');
 });
-
-byId('licenseForm').addEventListener('submit', async event => {
-  event.preventDefault();
-  const button = event.submitter;
-  button.disabled = true;
-  try {
-    const result = await portal('license', { machineId: byId('machineId').value.trim().toUpperCase() });
-    byId('licenseKey').textContent = result.key;
-    byId('keyExpiry').textContent = `Geçerlilik: ${new Date(result.expiresAt).toLocaleString('tr-TR')}`;
-    byId('keyResult').classList.remove('hidden');
-    await loadAccount();
-  } catch (error) {
-    showAlert(error.message);
-  } finally {
-    button.disabled = false;
-  }
-});
-
-byId('copyKey').addEventListener('click', async () => {
-  await navigator.clipboard.writeText(byId('licenseKey').textContent);
-  byId('copyKey').textContent = 'Kopyalandı';
-  setTimeout(() => { byId('copyKey').textContent = 'Kopyala'; }, 1500);
-});
-
-async function handleDownload(btn, platform) {
-  const key = byId('licenseKey')?.textContent?.trim() || '';
-  const keyParam = key ? `&key=${encodeURIComponent(key)}` : '';
-  location.href = `download.html?platform=${platform}${keyParam}`;
-}
-
-const btnWin = byId('downloadWindowsButton');
-if (btnWin) btnWin.addEventListener('click', () => handleDownload(btnWin, 'windows'));
-
-const btnLin = byId('downloadLinuxButton');
-if (btnLin) btnLin.addEventListener('click', () => handleDownload(btnLin, 'linux'));
 
 // Initialize Everything
 await loadAccount();

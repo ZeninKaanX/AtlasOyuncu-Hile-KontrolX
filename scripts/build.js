@@ -8,8 +8,10 @@
  */
 
 const { execSync } = require('child_process');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const AdmZip = require('adm-zip');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
@@ -22,7 +24,7 @@ console.log('======================================================\n');
 if (process.env.SKIP_TESTS === '1') {
   console.log('[*] Step 1: Skipping tests (SKIP_TESTS=1)...');
 } else {
-  console.log('[*] Step 1: Executing 57/57 engine verification tests...');
+  console.log('[*] Step 1: Executing the full engine verification suite...');
   try {
     execSync('npm test', { cwd: ROOT_DIR, stdio: 'inherit' });
     console.log('[+] All tests passed successfully.\n');
@@ -119,6 +121,30 @@ for (const leg of legacyFiles) {
   }
 }
 
+// The private Storage project has a lower per-object limit than the embedded
+// Node binaries. ZIP packages stay below that limit and are easy to extract on
+// both supported platforms.
+const windowsZipPath = path.join(DIST_DIR, 'AtlasAC-Windows.zip');
+const linuxZipPath = path.join(DIST_DIR, 'AtlasAC-Linux.zip');
+const windowsZip = new AdmZip();
+windowsZip.addLocalFile(targetWinBin);
+windowsZip.writeZip(windowsZipPath);
+fs.chmodSync(windowsZipPath, 0o644);
+const linuxZip = new AdmZip();
+linuxZip.addLocalFile(targetLinuxBin);
+linuxZip.writeZip(linuxZipPath);
+fs.chmodSync(linuxZipPath, 0o644);
+
+// Checksums must describe the binaries produced by this exact build. Keeping a
+// stale checksum file is worse than having none because staff may trust the
+// wrong artifact.
+const checksumTargets = [targetWinBin, targetLinuxBin, windowsZipPath, linuxZipPath];
+const checksumLines = checksumTargets.map(filePath => {
+  const digest = crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+  return `${digest}  ${path.relative(ROOT_DIR, filePath).replace(/\\/g, '/')}`;
+});
+fs.writeFileSync(path.join(DIST_DIR, 'SHA256SUMS.txt'), `${checksumLines.join('\n')}\n`, 'utf8');
+
 console.log('======================================================');
 console.log('                 BUILD COMPLETED SUCCESSFULLY!        ');
 console.log('======================================================');
@@ -127,4 +153,5 @@ console.log(`  1. Windows (Tek EXE): ${targetWinBin} (${(fs.statSync(targetWinBi
 console.log(`     -> Çift tıklandığında CMD açılmaz, doğrudan tarayıcıyı açar ve taramayı başlatır.`);
 console.log(`  2. Linux (Tek Binary): ${targetLinuxBin} (${(fs.statSync(targetLinuxBin).size / 1024 / 1024).toFixed(1)} MB)`);
 console.log(`     -> ./AtlasAC veya ./AtlasAC-Linux olarak tek tıkla çalışır.`);
+console.log('  3. Private packages: AtlasAC-Windows.zip, AtlasAC-Linux.zip');
 console.log('======================================================\n');

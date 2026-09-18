@@ -4,14 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
   <meta name="theme-color" content="#090b10">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; connect-src 'self' https://*.supabase.co https://ghproxy.net https://mirror.ghproxy.com; img-src 'self' data: https:; base-uri 'none'; frame-ancestors 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://grxcdtcalukzhlqisbgr.supabase.co; img-src 'self' data: https:; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; form-action 'self'">
   <title>İndir - Atlas AC | Minecraft Hile Kontrol</title>
-  <meta name="description" content="Windows ve Linux için Atlas AC tarayıcısını indirin. 8 haneli PIN kodunuzla yüksek hızlı Cloudflare CDN üzerinden anında hile kontrolünü başlatın.">
+  <meta name="description" content="Windows ve Linux için Atlas AC tarayıcısını, 8 haneli tek kullanımlık PIN ile güvenli özel bağlantıdan indirin.">
   <link rel="icon" type="image/x-icon" href="assets/atlas.ico">
   <link rel="shortcut icon" href="assets/atlas.ico">
-  <!-- Preconnect to Turbo CDN for instant line-speed download -->
-  <link rel="preconnect" href="https://ghproxy.net">
-  <link rel="preconnect" href="https://mirror.ghproxy.com">
   <link rel="stylesheet" href="assets/ocean.css">
   <link rel="stylesheet" href="assets/bot.css">
   <style>
@@ -285,7 +282,7 @@
         Taramayı bir PIN ile<br><span style="color:#64748b;">anında başlatın.</span>
       </h1>
       <p style="color:#94a3b8;max-width:580px;margin:0 auto;font-size:15px;line-height:1.6;">
-        Yetkilinizden aldığınız 8 haneli tarama PIN kodunu girerek resmi tarayıcıyı yüksek hızlı Cloudflare CDN üzerinden anında indirin.
+        Yetkilinizden aldığınız 8 haneli tarama PIN kodunu girerek resmi tarayıcı için kısa süreli, özel indirme bağlantısı alın.
       </p>
     </div>
 
@@ -315,7 +312,7 @@
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19h8"></path><path d="m4 17 6-6-6-6"></path></svg>
               Linux (PC)
             </button>
-            <button id="cardMobile" aria-pressed="false" type="button" onclick="alert('Minecraft Mobil (Android / iOS) ekran taraması ve hile kontrol istemcisi çok yakında burada yayınlanacaktır.');">
+            <button id="cardMobile" aria-pressed="false" type="button">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
               Mobil (Yakında)
             </button>
@@ -336,7 +333,7 @@
                   <span data-filled="false"></span>
                   <span data-filled="false"></span>
                 </div>
-                <input id="dlKeyInput" class="pin-input" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" required>
+                <input id="dlKeyInput" class="pin-input" maxlength="8" pattern="[23456789A-HJ-NP-Z]{8}" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" required>
               </div>
               <p id="dlResultStatus" class="pin-status">Yetkilinizden aldığınız 8 haneli PIN kodunu girin.</p>
               <p id="dlResultDetails" style="display:none;"></p>
@@ -344,45 +341,30 @@
 
             <button id="btnVerifyDownload" class="button button-primary shimmer-button" type="submit" style="width:100%;height:48px;">
               <span class="shimmer-spark"></span>
-              Resmi İndirmeyi Başlat (Turbo CDN)
+              PIN Doğrula ve İndir
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
             </button>
           </form>
 
-          <!-- Hidden Mirror Selector with Turbo CDN -->
+          <!-- Short-lived private download link -->
           <div id="dlMirrorsContainer" class="hidden" style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border-subtle);">
             <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:10px;">
-              <span style="color:#94a3b8;font-weight:600;">HIZLI İNDİRME AYNALARI</span>
-              <span style="color:#10b981;font-family:var(--font-mono);font-size:11px;">Hat Hızı Aktif</span>
+              <span style="color:#94a3b8;font-weight:600;">ÖZEL İNDİRME BAĞLANTISI</span>
+              <span style="color:#10b981;font-family:var(--font-mono);font-size:11px;">90 sn geçerli</span>
             </div>
             <div class="mirror-selector" style="display:flex;flex-direction:column;gap:8px;">
               <a id="btnPrimaryDl" href="#" class="mirror-option active" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:8px;background:rgba(14,165,233,0.1);border:1px solid rgba(14,165,233,0.3);text-decoration:none;">
                 <div>
-                  <strong style="font-size:13px;color:#fff;display:block;" id="lblPrimaryDl">AtlasAC.exe İndir (Turbo CDN)</strong>
-                  <small style="font-size:11px;color:#94a3b8;">Cloudflare Global Edge · Türkiye &amp; Avrupa Hızlandırıcısı</small>
+                  <strong style="font-size:13px;color:#fff;display:block;" id="lblPrimaryDl">AtlasAC dosyasını indir</strong>
+                  <small style="font-size:11px;color:#94a3b8;">Supabase özel depolama · Kısa süreli imzalı bağlantı</small>
                 </div>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--brand-light);"><path d="M12 17V3"></path><path d="m6 11 6 6 6-6"></path><path d="M19 21H5"></path></svg>
               </a>
 
-              <a id="btnMirror2" href="#" class="mirror-option" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border);text-decoration:none;">
-                <div>
-                  <strong style="font-size:13px;color:#fff;display:block;">Alternatif Hızlı Ayna (Frankfurt CDN)</strong>
-                  <small style="font-size:11px;color:#94a3b8;">Almanya &amp; Global Edge Önbelleği</small>
-                </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#64748b;"><path d="M12 17V3"></path><path d="m6 11 6 6 6-6"></path><path d="M19 21H5"></path></svg>
-              </a>
-
-              <a id="btnFallbackDl" href="#" target="_blank" rel="noopener" class="mirror-option" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border);text-decoration:none;">
-                <div>
-                  <strong style="font-size:13px;color:#fff;display:block;">Doğrudan GitHub Releases</strong>
-                  <small style="font-size:11px;color:#94a3b8;">Resmi GitHub depolama bağlantısı</small>
-                </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#64748b;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-              </a>
             </div>
 
             <div id="dlLinuxQuickStart" class="hidden" style="margin-top:14px;padding:10px;background:#06080d;border-radius:8px;border:1px solid var(--border);">
-              <code style="color:#38bdf8;font-size:12px;">chmod +x AtlasAC-Linux &amp;&amp; ./AtlasAC-Linux</code>
+              <code style="color:#38bdf8;font-size:12px;">unzip AtlasAC-Linux.zip &amp;&amp; chmod +x AtlasAC-Linux &amp;&amp; ./AtlasAC-Linux</code>
             </div>
           </div>
         </div>
@@ -402,15 +384,15 @@
             <span>02</span>
             <div>
               <h3>Platformunuzu seçin</h3>
-              <p>Windows veya Linux ikili dosyasını seçin. İndirme Cloudflare Turbo CDN ile anında başlayacaktır.</p>
+              <p>Windows veya Linux paketini seçin. PIN doğrulanınca size kısa süreli özel ZIP bağlantısı verilir.</p>
             </div>
           </div>
 
           <div class="download-step">
             <span>03</span>
             <div>
-              <h3>Çalıştırın ve izleyin</h3>
-              <p>Uygulamayı açın. Ekranınızda minimal balık simgeli ilerleme çubuğu görünür. Yetkiliniz sonuçları siteden anlık inceler.</p>
+              <h3>Arşivi çıkarın ve çalıştırın</h3>
+              <p>ZIP'i çıkarın, AtlasAC dosyasını çalıştırın ve aynı PIN'i girin. Yetkiliniz sonuçları panelden anlık inceler.</p>
             </div>
           </div>
 
@@ -458,26 +440,6 @@
     </div>
   </footer>
 
-  <script>
-    // Visual slot updater for PIN input
-    const pinInput = document.getElementById('dlKeyInput');
-    const previewSlots = document.querySelectorAll('#pinPreviewSlots span');
-
-    if (pinInput && previewSlots.length > 0) {
-      pinInput.addEventListener('input', () => {
-        const val = pinInput.value.trim().toUpperCase();
-        previewSlots.forEach((slot, idx) => {
-          if (idx < val.length) {
-            slot.textContent = val[idx];
-            slot.setAttribute('data-filled', 'true');
-          } else {
-            slot.textContent = '';
-            slot.setAttribute('data-filled', 'false');
-          }
-        });
-      });
-    }
-  </script>
   <script type="module" src="assets/download.js"></script>
   <script src="assets/bot.js" defer></script>
 </body>

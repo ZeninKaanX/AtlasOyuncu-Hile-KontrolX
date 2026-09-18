@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.portal]
 verify_jwt = true
+
+[functions.scan-sync]
+verify_jwt = false
