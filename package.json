@@ -15,12 +15,14 @@
   },
   "pkg": {
     "scripts": [
-      "src/**/*.js"
+      "src/main/**/*.js",
+      "src/engine/**/*.js",
+      "src/config/**/*.js"
     ],
     "assets": [
-      "src/ui/css/**/*",
-      "src/ui/js/**/*",
-      "src/ui/index.html",
+      "src/ui/css/player.css",
+      "src/ui/js/player.js",
+      "src/ui/player.html",
       "src/ui/assets/*.png",
       "src/ui/assets/*.svg",
       "src/ui/assets/*.ico",

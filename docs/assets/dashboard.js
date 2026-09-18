@@ -14,6 +14,15 @@ let currentInspectedScan = null;
 let currentFindingsFilter = 'all';
 let cachedScans = [];
 
+function openLiveScan(code) {
+  const cleanCode = String(code || '').trim().toUpperCase();
+  if (!cleanCode) return;
+  const url = new URL(location.href);
+  url.searchParams.set('scan', cleanCode);
+  history.pushState({ scan: cleanCode }, '', url);
+  inspectScan(cleanCode);
+}
+
 // Universal Portal API Caller
 async function portal(action, extra = {}) {
   const isGet = action === 'me' || action === 'list_scans';
@@ -180,7 +189,7 @@ function renderScansTable(scans) {
   tbody.querySelectorAll('.btn-inspect').forEach(btn => {
     btn.addEventListener('click', () => {
       const code = btn.getAttribute('data-code');
-      inspectScan(code);
+      openLiveScan(code);
     });
   });
   tbody.querySelectorAll('.player-avatar').forEach(image => {
@@ -427,7 +436,7 @@ byId('formCreateScan').addEventListener('submit', async (e) => {
     await loadScans();
     byId('btnWatchLiveScan').onclick = () => {
       byId('modalCreateScan').classList.add('hidden');
-      inspectScan(session.session_code);
+      openLiveScan(session.session_code);
     };
   } catch (err) {
     showAlert(`PIN oluşturulamadı: ${err.message}`);
@@ -467,6 +476,9 @@ byId('btnCloseInspectModal').addEventListener('click', () => {
     activePollingTimer = null;
   }
   byId('modalInspectScan').classList.add('hidden');
+  const url = new URL(location.href);
+  url.searchParams.delete('scan');
+  history.replaceState(null, '', url);
 });
 
 byId('btnRefreshInspection').addEventListener('click', () => {
@@ -476,7 +488,7 @@ byId('btnRefreshInspection').addEventListener('click', () => {
 byId('scanSearchInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
     const code = byId('scanSearchInput').value.trim().toUpperCase();
-    if (code) inspectScan(code);
+    if (code) openLiveScan(code);
   }
 });
 
@@ -567,3 +579,9 @@ const directScan = urlParams.get('scan');
 if (directScan) {
   inspectScan(directScan);
 }
+
+window.addEventListener('popstate', () => {
+  const code = new URLSearchParams(location.search).get('scan');
+  if (code) inspectScan(code);
+  else byId('modalInspectScan').classList.add('hidden');
+});

@@ -150,7 +150,7 @@ console.log('                 BUILD COMPLETED SUCCESSFULLY!        ');
 console.log('======================================================');
 console.log('Standalone Single Binaries ready in dist/:');
 console.log(`  1. Windows (Tek EXE): ${targetWinBin} (${(fs.statSync(targetWinBin).size / 1024 / 1024).toFixed(1)} MB)`);
-console.log(`     -> Çift tıklandığında CMD açılmaz, doğrudan tarayıcıyı açar ve taramayı başlatır.`);
+console.log(`     -> Çift tıklandığında CMD veya normal site sekmesi açılmaz; özel tarayıcı penceresini başlatır.`);
 console.log(`  2. Linux (Tek Binary): ${targetLinuxBin} (${(fs.statSync(targetLinuxBin).size / 1024 / 1024).toFixed(1)} MB)`);
 console.log(`     -> ./AtlasAC veya ./AtlasAC-Linux olarak tek tıkla çalışır.`);
 console.log('  3. Private packages: AtlasAC-Windows.zip, AtlasAC-Linux.zip');

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' ws://127.0.0.1:* ws://localhost:*; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'">
+  <title>Atlas AC Scanner</title>
+  <link rel="icon" href="assets/atlas.ico">
+  <link rel="stylesheet" href="css/player.css">
+</head>
+<body>
+  <main class="scanner-shell" aria-live="polite">
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <section class="scanner-card">
+      <header class="scanner-header">
+        <div class="brand-lockup">
+          <img src="assets/atlas_logo.png" alt="" class="brand-logo">
+          <div>
+            <p class="eyebrow">ATLAS SECURITY</p>
+            <h1>Atlas AC Scanner</h1>
+          </div>
+        </div>
+        <span class="secure-chip"><span></span> Güvenli oturum</span>
+      </header>
+
+      <div id="pinView" class="view active">
+        <div class="hero-mark">
+          <div class="shield-ring"><img src="assets/atlas_logo.png" alt="Atlas AC"></div>
+        </div>
+        <h2>Kontrol PIN’ini girin</h2>
+        <p class="intro">Yetkilinizin oluşturduğu 8 karakterli kod taramayı bu cihazla eşleştirir.</p>
+        <label for="pinInput">TARAMA PIN’İ</label>
+        <input id="pinInput" inputmode="text" maxlength="8" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" placeholder="••••••••">
+        <button id="startButton" type="button">Taramayı Başlat</button>
+        <p id="pinStatus" class="status">Sonuçlar yalnızca yetkilinin güvenli panelinde görüntülenir.</p>
+      </div>
+
+      <div id="scanView" class="view">
+        <div class="scan-orbit" aria-hidden="true">
+          <div class="orbit-ring"></div>
+          <div class="percent"><strong id="percentText">0</strong><span>%</span></div>
+        </div>
+        <h2>Tarama sürüyor</h2>
+        <p class="intro">Lütfen uygulamayı kapatmayın.</p>
+        <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+        <div class="progress-meta"><span>Güvenli sistem kontrolü</span><span id="progressText">0%</span></div>
+        <p class="privacy-note">Bulgu ayrıntıları bu cihazda gösterilmez.</p>
+      </div>
+
+      <div id="doneView" class="view">
+        <div class="done-icon">✓</div>
+        <h2>Tarama tamamlandı</h2>
+        <p class="intro">Veriler yetkilinin paneline güvenli biçimde aktarıldı. Sonuç için yetkilinizi bekleyin.</p>
+        <button id="closeButton" type="button">Uygulamayı Kapat</button>
+      </div>
+
+      <footer><span>ATLAS AC</span><span>PLAYER SCANNER</span></footer>
+    </section>
+  </main>
+  <script src="js/player.js" defer></script>
+</body>
+</html>
