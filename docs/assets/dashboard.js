@@ -6,13 +6,12 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 const { data: sessionData } = await supabase.auth.getSession();
 if (!sessionData.session) location.replace('auth.html');
-const session = sessionData.session;
-
 const byId = id => document.getElementById(id);
 let activePollingTimer = null;
 let currentInspectedScan = null;
 let currentFindingsFilter = 'all';
 let cachedScans = [];
+let scansLoading = false;
 
 function openLiveScan(code) {
   const cleanCode = String(code || '').trim().toUpperCase();
@@ -25,6 +24,12 @@ function openLiveScan(code) {
 
 // Universal Portal API Caller
 async function portal(action, extra = {}) {
+  const { data: freshSessionData } = await supabase.auth.getSession();
+  const accessToken = freshSessionData.session?.access_token;
+  if (!accessToken) {
+    location.replace('auth.html');
+    throw new Error('Oturumunuz sona erdi.');
+  }
   const isGet = action === 'me' || action === 'list_scans';
   const url = new URL(`${SUPABASE_URL}/functions/v1/portal`);
   url.searchParams.set('action', action);
@@ -36,7 +41,7 @@ async function portal(action, extra = {}) {
     headers: {
       'Content-Type': 'application/json',
       apikey: SUPABASE_PUBLISHABLE_KEY,
-      Authorization: `Bearer ${session.access_token}`
+      Authorization: `Bearer ${accessToken}`
     },
     body: isGet ? undefined : JSON.stringify({ action, ...extra })
   });
@@ -75,6 +80,8 @@ async function loadAccount() {
 // 2. REMOTE SCREEN CHECK (KONTROL) MANAGEMENT
 // --------------------------------------------------------------------------
 async function loadScans() {
+  if (scansLoading) return;
+  scansLoading = true;
   try {
     const res = await portal('list_scans');
     const allScans = res.scans || [];
@@ -85,7 +92,7 @@ async function loadScans() {
     const finished = allScans.filter(s => s.status === 'completed').length;
     const expired = allScans.filter(s => ['expired', 'cancelled', 'failed'].includes(s.status)).length;
 
-    if (byId('activeScansCount')) byId('activeScansCount').textContent = pending;
+    if (byId('activeScansCount')) byId('activeScansCount').textContent = `${pending} canlı oturum`;
     if (byId('statPendingPins')) byId('statPendingPins').textContent = pending;
     if (byId('statFinishedPins')) byId('statFinishedPins').textContent = finished;
     if (byId('statExpiredPins')) byId('statExpiredPins').textContent = expired;
@@ -95,13 +102,15 @@ async function loadScans() {
   } catch (err) {
     showAlert(err.message);
     renderScansTable([]);
+  } finally {
+    scansLoading = false;
   }
 }
 
 function renderScansTable(scans) {
   const tbody = byId('scansTableBody');
   if (!scans.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:35px;color:#64748b;">Henüz oluşturulmuş bir Minecraft kontrol PIN'i bulunmuyor. Yukarıdaki "Create Pin" butonundan yeni bir PIN oluşturabilirsiniz.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:35px;color:#64748b;">Henüz kontrol oturumu yok. “PIN oluştur” düğmesiyle ilk kontrolü başlatın.</td></tr>`;
     return;
   }
 
@@ -119,9 +128,9 @@ function renderScansTable(scans) {
 
     let resultPill = '';
     if (s.verdict === 'banned' || (s.findings_count > 0)) {
-      resultPill = `<span class="result-pill result-cheat">CHEATING</span>`;
+      resultPill = `<span class="result-pill result-cheat">BULGU VAR</span>`;
     } else if (s.status === 'completed' || s.status === 'finished' || s.verdict === 'clean') {
-      resultPill = `<span class="result-pill result-clean">TEMİZ</span>`;
+      resultPill = `<span class="result-pill result-clean">BULGU YOK</span>`;
     } else {
       resultPill = `<span style="font-size:11px;color:#64748b;">Henüz Yok</span>`;
     }
@@ -131,8 +140,8 @@ function renderScansTable(scans) {
     const gameBadgeColor = isBedrock ? '#0284c7' : '#10b981';
     const gameLetter = isBedrock ? 'B' : 'J';
 
-    const playerName = s.player_name || 'Şüpheli Oyuncu';
-    const avatarUrl = `https://minotar.net/avatar/${encodeURIComponent(playerName)}/24`;
+    const playerName = s.player_name || 'Oyuncu';
+    const playerInitial = escapeHtml(playerName.slice(0, 1).toUpperCase());
 
     return `
       <tr>
@@ -144,7 +153,7 @@ function renderScansTable(scans) {
         <td>
           <div style="display:flex;align-items:center;gap:10px;">
             <div style="width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--border);">
-              <img class="player-avatar" src="${avatarUrl}" alt="" style="width:24px;height:24px;border-radius:4px;">
+              <strong aria-hidden="true" style="color:var(--brand-light);font-size:11px;">${playerInitial}</strong>
             </div>
             <div>
               <strong style="color:#f8fafc;font-size:13px;display:block;">${escapeHtml(playerName)}</strong>
@@ -191,11 +200,6 @@ function renderScansTable(scans) {
       const code = btn.getAttribute('data-code');
       openLiveScan(code);
     });
-  });
-  tbody.querySelectorAll('.player-avatar').forEach(image => {
-    image.addEventListener('error', () => {
-      if (!image.src.endsWith('/assets/atlas_logo.png')) image.src = 'assets/atlas_logo.png';
-    }, { once: true });
   });
 }
 
@@ -286,13 +290,13 @@ function renderInspectionView(scan) {
   } else if (scan.verdict === 'banned' || (scan.findings_count > 0)) {
     verdictBanner.classList.add('verdict-banner-banned');
     verdictIcon.textContent = '';
-    verdictTitle.textContent = 'HİLE TESPİT EDİLDİ (KRİTİK İHLAL)';
-    verdictDesc.textContent = `Bu bilgisayarda ${scan.findings_count} adet doğrulanmış hile izi, kalıntı veya gizleme girişimi bulundu!`;
+    verdictTitle.textContent = 'TEKNİK BULGU VAR — YETKİLİ İNCELEMESİ GEREKİYOR';
+    verdictDesc.textContent = `${scan.findings_count} bulgu raporlandı. Yaptırım uygulamadan önce kanıt ayrıntılarını ve bağlamı inceleyin.`;
   } else if (scan.status === 'completed' && scan.verdict === 'clean') {
     verdictBanner.classList.add('verdict-banner-clean');
     verdictIcon.textContent = '';
-    verdictTitle.textContent = 'BİLGİSAYAR TEMİZ';
-    verdictDesc.textContent = 'Yapılan 33 motorlu adli bilişim taramasında herhangi bir hile izine veya tahrifata rastlanmadı.';
+    verdictTitle.textContent = 'RAPORLANAN BULGU YOK';
+    verdictDesc.textContent = 'Bu tarama kapsamında etkin kurallarla eşleşen bir bulgu raporlanmadı. Nihai karar yetkili incelemesine aittir.';
   } else {
     verdictBanner.classList.add('verdict-banner-suspicious');
     verdictIcon.textContent = '';
@@ -423,7 +427,7 @@ byId('formCreateScan').addEventListener('submit', async (e) => {
   e.preventDefault();
   const btn = byId('btnSubmitCreateScan');
   btn.disabled = true;
-  const playerName = byId('inputScanPlayerName').value.trim() || 'Şüpheli Oyuncu';
+  const playerName = byId('inputScanPlayerName').value.trim() || 'Oyuncu';
   const selectedGameBtn = document.querySelector('.game-grid-btn.selected');
   const selectedGame = selectedGameBtn ? selectedGameBtn.getAttribute('data-game') : 'Minecraft Java (PC)';
 
@@ -448,16 +452,16 @@ byId('formCreateScan').addEventListener('submit', async (e) => {
 byId('btnCopyCreatedCode').addEventListener('click', async () => {
   const code = byId('createdScanCodeDisplay').textContent;
   await navigator.clipboard.writeText(code);
-  byId('btnCopyCreatedCode').textContent = 'Kopyalandı!';
-  setTimeout(() => { byId('btnCopyCreatedCode').textContent = 'PIN Kopyala'; }, 1500);
+  byId('btnCopyCreatedCode').textContent = 'Kopyalandı';
+  setTimeout(() => { byId('btnCopyCreatedCode').textContent = 'PIN\'i kopyala'; }, 1500);
 });
 
 byId('btnCopyCreatedLink')?.addEventListener('click', async () => {
   const code = byId('createdScanCodeDisplay').textContent;
   const link = `https://zeninkaanx.github.io/AtlasOyuncu-Hile-KontrolX/download.html?pin=${encodeURIComponent(code)}`;
   await navigator.clipboard.writeText(link);
-  byId('btnCopyCreatedLink').textContent = 'Link Kopyalandı!';
-  setTimeout(() => { byId('btnCopyCreatedLink').textContent = 'İndirme Linkini Kopyala'; }, 1500);
+  byId('btnCopyCreatedLink').textContent = 'Link kopyalandı';
+  setTimeout(() => { byId('btnCopyCreatedLink').textContent = 'İndirme linkini kopyala'; }, 1500);
 });
 
 byId('btnCopyCreatedMsg')?.addEventListener('click', async () => {
@@ -465,8 +469,8 @@ byId('btnCopyCreatedMsg')?.addEventListener('click', async () => {
   const link = `https://zeninkaanx.github.io/AtlasOyuncu-Hile-KontrolX/download.html?pin=${encodeURIComponent(code)}`;
   const msg = `Atlas AC kontrol bağlantınız hazır.\n20 dakika içinde indirin ve uygulamada PIN'i girin:\n${link}\nPIN: ${code}\nBaşka bir lisans veya cihaz kodu gerekmez.`;
   await navigator.clipboard.writeText(msg);
-  byId('btnCopyCreatedMsg').textContent = 'Mesaj Kopyalandı!';
-  setTimeout(() => { byId('btnCopyCreatedMsg').textContent = 'Kontrol Mesajını Kopyala'; }, 1500);
+  byId('btnCopyCreatedMsg').textContent = 'Mesaj kopyalandı';
+  setTimeout(() => { byId('btnCopyCreatedMsg').textContent = 'Kontrol mesajını kopyala'; }, 1500);
 });
 
 // Inspector Close
@@ -525,9 +529,9 @@ document.querySelectorAll('.evidence-tab-btn').forEach(btn => {
 // Staff Action Toolbar Buttons
 byId('btnCopyBanCmd').addEventListener('click', async () => {
   if (!currentInspectedScan) return;
-  const cmd = `/ban ${currentInspectedScan.player_name} 30d Hile Kullanımı [AtlasAC-${currentInspectedScan.session_code}]`;
+  const cmd = `/kick ${currentInspectedScan.player_name} Atlas AC incelemesi tamamlandı [${currentInspectedScan.session_code}]`;
   await navigator.clipboard.writeText(cmd);
-  showAlert(`Ban komutu panoya kopyalandı: ${cmd}`);
+  showAlert(`Moderasyon komutu panoya kopyalandı: ${cmd}`);
 });
 
 byId('btnCopyDiscordReport').addEventListener('click', async () => {
@@ -536,12 +540,12 @@ byId('btnCopyDiscordReport').addEventListener('click', async () => {
   const reportText = `**[ATLAS AC ADLİ BİLİŞİM RAPORU]**\n` +
     `**Oyuncu:** \`${s.player_name}\`\n` +
     `**Kontrol Kodu:** \`${s.session_code}\`\n` +
-    `**Karar:** ${s.verdict === 'banned' ? '**CHEATING (HİLE TESPİT EDİLDİ)**' : '**CLEAN (TEMİZ)**'}\n` +
-    `**Risk Skoru:** %${s.risk_score || 0} (${s.findings_count || 0} İhlal)\n` +
+    `**Sonuç:** ${(s.findings_count || 0) > 0 ? '**TEKNİK BULGU VAR**' : '**RAPORLANAN BULGU YOK**'}\n` +
+    `**Risk Skoru:** %${s.risk_score || 0} (${s.findings_count || 0} bulgu)\n` +
     `**Tarih:** ${new Date(s.created_at).toLocaleString('tr-TR')}\n` +
     `**Rapor Linki:** ${location.origin + location.pathname}?scan=${s.session_code}`;
   await navigator.clipboard.writeText(reportText);
-  showAlert('Discord raporu panoya kopyalandı!');
+  showAlert('Yetkili özeti panoya kopyalandı.');
 });
 
 byId('btnCopyShareLink').addEventListener('click', async () => {
@@ -570,8 +574,10 @@ byId('logoutButton').addEventListener('click', async () => {
 await loadAccount();
 await loadScans();
 
-// Auto refresh scans table every 10 seconds
-setInterval(loadScans, 10000);
+// Arka plandaki sekmeler gereksiz istek göndermez.
+setInterval(() => {
+  if (!document.hidden) loadScans();
+}, 10000);
 
 // Check URL Params for direct scan view (?scan=ATL-XXXX)
 const urlParams = new URLSearchParams(window.location.search);
