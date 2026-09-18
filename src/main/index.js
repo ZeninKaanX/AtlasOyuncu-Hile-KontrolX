@@ -7,11 +7,12 @@
  */
 
 require('../engine/silentProcess');
-const { startServer } = require('./server');
+const { startServer, getRegisteredPort } = require('./server');
 const http = require('http');
 const { execSync, spawnSync } = require('child_process');
 
 const args = process.argv.slice(2);
+const controlPort = getRegisteredPort() || 3317;
 
 // Extract Ocean AC style --pin <PIN> or -p <PIN>
 const pinFlagIdx = args.findIndex(a => a === '--pin' || a === '-p' || a === '--session' || a === '-s');
@@ -37,12 +38,16 @@ if (args.includes('--stop') || args.includes('--kill') || args.includes('-k') ||
   };
 
   // Obtain the loopback-only session cookie before invoking the protected API.
-  const bootstrap = http.request({ hostname: '127.0.0.1', port: 3317, path: '/', method: 'GET', timeout: 2000 }, (rootRes) => {
+  const bootstrap = http.request({ hostname: '127.0.0.1', port: controlPort, path: '/', method: 'GET', timeout: 2000 }, (rootRes) => {
+    if (rootRes.headers['x-atlas-scanner'] !== '1') {
+      rootRes.resume();
+      return fallbackStop();
+    }
     const cookie = (rootRes.headers['set-cookie'] || [])[0];
     rootRes.resume();
     if (!cookie) return fallbackStop();
     const req = http.request({
-      hostname: '127.0.0.1', port: 3317, path: '/api/shutdown', method: 'POST', timeout: 2000,
+      hostname: '127.0.0.1', port: controlPort, path: '/api/shutdown', method: 'POST', timeout: 2000,
       headers: { Cookie: cookie.split(';')[0] }
     }, () => {
       console.log('[+] Atlas AC süreci başarıyla sonlandırıldı.');
@@ -56,12 +61,18 @@ if (args.includes('--stop') || args.includes('--kill') || args.includes('-k') ||
 } else if (args.includes('--status') || args.includes('status')) {
   const req = http.request({
     hostname: '127.0.0.1',
-    port: 3317,
+    port: controlPort,
     path: '/',
     method: 'GET',
     timeout: 1500
   }, (res) => {
-    console.log('[+] Atlas AC aktif durumda ve çalışıyor (Port: 3317).');
+    if (res.headers['x-atlas-scanner'] !== '1') {
+      res.resume();
+      console.log('[-] Bu port Atlas AC uygulamasına ait değil.');
+      process.exit(1);
+    }
+    res.resume();
+    console.log(`[+] Atlas AC aktif durumda ve çalışıyor (Port: ${controlPort}).`);
     process.exit(0);
   });
 

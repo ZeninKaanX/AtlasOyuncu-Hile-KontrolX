@@ -10,7 +10,8 @@ const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
 const crypto = require('crypto');
-const { execSync, spawn, spawnSync } = require('child_process');
+const os = require('os');
+const { spawn, spawnSync } = require('child_process');
 const scannerCore = require('../engine/scannerCore');
 const cloudSync = require('../engine/cloudSync');
 
@@ -18,8 +19,11 @@ const app = express();
 const server = http.createServer(app);
 const SESSION_TOKEN = crypto.randomBytes(32).toString('hex');
 const wss = new WebSocket.Server({ noServer: true, maxPayload: 64 * 1024 });
+let playerState = { type: 'IDLE' };
+let scanInFlight = false;
 
 const PORT = process.env.PORT || 3317;
+const RUNTIME_FILE = path.join(os.tmpdir(), `atlas-ac-${typeof process.getuid === 'function' ? process.getuid() : 'user'}.json`);
 
 const fs = require('fs');
 
@@ -102,6 +106,44 @@ function requireLocalSession(req, res, next) {
   next();
 }
 
+function broadcastPlayer(payload) {
+  playerState = payload;
+  const encoded = JSON.stringify(payload);
+  for (const client of wss.clients) {
+    if (client.readyState !== WebSocket.OPEN) continue;
+    try { client.send(encoded); } catch (_) {}
+  }
+}
+
+function getRegisteredPort() {
+  try {
+    const runtime = JSON.parse(fs.readFileSync(RUNTIME_FILE, 'utf8'));
+    if (!Number.isInteger(runtime.pid) || runtime.pid <= 0) return null;
+    try { process.kill(runtime.pid, 0); } catch (_) {
+      try { fs.unlinkSync(RUNTIME_FILE); } catch (_) {}
+      return null;
+    }
+    return Number.isInteger(runtime.port) && runtime.port > 0 && runtime.port < 65536 ? runtime.port : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function saveRuntimePort(port) {
+  try {
+    const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_TRUNC | (fs.constants.O_NOFOLLOW || 0);
+    const fd = fs.openSync(RUNTIME_FILE, flags, 0o600);
+    try { fs.writeFileSync(fd, JSON.stringify({ pid: process.pid, port })); } finally { fs.closeSync(fd); }
+  } catch (_) {}
+}
+
+function clearRuntimePort() {
+  try {
+    const runtime = JSON.parse(fs.readFileSync(RUNTIME_FILE, 'utf8'));
+    if (runtime.pid === process.pid) fs.unlinkSync(RUNTIME_FILE);
+  } catch (_) {}
+}
+
 // Resolve static UI assets directory (handles both raw node and pkg /snapshot)
 const uiPath = path.resolve(__dirname, '../ui');
 
@@ -173,6 +215,7 @@ function serveStaticFile(req, res, filePath) {
 app.get('/', (req, res) => {
   if (!isLoopbackRequest(req)) return res.status(403).send('Forbidden');
   res.setHeader('Set-Cookie', `atlas_session=${SESSION_TOKEN}; HttpOnly; SameSite=Strict; Path=/`);
+  res.setHeader('X-Atlas-Scanner', '1');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Cache-Control', 'no-store');
@@ -184,6 +227,20 @@ app.get('/', (req, res) => {
 // Every endpoint exposing forensic data or changing process state requires the
 // unguessable session cookie minted only by the loopback root page.
 app.use('/api', requireLocalSession);
+
+// A second invocation can safely forward a PIN to the already-running local
+// scanner instead of starting another process or opening the public website.
+app.post('/api/session-code', (req, res) => {
+  const sessionCode = String(req.body?.sessionCode || '').trim().toUpperCase();
+  if (!/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8}$/.test(sessionCode)) {
+    return res.status(400).json({ success: false, error: 'Geçersiz PIN.' });
+  }
+  if (scanInFlight || scannerCore.isScanning) {
+    return res.status(409).json({ success: false, error: 'Bir tarama zaten çalışıyor.' });
+  }
+  broadcastPlayer({ type: 'SESSION_CODE', sessionCode, autoStart: true });
+  return res.json({ success: true });
+});
 
 // Custom static middleware that intercepts UI assets safely
 app.use((req, res, next) => {
@@ -216,12 +273,16 @@ wss.on('connection', (ws) => {
   console.log('[Atlas AC] UI client connected.');
 
   try {
-    if (process.env.ATLAS_INITIAL_PIN) {
-      ws.send(JSON.stringify({
+    if (playerState.type !== 'IDLE') {
+      ws.send(JSON.stringify(playerState));
+    } else if (process.env.ATLAS_INITIAL_PIN) {
+      playerState = {
         type: 'SESSION_CODE',
         sessionCode: process.env.ATLAS_INITIAL_PIN,
         autoStart: true
-      }));
+      };
+      delete process.env.ATLAS_INITIAL_PIN;
+      ws.send(JSON.stringify(playerState));
     }
   } catch (_) {}
 
@@ -235,42 +296,38 @@ wss.on('connection', (ws) => {
           ws.send(JSON.stringify({ type: 'SCAN_ERROR', message: 'Yetkilinizin verdiği sekiz karakterli PIN kodunu girin.' }));
           return;
         }
-        if (scannerCore.isScanning) {
-          ws.send(JSON.stringify({ type: 'SCAN_ERROR', message: 'Bu cihazda zaten bir tarama çalışıyor.' }));
+        if (scanInFlight || scannerCore.isScanning) {
+          if (playerState.type !== 'IDLE') ws.send(JSON.stringify(playerState));
           return;
         }
 
+        scanInFlight = true;
         try {
           const syncRes = await cloudSync.initSession(sessionCode);
           sessionCode = syncRes.sessionCode;
           ws.send(JSON.stringify({ type: 'SESSION_CODE', sessionCode }));
+          playerState = { type: 'PROGRESS', percent: 0 };
         } catch (err) {
+          scanInFlight = false;
+          playerState = { type: 'IDLE' };
           ws.send(JSON.stringify({ type: 'SCAN_ERROR', message: err.message || 'PIN doğrulanamadı.' }));
           return;
         }
 
-        // Emit exactly one terminal event. Engine-level command timeouts are
-        // handled inside scanners so a still-running scan is never called done.
-        let scanSettled = false;
-        const finishScan = (type, payload) => {
-          if (scanSettled) return;
-          scanSettled = true;
-          try { ws.send(JSON.stringify({ type, ...payload })); } catch (e) {}
-        };
         try {
           const results = await scannerCore.runFullScan((stage, percent, log, finding, target, objectsCount) => {
-            try {
-              cloudSync.sendProgress(percent, stage, log, finding, target, objectsCount);
-            } catch (_) {}
+            void cloudSync.sendProgress(percent, stage, log, finding, target, objectsCount).catch(() => {});
             // The player channel deliberately receives percentage only. Full
             // forensic details are sent exclusively to the staff portal.
-            ws.send(JSON.stringify({ type: 'PROGRESS', percent }));
+            broadcastPlayer({ type: 'PROGRESS', percent });
           });
           await cloudSync.completeSession(results);
-          finishScan('SCAN_COMPLETE', { sessionCode });
+          broadcastPlayer({ type: 'SCAN_COMPLETE', sessionCode });
         } catch (err) {
-          await cloudSync.failSession(err.message);
-          finishScan('SCAN_ERROR', { message: 'Tarama tamamlanamadı. Lütfen yetkiliye bildirin.', sessionCode });
+          try { await cloudSync.failSession(err.message); } catch (_) {}
+          broadcastPlayer({ type: 'SCAN_ERROR', message: 'Tarama tamamlanamadı. Lütfen yetkiliye bildirin.', sessionCode });
+        } finally {
+          scanInFlight = false;
         }
       } else if (data.action === 'SHUTDOWN') {
         ws.send(JSON.stringify({
@@ -305,58 +362,80 @@ server.on('upgrade', (req, socket, head) => {
   wss.handleUpgrade(req, socket, head, (ws) => wss.emit('connection', ws, req));
 });
 
-// Launch server with graceful port retry & collision recovery
+// Launch server with safe port retry. Never terminate an unrelated process
+// merely because it owns the preferred port.
 function startServer(portToUse = PORT) {
   wss.on('error', () => {});
+
+  const openExistingInstance = (existingPort, res) => {
+    const cookie = (res.headers['set-cookie'] || [])[0];
+    res.resume();
+    const url = `http://localhost:${existingPort}`;
+    console.log(`[+] Atlas AC zaten aktif durumda çalışıyor: ${url}`);
+    let existingOpened = false;
+    const openExisting = () => {
+      if (existingOpened) return;
+      existingOpened = true;
+      if (process.env.ATLAS_NO_BROWSER !== '1') launchPlayerWindow(url);
+      setTimeout(() => process.exit(0), 500);
+    };
+    const initialPin = String(process.env.ATLAS_INITIAL_PIN || '').trim().toUpperCase();
+    if (cookie && /^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8}$/.test(initialPin)) {
+      const body = JSON.stringify({ sessionCode: initialPin });
+      const forward = http.request({
+        hostname: '127.0.0.1', port: existingPort, path: '/api/session-code', method: 'POST', timeout: 1500,
+        headers: { Cookie: cookie.split(';')[0], 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+      }, (forwardRes) => { forwardRes.resume(); openExisting(); });
+      forward.on('error', openExisting);
+      forward.on('timeout', () => forward.destroy());
+      forward.end(body);
+    } else {
+      openExisting();
+    }
+  };
+
+  const probeExisting = (candidatePort, onMissing) => {
+    let settled = false;
+    const missingOnce = () => {
+      if (settled) return;
+      settled = true;
+      onMissing();
+    };
+    const checkReq = http.request({
+      hostname: '127.0.0.1', port: candidatePort, path: '/', method: 'GET', timeout: 1200
+    }, (res) => {
+      if (settled) return res.resume();
+      if (res.headers['x-atlas-scanner'] === '1') {
+        settled = true;
+        return openExistingInstance(candidatePort, res);
+      }
+      res.resume();
+      missingOnce();
+    });
+    checkReq.on('error', missingOnce);
+    checkReq.on('timeout', () => checkReq.destroy());
+    checkReq.end();
+  };
 
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
       console.log(`[Atlas AC] Port ${portToUse} meşgul. Mevcut oturum kontrol ediliyor...`);
-
-      const checkReq = http.request({
-        hostname: '127.0.0.1',
-        port: portToUse,
-        path: '/',
-        method: 'GET',
-        timeout: 1200
-      }, () => {
-        const url = `http://localhost:${portToUse}`;
-        console.log(`\n======================================================`);
-        console.log(`      ATLAS AC - CLIENT INTEGRITY & INSPECTION ENGINE  `);
-        console.log(`======================================================`);
-        console.log(`[+] Atlas AC zaten aktif durumda çalışıyor.`);
-        console.log(`[+] Oyuncu tarayıcı penceresi açılıyor: ${url}\n`);
-        launchPlayerWindow(url);
-        setTimeout(() => process.exit(0), 500);
-      });
-
-      checkReq.on('error', () => {
-        console.log(`[!] Yanıt vermeyen eski bir süreç tespit edildi. Port ${portToUse} temizleniyor...`);
-        try {
-          if (process.platform === 'win32') {
-            execSync('taskkill /F /IM AtlasAC.exe /IM AtlasAC-Windows.exe /IM atlas_core.exe >nul 2>&1', { windowsHide: true });
-          } else {
-            execSync('fuser -k 3317/tcp 2>/dev/null || pkill -f "AtlasAC" 2>/dev/null || true');
-          }
-        } catch (e) {}
-
-        setTimeout(() => {
-          try {
-            server.listen(portToUse, '127.0.0.1');
-          } catch (listenErr) {
-            console.error('[Atlas AC] Port bağlanma hatası:', listenErr.message);
-          }
-        }, 500);
-      });
-
-      checkReq.end();
+      let collisionHandled = false;
+      const useAvailablePort = () => {
+        if (collisionHandled) return;
+        collisionHandled = true;
+        console.log('[Atlas AC] Port başka bir uygulamaya ait; boş bir yerel port seçiliyor...');
+        setTimeout(() => server.listen(0, '127.0.0.1'), 100);
+      };
+      probeExisting(portToUse, useAvailablePort);
     } else {
       console.error('[Atlas AC] Sunucu hatası:', err.message);
     }
   });
 
-  server.listen(portToUse, '127.0.0.1', () => {
+  const beginListen = () => server.listen(portToUse, '127.0.0.1', () => {
     const activePort = server.address().port;
+    saveRuntimePort(activePort);
     const url = `http://localhost:${activePort}`;
     console.log(`\n======================================================`);
     console.log(`      ATLAS AC - CLIENT INTEGRITY & INSPECTION ENGINE  `);
@@ -371,9 +450,19 @@ function startServer(portToUse = PORT) {
       launchPlayerWindow(url);
     }
   });
+
+  const registeredPort = getRegisteredPort();
+  if (Number(portToUse) === Number(PORT) && registeredPort) {
+    probeExisting(registeredPort, beginListen);
+  } else {
+    beginListen();
+  }
 }
 
-module.exports = { startServer, app, server };
+server.on('close', clearRuntimePort);
+process.once('exit', clearRuntimePort);
+
+module.exports = { startServer, app, server, getRegisteredPort };
 
 if (require.main === module) {
   startServer();

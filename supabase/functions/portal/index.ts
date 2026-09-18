@@ -60,7 +60,7 @@ Deno.serve(async req => {
   if (action === 'create_scan') {
     const playerName = clean(body.playerName || 'Şüpheli Oyuncu', 32);
     const game = clean(body.game || 'Minecraft Java (PC)', 40);
-    const allowedGames = ['Minecraft Java (PC)', 'Minecraft Bedrock (PC)'];
+    const allowedGames = ['Minecraft Java (PC)', 'Minecraft Java (Linux)', 'Minecraft Bedrock (PC)'];
     if (!allowedGames.includes(game)) return json({ error: 'Desteklenmeyen oyun türü.' }, 400, headers);
 
     let inserted = null;

@@ -40,10 +40,6 @@ byId('cardLin')?.addEventListener('click', () => {
   renderPlatform();
 });
 
-byId('cardMobile')?.addEventListener('click', () => {
-  setStatus('Mobil istemci henüz yayınlanmadı.', 'error');
-});
-
 byId('dlKeyInput')?.addEventListener('input', renderPin);
 
 const params = new URLSearchParams(location.search);

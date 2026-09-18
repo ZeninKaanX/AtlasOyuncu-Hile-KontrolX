@@ -20,9 +20,18 @@ for (const page of pages) {
 
 const dashboardHtml = read('docs/dashboard.html');
 const dashboardJs = read('docs/assets/dashboard.js');
+assert(dashboardHtml.includes('Minecraft Java (Linux)'), 'dashboard: Linux Java kontrol seçeneği eksik');
+assert(dashboardHtml.includes('Minecraft Bedrock (PC)'), 'dashboard: Bedrock Windows kontrol seçeneği eksik');
+assert(dashboardJs.includes("&platform=linux"), 'dashboard: Linux oturumu indirme bağlantısına platform bilgisi eklemeli');
 const referencedIds = [...dashboardJs.matchAll(/byId\('([^']+)'\)/g)].map(match => match[1]);
 const missingIds = [...new Set(referencedIds)].filter(id => !dashboardHtml.includes(`id="${id}"`));
 assert.deepStrictEqual(missingIds, [], `dashboard: HTML'de eksik JS hedefleri: ${missingIds.join(', ')}`);
+
+const playerHtml = read('src/ui/player.html');
+const playerJs = read('src/ui/js/player.js');
+const playerIds = [...playerJs.matchAll(/byId\('([^']+)'\)/g)].map(match => match[1]);
+const missingPlayerIds = [...new Set(playerIds)].filter(id => !playerHtml.includes(`id="${id}"`));
+assert.deepStrictEqual(missingPlayerIds, [], `player: HTML'de eksik JS hedefleri: ${missingPlayerIds.join(', ')}`);
 assert(dashboardJs.includes('freshSessionData'), 'dashboard: API çağrıları taze oturum kullanmalı');
 assert(!dashboardJs.includes('minotar.net'), 'dashboard: harici oyuncu avatarına bağımlı olmamalı');
 

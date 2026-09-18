@@ -12,6 +12,7 @@ let currentInspectedScan = null;
 let currentFindingsFilter = 'all';
 let cachedScans = [];
 let scansLoading = false;
+let createdScanGame = 'Minecraft Java (PC)';
 
 function openLiveScan(code) {
   const cleanCode = String(code || '').trim().toUpperCase();
@@ -137,8 +138,9 @@ function renderScansTable(scans) {
 
     const gameName = s.game || 'Minecraft Java (PC)';
     const isBedrock = gameName.includes('Bedrock');
-    const gameBadgeColor = isBedrock ? '#0284c7' : '#10b981';
-    const gameLetter = isBedrock ? 'B' : 'J';
+    const isLinux = gameName.includes('Linux');
+    const gameBadgeColor = isBedrock ? '#7c3aed' : (isLinux ? '#e87924' : '#10b981');
+    const gameLetter = isBedrock ? 'B' : (isLinux ? 'L' : 'J');
 
     const playerName = s.player_name || 'Oyuncu';
     const playerInitial = escapeHtml(playerName.slice(0, 1).toUpperCase());
@@ -434,6 +436,7 @@ byId('formCreateScan').addEventListener('submit', async (e) => {
   try {
     const result = await portal('create_scan', { playerName, game: selectedGame });
     const session = result.session;
+    createdScanGame = session.game || selectedGame;
     byId('createdScanCodeDisplay').textContent = session.session_code;
     byId('formCreateScan').classList.add('hidden');
     byId('createScanResultBox').classList.remove('hidden');
@@ -458,7 +461,8 @@ byId('btnCopyCreatedCode').addEventListener('click', async () => {
 
 byId('btnCopyCreatedLink')?.addEventListener('click', async () => {
   const code = byId('createdScanCodeDisplay').textContent;
-  const link = `https://zeninkaanx.github.io/AtlasOyuncu-Hile-KontrolX/download.html?pin=${encodeURIComponent(code)}`;
+  const platform = createdScanGame.includes('Linux') ? '&platform=linux' : '';
+  const link = `https://zeninkaanx.github.io/AtlasOyuncu-Hile-KontrolX/download.html?pin=${encodeURIComponent(code)}${platform}`;
   await navigator.clipboard.writeText(link);
   byId('btnCopyCreatedLink').textContent = 'Link kopyalandı';
   setTimeout(() => { byId('btnCopyCreatedLink').textContent = 'İndirme linkini kopyala'; }, 1500);
@@ -466,8 +470,9 @@ byId('btnCopyCreatedLink')?.addEventListener('click', async () => {
 
 byId('btnCopyCreatedMsg')?.addEventListener('click', async () => {
   const code = byId('createdScanCodeDisplay').textContent;
-  const link = `https://zeninkaanx.github.io/AtlasOyuncu-Hile-KontrolX/download.html?pin=${encodeURIComponent(code)}`;
-  const msg = `Atlas AC kontrol bağlantınız hazır.\n20 dakika içinde indirin ve uygulamada PIN'i girin:\n${link}\nPIN: ${code}\nBaşka bir lisans veya cihaz kodu gerekmez.`;
+  const platform = createdScanGame.includes('Linux') ? '&platform=linux' : '';
+  const link = `https://zeninkaanx.github.io/AtlasOyuncu-Hile-KontrolX/download.html?pin=${encodeURIComponent(code)}${platform}`;
+  const msg = `Atlas AC kontrol bağlantınız hazır.\nPlatform: ${createdScanGame}\n20 dakika içinde indirin ve uygulamada PIN'i girin:\n${link}\nPIN: ${code}\nBaşka bir lisans veya cihaz kodu gerekmez.`;
   await navigator.clipboard.writeText(msg);
   byId('btnCopyCreatedMsg').textContent = 'Mesaj kopyalandı';
   setTimeout(() => { byId('btnCopyCreatedMsg').textContent = 'Kontrol mesajını kopyala'; }, 1500);

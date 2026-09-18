@@ -13,6 +13,7 @@
   let activePin = '';
   let queuedStart = false;
   let reconnectTimer = null;
+  let closing = false;
 
   function show(view) {
     [pinView, scanView, doneView].forEach(element => element.classList.toggle('active', element === view));
@@ -41,10 +42,19 @@
   }
 
   function connect() {
+    if (closing) return;
+    clearTimeout(reconnectTimer);
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    socket = new WebSocket(`${protocol}//${location.host}/ws`);
+    try {
+      socket = new WebSocket(`${protocol}//${location.host}/ws`);
+    } catch (_) {
+      reconnectTimer = setTimeout(connect, 1500);
+      return;
+    }
     socket.addEventListener('open', () => {
-      status('Bağlantı hazır. Yetkilinizin verdiği PIN’i girin.');
+      if (pinView.classList.contains('active')) {
+        status('Bağlantı hazır. Yetkilinizin verdiği PIN’i girin.');
+      }
       if (queuedStart) sendStart();
     });
     socket.addEventListener('message', event => {
@@ -71,7 +81,9 @@
       }
     });
     socket.addEventListener('close', () => {
+      if (closing) return;
       clearTimeout(reconnectTimer);
+      if (pinView.classList.contains('active')) status('Yerel bağlantı yenileniyor…');
       reconnectTimer = setTimeout(connect, 1500);
     });
     socket.addEventListener('error', () => socket.close());
@@ -97,6 +109,9 @@
   pinInput.addEventListener('keydown', event => { if (event.key === 'Enter') start(); });
   startButton.addEventListener('click', start);
   byId('closeButton').addEventListener('click', async () => {
+    closing = true;
+    clearTimeout(reconnectTimer);
+    try { socket?.close(); } catch (_) {}
     try { await fetch('/api/shutdown', { method: 'POST' }); } catch (_) {}
     window.close();
   });

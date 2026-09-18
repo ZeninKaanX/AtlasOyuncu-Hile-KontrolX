@@ -12,26 +12,31 @@ process.env.ATLAS_NO_BROWSER = '1';
 const reporter = require('../src/engine/reporter');
 const minecraftInspector = require('../src/engine/minecraftInspector');
 
-function request(port, route, cookie = '') {
+function request(port, route, cookie = '', method = 'GET', payload = null) {
   return new Promise((resolve, reject) => {
+    const body = payload ? JSON.stringify(payload) : '';
     const req = http.request({
-      hostname: '127.0.0.1', port, path: route, method: 'GET',
-      headers: cookie ? { Cookie: cookie } : {}
+      hostname: '127.0.0.1', port, path: route, method,
+      headers: {
+        ...(cookie ? { Cookie: cookie } : {}),
+        ...(body ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } : {})
+      }
     }, (res) => {
       let body = '';
       res.on('data', chunk => { body += chunk; });
       res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body }));
     });
     req.on('error', reject);
-    req.end();
+    req.end(body);
   });
 }
 
 async function main() {
   const serverSource = fs.readFileSync(path.join(__dirname, '..', 'src', 'main', 'server.js'), 'utf8');
   const playerSource = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui', 'js', 'player.js'), 'utf8');
-  assert(serverSource.includes("JSON.stringify({ type: 'PROGRESS', percent })"), 'Player telemetry must be percentage-only');
+  assert(serverSource.includes("broadcastPlayer({ type: 'PROGRESS', percent })"), 'Player telemetry must be percentage-only');
   assert(!serverSource.includes("finishScan('SCAN_COMPLETE', { data: results"), 'Player completion event must not contain scan results');
+  assert(!serverSource.includes('fuser -k') && !serverSource.includes('taskkill /F'), 'Port collision handling must never kill unrelated processes');
   assert(!playerSource.includes('finding') && !playerSource.includes('reportData'), 'Player UI must not process forensic evidence');
 
   const malicious = '<img src=x onerror="globalThis.__atlas_xss=1">';
@@ -75,10 +80,13 @@ async function main() {
     const denied = await request(address.port, '/api/shutdown');
     assert.strictEqual(denied.status, 403, 'API must reject requests without a session');
     const root = await request(address.port, '/');
+    assert.strictEqual(root.headers['x-atlas-scanner'], '1', 'Root must identify a genuine Atlas scanner instance');
     const setCookie = root.headers['set-cookie'] && root.headers['set-cookie'][0];
     assert(setCookie && setCookie.includes('HttpOnly') && setCookie.includes('SameSite=Strict'), 'Root must mint a hardened session cookie');
     assert(root.body.includes('Atlas AC Scanner'), 'Root must serve the minimal player scanner');
     assert(!root.body.includes('Detection Results'), 'Player UI must not expose forensic results');
+    const invalidPin = await request(address.port, '/api/session-code', setCookie.split(';')[0], 'POST', { sessionCode: 'INVALID!' });
+    assert.strictEqual(invalidPin.status, 400, 'Existing scanner PIN forwarding must validate input');
     const hiddenReport = await request(address.port, '/api/report/latest', setCookie.split(';')[0]);
     assert.strictEqual(hiddenReport.status, 404, 'Local forensic report route must not exist');
     const legacyUi = await request(address.port, '/index.html', setCookie.split(';')[0]);
