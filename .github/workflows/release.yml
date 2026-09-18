@@ -44,8 +44,14 @@ jobs:
             dist/AtlasAC-Linux.zip
             dist/SHA256SUMS.txt
 
+      - name: Require private storage secret
+        run: |
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "SUPABASE_SERVICE_ROLE_KEY repository secret is required; refusing a partial release."
+            exit 1
+          fi
+
       - name: Publish to private Supabase Storage
-        if: ${{ env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: |
           curl --fail-with-body --request POST \
             --header "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \

@@ -9,6 +9,7 @@
     "stop": "node src/main/index.js --stop",
     "test": "node tests/testFarbenAC.js && node tests/test_all_clients.js && node tests/test_meteor_liquid_wurst_doomsday.js && node tests/test_server_status.js && node tests/allMarketCheats.test.js && node tests/testSecurityHardening.js && node tests/testLicenseManager.js && node tests/testWebPortal.js",
     "test:remote-pin": "node scripts/verify_remote_pin_flow.js",
+    "verify:private-packages": "node scripts/verify_private_packages.js",
     "benchmark": "node scripts/benchmark.js",
     "build": "node scripts/build.js",
     "license:issue": "node scripts/issue_license.js"
