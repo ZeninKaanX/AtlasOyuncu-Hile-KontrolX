@@ -41,6 +41,19 @@ if (!fs.existsSync(DIST_DIR)) {
   fs.mkdirSync(DIST_DIR, { recursive: true });
 }
 
+// Never let a successful-looking release reuse a binary from an older build.
+// pkg can occasionally exit without producing every requested target, so all
+// managed outputs are removed first and the fresh raw targets are required.
+const managedOutputs = [
+  'atlas-ac-linux', 'atlas-ac-win.exe', 'AtlasAC-Linux', 'AtlasAC',
+  'AtlasAC.exe', 'AtlasAC-Windows.exe', 'AtlasAC-Windows.zip',
+  'AtlasAC-Linux.zip', 'AtlasAC.exe.gz', 'AtlasAC.bat', 'AtlasAC.vbs',
+  'AtlasAC-Linux.run', 'baslat.sh', 'SHA256SUMS.txt', 'test'
+];
+for (const name of managedOutputs) {
+  fs.rmSync(path.join(DIST_DIR, name), { recursive: true, force: true });
+}
+
 try {
   // Some hosts cannot generate V8 bytecode for every dependency. Explicitly
   // retain source as a fallback so pkg never emits a "successful" but
@@ -48,6 +61,11 @@ try {
   const pkgCmd = `npx --no-install pkg . --targets node22-linux-x64,node22-win-x64 --out-path dist --compress GZip --fallback-to-source`;
   console.log(`[>] Running: ${pkgCmd}`);
   execSync(pkgCmd, { cwd: ROOT_DIR, stdio: 'inherit' });
+  for (const expected of ['atlas-ac-linux', 'atlas-ac-win.exe']) {
+    if (!fs.existsSync(path.join(DIST_DIR, expected))) {
+      throw new Error(`Fresh pkg output missing: ${expected}`);
+    }
+  }
   console.log('[+] Pkg compilation complete.\n');
 } catch (err) {
   console.error('[!] Pkg compilation error:', err.message);

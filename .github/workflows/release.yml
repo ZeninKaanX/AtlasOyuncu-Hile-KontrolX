@@ -53,17 +53,18 @@ jobs:
 
       - name: Publish to private Supabase Storage
         run: |
+          RELEASE="v$(node -p "require('./package.json').version")"
           curl --fail-with-body --request POST \
             --header "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             --header "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
             --header "Content-Type: application/octet-stream" \
-            --header "x-upsert: true" \
+            --header "x-upsert: false" \
             --data-binary @dist/AtlasAC-Windows.zip \
-            "https://grxcdtcalukzhlqisbgr.supabase.co/storage/v1/object/atlas-downloads/AtlasAC-Windows.zip"
+            "https://grxcdtcalukzhlqisbgr.supabase.co/storage/v1/object/atlas-downloads/releases/$RELEASE/AtlasAC-Windows.zip"
           curl --fail-with-body --request POST \
             --header "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             --header "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
             --header "Content-Type: application/octet-stream" \
-            --header "x-upsert: true" \
+            --header "x-upsert: false" \
             --data-binary @dist/AtlasAC-Linux.zip \
-            "https://grxcdtcalukzhlqisbgr.supabase.co/storage/v1/object/atlas-downloads/AtlasAC-Linux.zip"
+            "https://grxcdtcalukzhlqisbgr.supabase.co/storage/v1/object/atlas-downloads/releases/$RELEASE/AtlasAC-Linux.zip"

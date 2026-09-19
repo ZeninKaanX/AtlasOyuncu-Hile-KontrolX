@@ -71,6 +71,11 @@ assert(authJs.includes('location.replace(nextPage)'), 'auth: giriş sonrası ist
 assert(dashboardJs.includes("urlParams.get('action') === 'create'"), 'dashboard: sonuç sayfasından yeni kontrol açılmalı');
 
 const packageJson = JSON.parse(read('package.json'));
+assert(playerHtml.includes(`PLAYER SCANNER · v${packageJson.version}`),
+  'player: görünen sürüm package.json ile aynı olmalı');
+const scanSync = read('supabase/functions/scan-sync/index.ts');
+assert(scanSync.includes(`const SCANNER_RELEASE = 'v${packageJson.version}'`),
+  'scan-sync: değişmez paket yolu uygulama sürümüyle aynı olmalı');
 assert(!packageJson.pkg.assets.some(value => value.includes('*.png') || value.includes('*.svg')),
   'paket: geniş UI varlık globları kullanılmamalı');
 assert(packageJson.pkg.assets.includes('src/ui/assets/atlas_logo.png'), 'paket: oyuncu logosu eksik');

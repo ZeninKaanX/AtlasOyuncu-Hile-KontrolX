@@ -3,6 +3,7 @@ import { admin, cors, json, randomKey, sha256 } from '../_shared/common.ts';
 const PIN_RE = /^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8}$/;
 const HEX_64_RE = /^[a-fA-F0-9]{64}$/;
 const MAX_FINDINGS = 500;
+const SCANNER_RELEASE = 'v1.1.3';
 type Db = ReturnType<typeof admin>;
 
 function text(value: unknown, max: number) {
@@ -80,10 +81,11 @@ Deno.serve(async req => {
       return json({ error: 'PIN geçersiz veya süresi dolmuş.' }, 404, headers);
     }
     const filename = platform === 'linux' ? 'AtlasAC-Linux.zip' : 'AtlasAC-Windows.zip';
-    const { data, error } = await db.storage.from('atlas-downloads').createSignedUrl(filename, 90, { download: filename });
+    const objectPath = `releases/${SCANNER_RELEASE}/${filename}`;
+    const { data, error } = await db.storage.from('atlas-downloads').createSignedUrl(objectPath, 90, { download: filename });
     if (error || !data?.signedUrl) return json({ error: 'İndirme paketi şu anda hazır değil. Yetkiliye bildirin.' }, 503, headers);
     await db.from('scan_sessions').update({ download_count: (session.download_count || 0) + 1, updated_at: new Date().toISOString() }).eq('id', session.id);
-    return json({ url: data.signedUrl, filename, expiresIn: 90 }, 200, headers);
+    return json({ url: data.signedUrl, filename, release: SCANNER_RELEASE, expiresIn: 90 }, 200, headers);
   }
 
   if (action === 'claim') {

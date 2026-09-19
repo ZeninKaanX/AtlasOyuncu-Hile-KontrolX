@@ -8,6 +8,7 @@ const projectUrl = 'https://grxcdtcalukzhlqisbgr.supabase.co';
 const serviceKey = process.env.ATLAS_STORAGE_KEY;
 const config = fs.readFileSync(path.join(__dirname, '..', 'docs', 'assets', 'config.js'), 'utf8');
 const anonKey = config.match(/SUPABASE_PUBLISHABLE_KEY\s*=\s*'([^']+)'/)?.[1];
+const release = `v${JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')).version}`;
 const alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 
 if (!serviceKey) throw new Error('ATLAS_STORAGE_KEY ortam değişkeni gerekli.');
@@ -55,6 +56,9 @@ async function main() {
         headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'download', pin: sessionCode, platform })
       });
+      if (result.release !== release || !result.url.includes(`/releases/${release}/`)) {
+        throw new Error(`${platform} indirmesi güncel ${release} paket yolunu kullanmıyor.`);
+      }
       const response = await fetch(result.url);
       if (!response.ok) throw new Error(`${platform} imzalı indirmesi ${response.status} döndürdü.`);
       const remote = Buffer.from(await response.arrayBuffer());

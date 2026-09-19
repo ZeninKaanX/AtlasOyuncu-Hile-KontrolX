@@ -20,7 +20,7 @@ links.
    - `APP_ORIGIN=https://zeninkaanx.github.io`
    - `ADMIN_TOKEN=<long random administrator secret>`
 4. Deploy `register`, `admin-invite`, `portal`, and `scan-sync` functions.
-5. Upload `dist/AtlasAC-Windows.zip` and `dist/AtlasAC-Linux.zip` to the private `atlas-downloads` bucket with the same object names.
+5. Upload `dist/AtlasAC-Windows.zip` and `dist/AtlasAC-Linux.zip` to the private `atlas-downloads/releases/v<package-version>/` path. `scan-sync` uses this immutable release path so a CDN cannot serve an overwritten older executable.
 6. Put the project URL and **publishable/anon** browser key in `docs/assets/config.js`. Never put a service-role key there.
 
 The public registration function consumes an expiring invitation before creating
