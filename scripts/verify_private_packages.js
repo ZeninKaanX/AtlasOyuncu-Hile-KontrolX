@@ -59,6 +59,8 @@ async function main() {
       if (result.release !== release || !result.url.includes(`/releases/${release}/`)) {
         throw new Error(`${platform} indirmesi güncel ${release} paket yolunu kullanmıyor.`);
       }
+      const expectedDownloadName = platform === 'linux' ? `AtlasAC-Linux-${release}.zip` : `AtlasAC-Windows-${release}.zip`;
+      if (result.filename !== expectedDownloadName) throw new Error(`${platform} indirme adı sürüm bilgisini içermiyor.`);
       const response = await fetch(result.url);
       if (!response.ok) throw new Error(`${platform} imzalı indirmesi ${response.status} döndürdü.`);
       const remote = Buffer.from(await response.arrayBuffer());

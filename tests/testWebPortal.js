@@ -76,6 +76,8 @@ assert(playerHtml.includes(`PLAYER SCANNER · v${packageJson.version}`),
 const scanSync = read('supabase/functions/scan-sync/index.ts');
 assert(scanSync.includes(`const SCANNER_RELEASE = 'v${packageJson.version}'`),
   'scan-sync: değişmez paket yolu uygulama sürümüyle aynı olmalı');
+assert(scanSync.includes('AtlasAC-Windows-${SCANNER_RELEASE}.zip') && scanSync.includes('AtlasAC-Linux-${SCANNER_RELEASE}.zip'),
+  'scan-sync: indirilen dosya adı eski yerel paketlerle karışmaması için sürümlü olmalı');
 assert(!packageJson.pkg.assets.some(value => value.includes('*.png') || value.includes('*.svg')),
   'paket: geniş UI varlık globları kullanılmamalı');
 assert(packageJson.pkg.assets.includes('src/ui/assets/atlas_logo.png'), 'paket: oyuncu logosu eksik');

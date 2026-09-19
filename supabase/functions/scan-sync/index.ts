@@ -80,8 +80,9 @@ Deno.serve(async req => {
       if (session) await db.from('scan_sessions').update({ status: 'expired', updated_at: new Date().toISOString() }).eq('id', session.id).eq('status', 'pending');
       return json({ error: 'PIN geçersiz veya süresi dolmuş.' }, 404, headers);
     }
-    const filename = platform === 'linux' ? 'AtlasAC-Linux.zip' : 'AtlasAC-Windows.zip';
-    const objectPath = `releases/${SCANNER_RELEASE}/${filename}`;
+    const objectName = platform === 'linux' ? 'AtlasAC-Linux.zip' : 'AtlasAC-Windows.zip';
+    const filename = platform === 'linux' ? `AtlasAC-Linux-${SCANNER_RELEASE}.zip` : `AtlasAC-Windows-${SCANNER_RELEASE}.zip`;
+    const objectPath = `releases/${SCANNER_RELEASE}/${objectName}`;
     const { data, error } = await db.storage.from('atlas-downloads').createSignedUrl(objectPath, 90, { download: filename });
     if (error || !data?.signedUrl) return json({ error: 'İndirme paketi şu anda hazır değil. Yetkiliye bildirin.' }, 503, headers);
     await db.from('scan_sessions').update({ download_count: (session.download_count || 0) + 1, updated_at: new Date().toISOString() }).eq('id', session.id);
