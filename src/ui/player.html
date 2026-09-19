@@ -40,14 +40,21 @@
       </div>
 
       <div id="scanView" class="view">
-        <div class="compact-brand" aria-hidden="true">
-          <img src="assets/atlas_logo.png" alt="">
-          <div><strong>ATLAS AC</strong><span>ADVANCED INTEGRITY SCANNER</span></div>
+        <div class="scan-session-line">
+          <span class="scan-session-marks" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>SECURE PLAYER SCAN</span>
         </div>
-        <div class="scan-copy"><h2>Bilgisayar taranıyor</h2><p>Lütfen uygulamayı kapatmayın.</p></div>
+
+        <div class="scan-atlas-mark">
+          <img src="assets/atlas_logo.png" alt="Atlas AC logosu">
+          <strong>ATLAS AC</strong>
+        </div>
+        <p class="scan-subtitle">ADVANCED AUTOMATIC INTEGRITY SCANNING</p>
+
+        <div id="progressText" class="progress-readout" aria-label="0%"><strong id="percentText">0</strong>%</div>
         <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
-        <div class="progress-meta"><span id="scanStatusText">Tarama modülleri hazırlanıyor…</span><span id="progressText"><strong id="percentText">0</strong>%</span></div>
-        <p class="privacy-note"><span></span> Sonuçlar canlı olarak yetkili paneline aktarılıyor.</p>
+        <div class="scan-stage"><span class="scan-spinner" aria-hidden="true"></span><span id="scanStatusText">Tarama modülleri hazırlanıyor…</span></div>
+        <p class="privacy-note"><span></span> Canlı ve güvenli aktarım etkin</p>
       </div>
 
       <div id="doneView" class="view">

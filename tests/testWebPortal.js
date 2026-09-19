@@ -30,10 +30,17 @@ assert.deepStrictEqual(missingIds, [], `dashboard: HTML'de eksik JS hedefleri: $
 
 const playerHtml = read('src/ui/player.html');
 const playerJs = read('src/ui/js/player.js');
+const playerCss = read('src/ui/css/player.css');
 const playerIds = [...playerJs.matchAll(/byId\('([^']+)'\)/g)].map(match => match[1]);
 const missingPlayerIds = [...new Set(playerIds)].filter(id => !playerHtml.includes(`id="${id}"`));
 assert.deepStrictEqual(missingPlayerIds, [], `player: HTML'de eksik JS hedefleri: ${missingPlayerIds.join(', ')}`);
-assert(playerHtml.includes('ADVANCED INTEGRITY SCANNER'), 'player: kompakt Atlas tarama kimliği eksik');
+assert(playerHtml.includes('ADVANCED AUTOMATIC INTEGRITY SCANNING'), 'player: kompakt Atlas tarama kimliği eksik');
+assert(playerHtml.includes('class="scan-atlas-mark"'), 'player: Atlas logolu tarama görünümü eksik');
+assert(playerHtml.includes('id="progressBar"') && playerHtml.includes('id="percentText"'),
+  'player: canlı tarama ilerleme hedefleri eksik');
+assert(playerCss.includes('body[data-view="scanView"]') && playerCss.includes('@keyframes scan-spin'),
+  'player: tarama görünümü veya canlı durum animasyonu eksik');
+assert(playerJs.includes('window.resizeTo(size[0], size[1])'), 'player: görünüme göre pencere boyutlandırma eksik');
 assert(dashboardJs.includes('freshSessionData'), 'dashboard: API çağrıları taze oturum kullanmalı');
 assert(!dashboardJs.includes('minotar.net'), 'dashboard: harici oyuncu avatarına bağımlı olmamalı');
 assert(dashboardJs.includes('results.html?scan='), 'dashboard: incele eylemi tam sayfa sonuç ekranına gitmeli');

@@ -18,7 +18,7 @@
   function show(view) {
     [pinView, scanView, doneView].forEach(element => element.classList.toggle('active', element === view));
     document.body.dataset.view = view.id;
-    const size = view === scanView ? [500, 350] : view === doneView ? [500, 410] : [520, 610];
+    const size = view === scanView ? [640, 400] : view === doneView ? [500, 410] : [520, 610];
     try { window.resizeTo(size[0], size[1]); } catch (_) {}
   }
 
