@@ -171,7 +171,8 @@ function renderScan(scan) {
   const duration = formatDuration(scan);
   const verdict = verdictState(scan, findings);
   const objects = number(scan.objects_count || scan.report_data?.scannedObjects);
-  const os = system.osName || system.platform || (scan.client_platform === 'linux' ? 'Linux 64-bit' : 'Windows 64-bit');
+  const expectsLinux = scan.client_platform === 'linux' || String(scan.game || '').toLowerCase().includes('linux');
+  const os = system.osName || system.platform || (expectsLinux ? 'Linux 64-bit' : 'Windows 64-bit');
 
   document.title = `${scan.player_name || 'Oyuncu'} · ${scan.session_code} | Atlas AC`;
   setText('resultPinTop', scan.session_code);

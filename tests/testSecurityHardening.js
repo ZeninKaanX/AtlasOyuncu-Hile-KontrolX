@@ -54,7 +54,23 @@ async function main() {
     orderedSync.sendProgress(20, 'B', 'B'),
     orderedSync.sendProgress(30, 'C', 'C')
   ]);
-  assert.deepStrictEqual(sentPercents, [10, 20, 30], 'Cloud progress writes must remain ordered');
+  assert.strictEqual(sentPercents[0], 10, 'Cloud progress must start with the first available snapshot');
+  assert.strictEqual(sentPercents.at(-1), 30, 'Cloud progress must prioritize the newest snapshot');
+  assert(sentPercents.every((value, index) => index === 0 || value >= sentPercents[index - 1]),
+    'Cloud progress must never move backwards');
+
+  const retryingSync = new CloudSync();
+  retryingSync.activeSessionId = '00000000-0000-4000-8000-000000000002';
+  retryingSync.clientToken = 'B'.repeat(64);
+  let attempts = 0;
+  retryingSync.request = async payload => {
+    attempts++;
+    if (attempts < 3) throw new Error('temporary network failure');
+    return { ok: true, percent: payload.percent };
+  };
+  await retryingSync.sendProgress(31, 'FILES', 'Oyuncu dosyaları inceleniyor', null, '', 42);
+  assert.strictEqual(attempts, 3, 'Cloud progress must retry transient failures');
+  assert.strictEqual(retryingSync.latestProgress, null, 'Successful retry must clear the pending snapshot');
 
   const malicious = '<img src=x onerror="globalThis.__atlas_xss=1">';
   const html = reporter.generateHtmlReport({

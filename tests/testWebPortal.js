@@ -46,6 +46,8 @@ assert.deepStrictEqual(missingResultIds, [], `results: HTML'de eksik JS hedefler
 assert(resultsJs.includes("portal('get_scan'"), 'results: güvenli portal rapor akışı kullanılmalı');
 assert(resultsJs.includes('setTimeout(loadScan'), 'results: canlı tarama istekleri sıralı çalışmalı');
 assert(!resultsJs.includes('innerHTML'), 'results: sunucudan gelen kanıtlar güvenli DOM API ile işlenmeli');
+assert(resultsJs.includes("scan.game || '').toLowerCase().includes('linux')"),
+  'results: Linux oturumu sistem bilgisi gelmeden Windows olarak gösterilmemeli');
 
 const packageJson = JSON.parse(read('package.json'));
 assert(!packageJson.pkg.assets.some(value => value.includes('*.png') || value.includes('*.svg')),

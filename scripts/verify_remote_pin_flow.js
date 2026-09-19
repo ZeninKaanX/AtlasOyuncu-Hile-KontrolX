@@ -50,7 +50,10 @@ async function main() {
     await range.body?.cancel();
 
     const clientIds = [crypto.randomBytes(32).toString('hex'), crypto.randomBytes(32).toString('hex')];
-    const competingClaims = await Promise.all(clientIds.map(clientId => publicAction({ action: 'claim', pin, clientId })));
+    const competingClaims = await Promise.all(clientIds.map(clientId => publicAction({
+      action: 'claim', pin, clientId, clientPlatform: 'linux',
+      systemInfo: { platform: 'linux', osName: 'Linux Remote Smoke Test', cpu: 'Test CPU', cpuCores: 4, ram: '8 GB', uptimeMinutes: 12 }
+    })));
     const successfulClaims = competingClaims.filter(result => result.response.ok);
     const rejectedClaims = competingClaims.filter(result => result.response.status === 409);
     if (successfulClaims.length !== 1 || rejectedClaims.length !== 1) throw new Error('Atomic single-device claim protection failed.');
@@ -67,6 +70,17 @@ async function main() {
     });
     if (!progress.response.ok) throw new Error('Authenticated progress update failed.');
 
+    const stored = await jsonFetch(`${SUPABASE_URL}/rest/v1/scan_sessions?id=eq.${encodeURIComponent(sessionId)}&select=progress,objects_count,client_platform,system_info`, {
+      method: 'GET', headers: adminHeaders
+    });
+    const liveRow = stored.data?.[0];
+    if (!stored.response.ok || liveRow?.progress !== 50 || liveRow?.objects_count !== 1) {
+      throw new Error('Live progress was accepted but not persisted.');
+    }
+    if (liveRow.client_platform !== 'linux' || liveRow.system_info?.osName !== 'Linux Remote Smoke Test') {
+      throw new Error('Early client platform metadata was not persisted.');
+    }
+
     const complete = await publicAction({
       action: 'complete', sessionId, clientToken: claim.data.clientToken,
       findings: [], reportData: { scannedObjects: 1, durationSeconds: 1 }, systemInfo: { platform: 'test' }
@@ -75,7 +89,7 @@ async function main() {
 
     const replay = await publicAction({ action: 'claim', pin, clientId });
     if (replay.response.status !== 404) throw new Error('Completed PIN could be replayed.');
-    console.log('PASS remote PIN flow: private download, device binding, write auth, completion, replay protection.');
+    console.log('PASS remote PIN flow: private download, device binding, live persistence, platform metadata, completion, replay protection.');
   } finally {
     if (sessionId) {
       await fetch(`${SUPABASE_URL}/rest/v1/scan_sessions?id=eq.${encodeURIComponent(sessionId)}`, {

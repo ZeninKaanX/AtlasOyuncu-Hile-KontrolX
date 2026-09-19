@@ -35,6 +35,18 @@ function safeFinding(raw: Record<string, unknown>) {
   };
 }
 
+function safeSystemInfo(raw: unknown) {
+  const value = raw && typeof raw === 'object' ? raw as Record<string, unknown> : {};
+  return {
+    platform: text(value.platform, 24),
+    osName: text(value.osName, 160),
+    cpu: text(value.cpu, 180),
+    cpuCores: Math.max(0, Math.min(Number(value.cpuCores) || 0, 1024)),
+    ram: text(value.ram, 40),
+    uptimeMinutes: Math.max(0, Math.min(Number(value.uptimeMinutes) || 0, 10_000_000))
+  };
+}
+
 async function clientSession(db: Db, body: Record<string, unknown>) {
   const sessionId = text(body.sessionId, 64);
   const clientToken = text(body.clientToken, 128);
@@ -90,10 +102,13 @@ Deno.serve(async req => {
     if (session.client_id_hash && session.client_id_hash !== clientHash) return json({ error: 'Bu PIN başka bir cihazda kullanılıyor.' }, 409, headers);
     const clientToken = randomKey(32);
     const now = new Date().toISOString();
+    const requestedPlatform = text(body.clientPlatform, 24).toLowerCase();
+    const clientPlatform = ['win32', 'linux', 'darwin'].includes(requestedPlatform) ? requestedPlatform : 'unknown';
     let claimQuery = db.from('scan_sessions').update({
       status: 'scanning', client_id_hash: clientHash, client_token_hash: await sha256(clientToken),
       claimed_at: session.claimed_at || now, last_heartbeat_at: now,
-      current_stage: 'Tarama başlatılıyor', updated_at: now
+      current_stage: 'Tarama başlatılıyor', client_platform: clientPlatform,
+      system_info: safeSystemInfo(body.systemInfo), updated_at: now
     }).eq('id', session.id).in('status', ['pending', 'scanning']);
     // A previously claimed PIN may only be resumed by the same installation.
     // For a fresh PIN, the IS NULL predicate makes the first claim atomic so
@@ -146,7 +161,7 @@ Deno.serve(async req => {
         scannedJars: Math.max(0, Math.min(Number(report.scannedJars) || 0, 10_000_000)),
         criticalCount: critical, highCount: high, totalFindings: findings.length
       },
-      system_info: body.systemInfo && typeof body.systemInfo === 'object' ? body.systemInfo : {},
+      system_info: safeSystemInfo(body.systemInfo),
       current_stage: 'Tarama tamamlandı', current_log: verdict === 'clean' ? 'Doğrulanmış ihlal bulunamadı.' : `${findings.length} bulgu kaydedildi.`,
       completed_at: now, last_heartbeat_at: now, updated_at: now, client_token_hash: null
     }).eq('id', session.id).eq('client_token_hash', tokenHash);
