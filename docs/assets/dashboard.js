@@ -18,10 +18,7 @@ let inspectionGeneration = 0;
 function openLiveScan(code) {
   const cleanCode = String(code || '').trim().toUpperCase();
   if (!cleanCode) return;
-  const url = new URL(location.href);
-  url.searchParams.set('scan', cleanCode);
-  history.pushState({ scan: cleanCode }, '', url);
-  inspectScan(cleanCode);
+  location.assign(`results.html?scan=${encodeURIComponent(cleanCode)}`);
 }
 
 // Universal Portal API Caller
@@ -594,7 +591,7 @@ setInterval(() => {
 const urlParams = new URLSearchParams(window.location.search);
 const directScan = urlParams.get('scan');
 if (directScan) {
-  inspectScan(directScan);
+  location.replace(`results.html?scan=${encodeURIComponent(directScan.trim().toUpperCase())}`);
 }
 
 window.addEventListener('popstate', () => {

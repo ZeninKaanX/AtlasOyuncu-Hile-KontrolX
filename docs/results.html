@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0f17">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://grxcdtcalukzhlqisbgr.supabase.co wss://grxcdtcalukzhlqisbgr.supabase.co; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; form-action 'self'">
+  <title>Tarama Sonucu | Atlas AC</title><link rel="icon" href="assets/atlas.ico"><link rel="stylesheet" href="assets/app.css"><link rel="stylesheet" href="assets/results.css">
+</head>
+<body class="results-body">
+  <div class="results-shell">
+    <aside class="results-sidebar">
+      <a class="results-brand" href="dashboard.html"><img src="assets/atlas_icon_full.png" alt=""><span><b>Atlas <em>AC</em></b><small>atlasoyuncu.com</small></span></a>
+      <nav aria-label="Rapor kategorileri">
+        <button class="result-nav-button active" type="button" data-category="all"><span>▦</span>Genel Bakış<b id="countAll">0</b></button>
+        <div class="results-nav-label">SERVİSLER</div>
+        <button class="result-nav-button" type="button" data-category="minecraft"><span>⌖</span>Minecraft ve Modlar<b id="countMinecraft">0</b></button>
+        <button class="result-nav-button" type="button" data-category="injection"><span>⬡</span>Bypass ve Enjeksiyon<b id="countInjection">0</b></button>
+        <div class="results-nav-label">FORENSICS</div>
+        <button class="result-nav-button" type="button" data-category="deleted"><span>◴</span>USN / Silinenler<b id="countDeleted">0</b></button>
+        <button class="result-nav-button" type="button" data-category="execution"><span>▱</span>Prefetch ve RAM<b id="countExecution">0</b></button>
+        <button class="result-nav-button" type="button" data-category="network"><span>◎</span>Ağ ve İndirmeler<b id="countNetwork">0</b></button>
+        <button class="result-nav-button" type="button" data-category="other"><span>⌁</span>Diğer Bulgular<b id="countOther">0</b></button>
+      </nav>
+      <div class="results-sidebar-foot"><span><i></i> Gerçek zamanlı aktif</span><div class="results-account"><b id="resultsUser">Yükleniyor…</b><small id="resultsEmail">—</small></div><button id="btnLogoutResult" type="button">Güvenli çıkış</button></div>
+    </aside>
+    <main class="results-main">
+      <header class="results-topbar"><div class="breadcrumb"><a href="dashboard.html">Dashboard</a><span>/</span><span>Results</span><span>/</span><code id="resultPinTop">—</code></div><div class="results-actions"><label class="result-search-wrap"><span>⌕</span><input id="resultSearch" placeholder="Bulgularda ara"><kbd>Ctrl+K</kbd></label><button id="btnRefreshResult" type="button">↻ Yenile</button><button id="btnBackDashboard" type="button">Tarama Ekranı</button><button id="btnExportResult" type="button">⇩ Raporu Dışa Aktar</button></div></header>
+      <div class="results-content">
+        <div id="resultsStatus" class="results-alert hidden" role="status"></div>
+        <section id="heroVerdictPanel" class="result-hero state-loading">
+          <div class="result-hero-copy"><span class="eyebrow">ATLAS AC ADLİ ANALİZ</span><h1 id="heroTitle">Denetim Kararı</h1><p id="heroSubtitle">Tarama verisi güvenli sunucudan yükleniyor.</p><div class="hero-meta"><div><small>KİMLİK PINİ</small><button id="btnCopyHeroPin" type="button"><code id="heroPin">—</code> □</button></div><div><small>TARAMA SÜRESİ</small><strong><span id="durationMinutes">0</span><i>m</i> <span id="durationSeconds">00</span><i>s</i></strong></div></div><div class="hero-tags"><span id="heroGame">Minecraft</span><span>AI: Supported Semantic Engine</span><span id="heroPlatform">Platform bekleniyor</span></div></div>
+          <div class="result-hero-verdict"><div class="verdict-symbol">!</div><strong id="heroVerdict">YÜKLENİYOR</strong><span id="heroRisk">Risk hesaplanıyor</span></div>
+        </section>
+
+        <section id="liveProgressPanel" class="live-result-panel hidden"><div><span class="eyebrow">CANLI TARAMA</span><b id="liveStage">Hazırlanıyor…</b><small id="liveLog">İstemci bağlantısı bekleniyor.</small></div><strong>%<span id="liveProgress">0</span></strong><div class="live-result-track"><i id="liveProgressBar"></i></div><footer><span id="liveObjects">0 nesne</span><span id="liveHeartbeat">Son sinyal bekleniyor</span></footer></section>
+
+        <div class="result-dashboard-grid">
+          <section class="result-card summary-card"><header><div><h2>Tarama Özeti</h2><p>Kanıtların önem seviyesine göre dağılımı</p></div><span id="summaryVerdictBadge">Analiz</span></header><div class="radar-wrap"><svg viewBox="0 0 300 185" role="img" aria-label="Bulgu dağılımı"><polygon class="radar-grid" points="150,18 274,158 26,158"></polygon><polygon class="radar-grid inner" points="150,62 232,150 68,150"></polygon><line x1="150" y1="18" x2="150" y2="158"></line><line x1="26" y1="158" x2="274" y2="158"></line><line x1="150" y1="18" x2="26" y2="158"></line><line x1="150" y1="18" x2="274" y2="158"></line><polygon id="radarValue" class="radar-value" points="150,120 150,150 150,150"></polygon><text x="150" y="12">Tespitler</text><text x="2" y="176">Güvenli</text><text x="248" y="176">Uyarılar</text></svg></div><div class="summary-stats"><article class="danger"><small>TESPİTLER</small><strong id="summaryCritical">0</strong></article><article class="warning"><small>UYARILAR</small><strong id="summaryWarnings">0</strong></article><article class="safe"><small>İNCELENEN</small><strong id="summaryScanned">0</strong></article></div></section>
+          <section class="result-card system-card"><header><div><h2>Sistem Bilgileri</h2><p>Oyuncu bilgisayarından raporlanan ortam</p></div><span id="systemState">CANLI</span></header><div class="system-quick"><article><small>İşletim Sistemi</small><b id="sysOs">—</b></article><article><small>CPU</small><b id="sysCpu">—</b></article><article><small>RAM</small><b id="sysRam">—</b></article></div><dl><div><dt>Oyuncu</dt><dd id="sysPlayer">—</dd></div><div><dt>Platform</dt><dd id="sysPlatform">—</dd></div><div><dt>Sistem çalışma süresi</dt><dd id="sysUptime">—</dd></div><div><dt>Tarama başlangıcı</dt><dd id="sysStarted">—</dd></div><div><dt>Tamamlanma</dt><dd id="sysCompleted">—</dd></div><div><dt>İncelenen nesne</dt><dd id="sysObjects">0</dd></div></dl></section>
+        </div>
+
+        <section class="findings-explorer"><aside><span class="eyebrow">TESPİT SONUÇLARI</span><h2><span id="findingsTotal">0</span> kayıt</h2><p>Kanıt kayıtları kategori ve önem düzeyine göre listelenir.</p><div class="severity-summary"><button class="result-filter active" data-severity="all" type="button">Tümü <b id="severityAll">0</b></button><button class="result-filter" data-severity="critical" type="button">Kritik / Yüksek <b id="severityCritical">0</b></button><button class="result-filter" data-severity="medium" type="button">Uyarı <b id="severityMedium">0</b></button><button class="result-filter" data-severity="low" type="button">Bilgi <b id="severityLow">0</b></button></div></aside><div class="findings-main"><header><h2>Tüm Bulgular</h2><span id="visibleFindingsLabel">0 kayıt gösteriliyor</span></header><div id="findingsList" class="professional-findings"></div><div id="emptyFindings" class="empty-results hidden"><b>Bu görünümde bulgu yok</b><span>Filtreyi değiştirin veya taramanın tamamlanmasını bekleyin.</span></div></div></section>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="assets/results.js"></script>
+</body>
+</html>

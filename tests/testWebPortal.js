@@ -6,7 +6,7 @@ const path = require('path');
 
 const root = path.join(__dirname, '..');
 const read = relative => fs.readFileSync(path.join(root, relative), 'utf8');
-const pages = ['index.html', 'auth.html', 'download.html', 'dashboard.html'];
+const pages = ['index.html', 'auth.html', 'download.html', 'dashboard.html', 'results.html'];
 
 for (const page of pages) {
   const html = read(`docs/${page}`);
@@ -36,6 +36,16 @@ assert.deepStrictEqual(missingPlayerIds, [], `player: HTML'de eksik JS hedefleri
 assert(playerHtml.includes('ADVANCED INTEGRITY SCANNER'), 'player: kompakt Atlas tarama kimliği eksik');
 assert(dashboardJs.includes('freshSessionData'), 'dashboard: API çağrıları taze oturum kullanmalı');
 assert(!dashboardJs.includes('minotar.net'), 'dashboard: harici oyuncu avatarına bağımlı olmamalı');
+assert(dashboardJs.includes('results.html?scan='), 'dashboard: incele eylemi tam sayfa sonuç ekranına gitmeli');
+
+const resultsHtml = read('docs/results.html');
+const resultsJs = read('docs/assets/results.js');
+const resultIds = [...resultsJs.matchAll(/byId\('([^']+)'\)/g)].map(match => match[1]);
+const missingResultIds = [...new Set(resultIds)].filter(id => !resultsHtml.includes(`id="${id}"`));
+assert.deepStrictEqual(missingResultIds, [], `results: HTML'de eksik JS hedefleri: ${missingResultIds.join(', ')}`);
+assert(resultsJs.includes("portal('get_scan'"), 'results: güvenli portal rapor akışı kullanılmalı');
+assert(resultsJs.includes('setTimeout(loadScan'), 'results: canlı tarama istekleri sıralı çalışmalı');
+assert(!resultsJs.includes('innerHTML'), 'results: sunucudan gelen kanıtlar güvenli DOM API ile işlenmeli');
 
 const packageJson = JSON.parse(read('package.json'));
 assert(!packageJson.pkg.assets.some(value => value.includes('*.png') || value.includes('*.svg')),
