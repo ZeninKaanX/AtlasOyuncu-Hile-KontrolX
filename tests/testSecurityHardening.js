@@ -11,6 +11,7 @@ process.env.ATLAS_NO_BROWSER = '1';
 
 const reporter = require('../src/engine/reporter');
 const minecraftInspector = require('../src/engine/minecraftInspector');
+const { CloudSync } = require('../src/engine/cloudSync');
 
 function request(port, route, cookie = '', method = 'GET', payload = null) {
   return new Promise((resolve, reject) => {
@@ -38,6 +39,22 @@ async function main() {
   assert(!serverSource.includes("finishScan('SCAN_COMPLETE', { data: results"), 'Player completion event must not contain scan results');
   assert(!serverSource.includes('fuser -k') && !serverSource.includes('taskkill /F'), 'Port collision handling must never kill unrelated processes');
   assert(!playerSource.includes('finding') && !playerSource.includes('reportData'), 'Player UI must not process forensic evidence');
+
+  const orderedSync = new CloudSync();
+  orderedSync.activeSessionId = '00000000-0000-4000-8000-000000000001';
+  orderedSync.clientToken = 'A'.repeat(64);
+  const sentPercents = [];
+  orderedSync.request = async payload => {
+    await new Promise(resolve => setTimeout(resolve, payload.percent === 10 ? 20 : 1));
+    sentPercents.push(payload.percent);
+    return { ok: true };
+  };
+  await Promise.all([
+    orderedSync.sendProgress(10, 'A', 'A'),
+    orderedSync.sendProgress(20, 'B', 'B'),
+    orderedSync.sendProgress(30, 'C', 'C')
+  ]);
+  assert.deepStrictEqual(sentPercents, [10, 20, 30], 'Cloud progress writes must remain ordered');
 
   const malicious = '<img src=x onerror="globalThis.__atlas_xss=1">';
   const html = reporter.generateHtmlReport({

@@ -17,6 +17,9 @@
 
   function show(view) {
     [pinView, scanView, doneView].forEach(element => element.classList.toggle('active', element === view));
+    document.body.dataset.view = view.id;
+    const size = view === scanView ? [500, 350] : view === doneView ? [500, 410] : [520, 610];
+    try { window.resizeTo(size[0], size[1]); } catch (_) {}
   }
 
   function status(message, error = false) {
@@ -27,8 +30,13 @@
   function setProgress(value) {
     const percent = Math.max(0, Math.min(100, Number(value) || 0));
     byId('percentText').textContent = String(Math.round(percent));
-    byId('progressText').textContent = `${Math.round(percent)}%`;
+    byId('progressText').setAttribute('aria-label', `${Math.round(percent)}%`);
     byId('progressBar').style.width = `${percent}%`;
+    const scanStatus = percent < 10 ? 'Güvenlik modülleri hazırlanıyor…'
+      : percent < 35 ? 'Oyun dosyaları inceleniyor…'
+        : percent < 70 ? 'Sistem bütünlüğü doğrulanıyor…'
+          : percent < 95 ? 'Son kontroller tamamlanıyor…' : 'Rapor güvenli biçimde aktarılıyor…';
+    byId('scanStatusText').textContent = scanStatus;
   }
 
   function sendStart() {

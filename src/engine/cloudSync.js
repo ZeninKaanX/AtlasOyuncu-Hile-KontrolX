@@ -27,6 +27,7 @@ class CloudSync {
     this.clientToken = null;
     this.lastProgressSent = 0;
     this.lastPercentSent = -1;
+    this.progressQueue = Promise.resolve();
   }
 
   loadClientId() {
@@ -115,8 +116,7 @@ class CloudSync {
     if (!finding && percentDiff < 3 && now - this.lastProgressSent < 1000 && percent < 100) return;
     this.lastProgressSent = now;
     this.lastPercentSent = percent;
-    try {
-      await this.request({
+    const payload = {
         ...auth, percent, stage, log, target, objectsCount,
         finding: finding ? {
           title: finding.title || finding.name || 'Adli Bulgu',
@@ -126,15 +126,20 @@ class CloudSync {
           details: finding.details || finding.desc || log || '',
           timestamp: finding.timestamp || new Date().toISOString()
         } : null
-      }, 10000);
-    } catch (error) {
-      console.warn('[CloudSync] İlerleme gönderilemedi:', error.message);
-    }
+      };
+    // Scanner callbacks are intentionally not awaited by the engine. Serialize
+    // network writes here so an older request can never overwrite newer live
+    // progress in the staff panel.
+    this.progressQueue = this.progressQueue
+      .then(() => this.request(payload, 10000))
+      .catch(error => { console.warn('[CloudSync] İlerleme gönderilemedi:', error.message); });
+    return this.progressQueue;
   }
 
   async completeSession(scanResults) {
     const auth = this.authPayload('complete');
     if (!auth) throw new Error('Aktif tarama oturumu yok.');
+    await this.progressQueue;
     const allFindings = Array.isArray(scanResults?.allFindings) ? scanResults.allFindings : [];
     const result = await this.request({
       ...auth,
@@ -161,7 +166,10 @@ class CloudSync {
   async failSession(message) {
     const auth = this.authPayload('fail');
     if (!auth) return;
-    try { await this.request({ ...auth, message: String(message || 'Tarama başarısız') }, 10000); } catch (_) {}
+    try {
+      await this.progressQueue;
+      await this.request({ ...auth, message: String(message || 'Tarama başarısız') }, 10000);
+    } catch (_) {}
     this.reset();
   }
 }

@@ -124,7 +124,8 @@ Deno.serve(async req => {
       update.findings = findings.slice(0, MAX_FINDINGS);
       update.findings_count = Math.min(findings.length, MAX_FINDINGS);
     }
-    await db.from('scan_sessions').update(update).eq('id', session.id).eq('client_token_hash', tokenHash);
+    const { error } = await db.from('scan_sessions').update(update).eq('id', session.id).eq('client_token_hash', tokenHash);
+    if (error) return json({ error: 'Canlı ilerleme kaydedilemedi.' }, 500, headers);
     return json({ ok: true }, 200, headers);
   }
 
@@ -137,7 +138,7 @@ Deno.serve(async req => {
     const verdict = critical || high ? 'banned' : findings.length ? 'suspicious' : 'clean';
     const report = body.reportData && typeof body.reportData === 'object' ? body.reportData as Record<string, unknown> : {};
     const now = new Date().toISOString();
-    await db.from('scan_sessions').update({
+    const { error } = await db.from('scan_sessions').update({
       status: 'completed', progress: 100, verdict, risk_score: riskScore, findings, findings_count: findings.length,
       report_data: {
         timestamp: text(report.timestamp || now, 40), durationSeconds: Math.max(0, Math.min(Number(report.durationSeconds) || 0, 86400)),
@@ -149,15 +150,17 @@ Deno.serve(async req => {
       current_stage: 'Tarama tamamlandı', current_log: verdict === 'clean' ? 'Doğrulanmış ihlal bulunamadı.' : `${findings.length} bulgu kaydedildi.`,
       completed_at: now, last_heartbeat_at: now, updated_at: now, client_token_hash: null
     }).eq('id', session.id).eq('client_token_hash', tokenHash);
+    if (error) return json({ error: 'Tarama sonucu kaydedilemedi.' }, 500, headers);
     return json({ ok: true, sessionCode: session.session_code, verdict, findingsCount: findings.length }, 200, headers);
   }
 
   if (action === 'fail') {
     const now = new Date().toISOString();
-    await db.from('scan_sessions').update({
+    const { error } = await db.from('scan_sessions').update({
       status: 'failed', current_stage: 'Tarama başarısız', current_log: text(body.message, 300),
       updated_at: now, last_heartbeat_at: now, client_token_hash: null
     }).eq('id', session.id).eq('client_token_hash', tokenHash);
+    if (error) return json({ error: 'Başarısız tarama durumu kaydedilemedi.' }, 500, headers);
     return json({ ok: true }, 200, headers);
   }
 

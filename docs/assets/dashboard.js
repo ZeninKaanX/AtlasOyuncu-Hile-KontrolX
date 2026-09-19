@@ -13,6 +13,7 @@ let currentFindingsFilter = 'all';
 let cachedScans = [];
 let scansLoading = false;
 let createdScanGame = 'Minecraft Java (PC)';
+let inspectionGeneration = 0;
 
 function openLiveScan(code) {
   const cleanCode = String(code || '').trim().toUpperCase();
@@ -39,6 +40,7 @@ async function portal(action, extra = {}) {
 
   const response = await fetch(url.toString(), {
     method: isGet ? 'GET' : 'POST',
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       apikey: SUPABASE_PUBLISHABLE_KEY,
@@ -213,11 +215,13 @@ async function inspectScan(codeOrId) {
     clearInterval(activePollingTimer);
     activePollingTimer = null;
   }
+  const generation = ++inspectionGeneration;
 
   const modal = byId('modalInspectScan');
   modal.classList.remove('hidden');
 
   async function fetchDetails() {
+    if (generation !== inspectionGeneration) return;
     let scan = null;
     try {
       const res = await portal('get_scan', { code: codeOrId });
@@ -227,18 +231,19 @@ async function inspectScan(codeOrId) {
     }
 
     if (!scan) {
-      showAlert('Belirtilen PIN ile kontrol oturumu bulunamadı.');
+      if (generation === inspectionGeneration) {
+        activePollingTimer = setTimeout(fetchDetails, 1500);
+      }
       return;
     }
 
+    if (generation !== inspectionGeneration) return;
     currentInspectedScan = scan;
     renderInspectionView(scan);
 
     // Continue polling if scan is ongoing
     if (scan.status === 'scanning' || scan.status === 'pending') {
-      if (!activePollingTimer) {
-        activePollingTimer = setInterval(fetchDetails, 1500);
-      }
+      activePollingTimer = setTimeout(fetchDetails, 1000);
     } else {
       if (activePollingTimer) {
         clearInterval(activePollingTimer);
@@ -480,6 +485,7 @@ byId('btnCopyCreatedMsg')?.addEventListener('click', async () => {
 
 // Inspector Close
 byId('btnCloseInspectModal').addEventListener('click', () => {
+  inspectionGeneration++;
   if (activePollingTimer) {
     clearInterval(activePollingTimer);
     activePollingTimer = null;

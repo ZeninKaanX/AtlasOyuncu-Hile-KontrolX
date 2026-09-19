@@ -48,16 +48,16 @@ function launchPlayerWindow(url) {
       candidates.push(path.join(root, 'Google', 'Chrome', 'Application', 'chrome.exe'));
     }
     const browser = candidates.find(candidate => fs.existsSync(candidate));
-    if (browser) return launch(browser, [`--app=${url}`, '--no-first-run', '--disable-session-crashed-bubble']);
+    if (browser) return launch(browser, [`--app=${url}`, '--window-size=520,610', '--no-first-run', '--disable-session-crashed-bubble']);
   }
 
   if (process.platform === 'darwin') {
-    return launch('open', ['-a', 'Google Chrome', '--args', `--app=${url}`]);
+    return launch('open', ['-a', 'Google Chrome', '--args', `--app=${url}`, '--window-size=520,610']);
   }
 
   for (const command of ['microsoft-edge', 'google-chrome', 'chromium', 'chromium-browser']) {
     const found = spawnSync('which', [command], { stdio: 'ignore' });
-    if (found.status === 0) return launch(command, [`--app=${url}`, '--no-first-run']);
+    if (found.status === 0) return launch(command, [`--app=${url}`, '--window-size=520,610', '--no-first-run']);
   }
   return launch('xdg-open', [url]);
 }
