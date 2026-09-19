@@ -48,6 +48,20 @@ assert(resultsJs.includes('setTimeout(loadScan'), 'results: canlı tarama istekl
 assert(!resultsJs.includes('innerHTML'), 'results: sunucudan gelen kanıtlar güvenli DOM API ile işlenmeli');
 assert(resultsJs.includes("scan.game || '').toLowerCase().includes('linux')"),
   'results: Linux oturumu sistem bilgisi gelmeden Windows olarak gösterilmemeli');
+const resultButtonIds = [...resultsHtml.matchAll(/<button[^>]+id="([^"]+)"/g)].map(match => match[1]);
+const deadResultButtons = resultButtonIds.filter(id => !resultsJs.includes(`byId('${id}')`));
+assert.deepStrictEqual(deadResultButtons, [], `results: işlev bağlanmamış düğmeler: ${deadResultButtons.join(', ')}`);
+assert(resultsJs.includes("querySelectorAll('.result-nav-button')"), 'results: kategori düğmeleri işlevsel olmalı');
+assert(resultsJs.includes("querySelectorAll('.result-filter')"), 'results: önem filtreleri işlevsel olmalı');
+assert(resultsJs.includes("bindJumpAction(byId('btnJumpScan'))"), 'results: tarama ekranı kısayolu işlevsel olmalı');
+assert(resultsJs.includes("bindJumpAction(byId('btnJumpTelemetry'))"), 'results: canlı telemetri kısayolu işlevsel olmalı');
+assert(resultsJs.includes('window.print()'), 'results: yazdır/PDF işlemi çalışmalı');
+assert(resultsJs.includes('dashboard.html?action=create'), 'results: yeni kontrol düğmesi PIN oluşturmayı açmalı');
+
+const authJs = read('docs/assets/auth.js');
+assert(authJs.includes('safeNextPage'), 'auth: güvenli dönüş rotası doğrulaması eksik');
+assert(authJs.includes('location.replace(nextPage)'), 'auth: giriş sonrası istenen rapora dönmeli');
+assert(dashboardJs.includes("urlParams.get('action') === 'create'"), 'dashboard: sonuç sayfasından yeni kontrol açılmalı');
 
 const packageJson = JSON.parse(read('package.json'));
 assert(!packageJson.pkg.assets.some(value => value.includes('*.png') || value.includes('*.svg')),

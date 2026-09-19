@@ -592,6 +592,11 @@ const urlParams = new URLSearchParams(window.location.search);
 const directScan = urlParams.get('scan');
 if (directScan) {
   location.replace(`results.html?scan=${encodeURIComponent(directScan.trim().toUpperCase())}`);
+} else if (urlParams.get('action') === 'create') {
+  openCreateModal();
+  const cleanUrl = new URL(location.href);
+  cleanUrl.searchParams.delete('action');
+  history.replaceState(null, '', cleanUrl);
 }
 
 window.addEventListener('popstate', () => {

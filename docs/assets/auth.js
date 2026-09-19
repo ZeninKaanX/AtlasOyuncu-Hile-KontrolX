@@ -4,6 +4,23 @@ import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, configured } from './config.js'
 const byId = id => document.getElementById(id);
 const supabase = configured ? createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) : null;
 
+function safeNextPage() {
+  const candidate = new URLSearchParams(location.search).get('next') || '';
+  if (candidate === 'dashboard.html') return candidate;
+  if (/^results\.html\?scan=[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8}$/.test(candidate)) return candidate;
+  return 'dashboard.html';
+}
+
+const nextPage = safeNextPage();
+
+function authUrl(selectedMode) {
+  const params = new URLSearchParams();
+  if (selectedMode === 'register') params.set('mode', 'register');
+  if (nextPage !== 'dashboard.html') params.set('next', nextPage);
+  const query = params.toString();
+  return query ? `auth.html?${query}` : 'auth.html';
+}
+
 function status(id, message, ok = false) {
   const element = byId(id);
   element.textContent = message;
@@ -21,7 +38,7 @@ function mode(value) {
   byId('authSubtitle').textContent = register
     ? 'Yetkili hesabınızı davet anahtarıyla oluşturun.'
     : 'Tarama PIN’leri oluşturmak ve raporları incelemek için giriş yapın.';
-  history.replaceState(null, '', register ? '?mode=register' : 'auth.html');
+  history.replaceState(null, '', authUrl(register ? 'register' : 'login'));
 }
 
 if (!configured) byId('configWarning').classList.remove('hidden');
@@ -43,7 +60,7 @@ if (new URLSearchParams(location.search).get('mode') === 'register') mode('regis
 
 if (supabase) {
   const { data } = await supabase.auth.getSession();
-  if (data.session) location.replace('dashboard.html');
+  if (data.session) location.replace(nextPage);
 }
 
 byId('loginForm').addEventListener('submit', async event => {
@@ -57,7 +74,7 @@ byId('loginForm').addEventListener('submit', async event => {
   });
   button.disabled = false;
   if (error) return status('loginStatus', 'E-posta veya şifre hatalı.');
-  location.replace('dashboard.html');
+  location.replace(nextPage);
 });
 
 byId('registerForm').addEventListener('submit', async event => {

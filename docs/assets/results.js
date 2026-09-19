@@ -11,6 +11,7 @@ let pollGeneration = 0;
 let categoryFilter = 'all';
 let severityFilter = 'all';
 let searchFilter = '';
+let statusTimer = null;
 
 if (!scanCode) location.replace('dashboard.html');
 
@@ -40,9 +41,14 @@ function setText(id, value) {
   if (element) element.textContent = value ?? '—';
 }
 
-function showStatus(message) {
+function showStatus(message, type = 'error', autoHideMs = 0) {
+  if (statusTimer) clearTimeout(statusTimer);
   setText('resultsStatus', message);
+  byId('resultsStatus').classList.toggle('success', type === 'success');
   byId('resultsStatus').classList.toggle('hidden', !message);
+  if (message && autoHideMs) {
+    statusTimer = setTimeout(() => showStatus(''), autoHideMs);
+  }
 }
 
 function number(value) {
@@ -78,11 +84,15 @@ function haystackOf(finding) {
 
 function categoryOf(finding) {
   const text = haystackOf(finding);
-  if (/minecraft|mod|fabric|forge|lunar|badlion|cheat|client/.test(text)) return 'minecraft';
-  if (/inject|bypass|dll|hook|process|bellek|memory|jvm/.test(text)) return 'injection';
+  if (/semantic|bytecode|mixin|class analysis|custom homemade|trojan whitelist/.test(text)) return 'semantic';
+  if (/autoclick|clicker|macro|mouse_event|tıklayıcı|makro/.test(text)) return 'autoclicker';
+  if (/usb|setupapi|removable|flash drive|bellek aygıt/.test(text)) return 'usb';
+  if (/browser|tarayıcı|download|indirme|chromium|firefox|zone\.identifier/.test(text)) return 'browser';
   if (/usn|silin|deleted|journal|recycle/.test(text)) return 'deleted';
   if (/prefetch|bam|execution|çalıştır|yürüt|recent/.test(text)) return 'execution';
-  if (/dns|network|internet|download|tarayıcı|browser|ağ|vpn/.test(text)) return 'network';
+  if (/dns|network|internet|socket|ağ|vpn|srum/.test(text)) return 'network';
+  if (/inject|bypass|dll|hook|process|bellek|memory|jvm|ptrace|hollow/.test(text)) return 'injection';
+  if (/minecraft|mod|fabric|forge|lunar|badlion|cheat|client|jar/.test(text)) return 'minecraft';
   return 'other';
 }
 
@@ -117,6 +127,15 @@ function renderFinding(finding) {
     path.textContent = `[DOSYA] ${finding.path}`;
     card.append(path);
   }
+  const copyButton = document.createElement('button');
+  copyButton.type = 'button';
+  copyButton.className = 'professional-finding-copy';
+  copyButton.textContent = 'KANITI KOPYALA';
+  copyButton.addEventListener('click', async () => {
+    const evidence = [finding.title, finding.severity, finding.category, finding.path, finding.details].filter(Boolean).join('\n');
+    await copyText(evidence, copyButton, 'KOPYALANDI');
+  });
+  card.append(copyButton);
   return card;
 }
 
@@ -134,7 +153,7 @@ function renderFindings() {
 }
 
 function updateCounts(findings) {
-  const categories = { minecraft: 0, injection: 0, deleted: 0, execution: 0, network: 0, other: 0 };
+  const categories = { minecraft: 0, semantic: 0, injection: 0, deleted: 0, execution: 0, autoclicker: 0, browser: 0, usb: 0, network: 0, other: 0 };
   const severities = { critical: 0, medium: 0, low: 0 };
   findings.forEach(finding => {
     categories[categoryOf(finding)]++;
@@ -145,9 +164,13 @@ function updateCounts(findings) {
   });
   setText('countAll', findings.length);
   setText('countMinecraft', categories.minecraft);
+  setText('countSemantic', categories.semantic);
   setText('countInjection', categories.injection);
   setText('countDeleted', categories.deleted);
   setText('countExecution', categories.execution);
+  setText('countAutoclicker', categories.autoclicker);
+  setText('countBrowser', categories.browser);
+  setText('countUsb', categories.usb);
   setText('countNetwork', categories.network);
   setText('countOther', categories.other);
   setText('severityAll', findings.length);
@@ -218,14 +241,15 @@ async function loadAccount() {
   setText('resultsEmail', response.user?.email || '');
 }
 
-async function loadScan() {
+async function loadScan(announce = false) {
   const generation = ++pollGeneration;
   if (pollTimer) clearTimeout(pollTimer);
   try {
     const response = await portal('get_scan', { code: scanCode });
     if (generation !== pollGeneration) return;
     renderScan(response.scan);
-    showStatus('');
+    if (announce) showStatus(`Rapor ${new Date().toLocaleTimeString('tr-TR')} itibarıyla yenilendi.`, 'success', 2500);
+    else showStatus('');
     if (['pending', 'scanning'].includes(response.scan.status)) pollTimer = setTimeout(loadScan, 1200);
   } catch (error) {
     if (generation !== pollGeneration) return;
@@ -234,11 +258,53 @@ async function loadScan() {
   }
 }
 
+async function writeClipboard(value) {
+  try {
+    await navigator.clipboard.writeText(value);
+  } catch (_) {
+    const input = document.createElement('textarea');
+    input.value = value;
+    input.setAttribute('readonly', '');
+    input.style.position = 'fixed';
+    input.style.opacity = '0';
+    document.body.append(input);
+    input.select();
+    const copied = document.execCommand('copy');
+    input.remove();
+    if (!copied) throw new Error('Panoya erişilemedi. Tarayıcı iznini kontrol edin.');
+  }
+}
+
 async function copyText(value, button, success) {
-  await navigator.clipboard.writeText(value);
+  if (!value) return showStatus('Kopyalanacak veri henüz hazır değil.');
   const original = button.textContent;
-  button.textContent = success;
-  setTimeout(() => { button.textContent = original; }, 1400);
+  try {
+    await writeClipboard(value);
+    button.textContent = success;
+    showStatus(success, 'success', 1800);
+  } catch (error) {
+    showStatus(error.message);
+  } finally {
+    setTimeout(() => { button.textContent = original; }, 1400);
+  }
+}
+
+function reportSummary() {
+  if (!currentScan) return '';
+  const findings = Array.isArray(currentScan.findings) ? currentScan.findings : [];
+  const serious = findings.filter(item => ['critical', 'high'].includes(severityOf(item))).length;
+  return [
+    '[ATLAS AC ADLİ BİLİŞİM RAPORU]',
+    `Oyuncu: ${currentScan.player_name || 'Oyuncu'}`,
+    `Kontrol PIN: ${currentScan.session_code}`,
+    `Durum: ${verdictState(currentScan, findings).title}`,
+    `Risk skoru: %${number(currentScan.risk_score)}`,
+    `Toplam bulgu: ${findings.length}`,
+    `Kritik/Yüksek: ${serious}`,
+    `İncelenen nesne: ${number(currentScan.objects_count || currentScan.report_data?.scannedObjects).toLocaleString('tr-TR')}`,
+    `Tarih: ${formatDate(currentScan.completed_at || currentScan.updated_at || currentScan.created_at)}`,
+    `Yetkili raporu: ${location.href}`
+  ].join('\n');
 }
 
 document.querySelectorAll('.result-nav-button').forEach(button => button.addEventListener('click', () => {
@@ -248,6 +314,19 @@ document.querySelectorAll('.result-nav-button').forEach(button => button.addEven
   renderFindings();
   document.querySelector('.findings-explorer')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }));
+
+function bindJumpAction(button) {
+  button.addEventListener('click', () => {
+  const livePanel = byId('liveProgressPanel');
+  const target = button.dataset.target === 'telemetry'
+    ? (livePanel.classList.contains('hidden') ? document.querySelector('.system-card') : livePanel)
+    : (livePanel.classList.contains('hidden') ? byId('heroVerdictPanel') : livePanel);
+  target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  showStatus(button.dataset.target === 'telemetry' ? 'Canlı telemetri görünümüne gidildi.' : 'Tarama durumu görünümüne gidildi.', 'success', 1600);
+  });
+}
+bindJumpAction(byId('btnJumpScan'));
+bindJumpAction(byId('btnJumpTelemetry'));
 
 document.querySelectorAll('.result-filter').forEach(button => button.addEventListener('click', () => {
   document.querySelectorAll('.result-filter').forEach(item => item.classList.remove('active'));
@@ -266,17 +345,33 @@ document.addEventListener('keydown', event => {
     byId('resultSearch').focus();
   }
 });
-byId('btnRefreshResult').addEventListener('click', loadScan);
+byId('btnRefreshResult').addEventListener('click', async event => {
+  const button = event.currentTarget;
+  button.disabled = true;
+  try { await loadScan(true); } finally { button.disabled = false; }
+});
+byId('btnNewScan').addEventListener('click', () => location.assign('dashboard.html?action=create'));
 byId('btnBackDashboard').addEventListener('click', () => location.assign('dashboard.html'));
 byId('btnCopyHeroPin').addEventListener('click', event => copyText(currentScan?.session_code || scanCode, event.currentTarget, 'PIN KOPYALANDI'));
 byId('btnExportResult').addEventListener('click', () => {
-  if (!currentScan) return;
+  if (!currentScan) return showStatus('Rapor henüz yüklenmedi.');
   const blob = new Blob([JSON.stringify(currentScan, null, 2)], { type: 'application/json' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.download = `AtlasAC_Report_${currentScan.session_code}_${currentScan.player_name || 'Oyuncu'}.json`;
   link.click();
+  showStatus('JSON kanıt raporu indirildi.', 'success', 2000);
   setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+});
+byId('btnCopySummary').addEventListener('click', event => copyText(reportSummary(), event.currentTarget, 'ÖZET KOPYALANDI'));
+byId('btnCopyResultLink').addEventListener('click', event => copyText(location.href, event.currentTarget, 'LİNK KOPYALANDI'));
+byId('btnCopyModeration').addEventListener('click', event => {
+  const command = currentScan ? `/kick ${currentScan.player_name || 'Oyuncu'} Atlas AC incelemesi [${currentScan.session_code}]` : '';
+  copyText(command, event.currentTarget, 'KOMUT KOPYALANDI');
+});
+byId('btnPrintResult').addEventListener('click', () => {
+  if (!currentScan) return showStatus('Yazdırılacak rapor henüz yüklenmedi.');
+  window.print();
 });
 byId('btnLogoutResult').addEventListener('click', async () => { await supabase.auth.signOut(); location.replace('auth.html'); });
 document.addEventListener('visibilitychange', () => {

@@ -12,18 +12,24 @@
       <nav aria-label="Rapor kategorileri">
         <button class="result-nav-button active" type="button" data-category="all"><span>▦</span>Genel Bakış<b id="countAll">0</b></button>
         <div class="results-nav-label">SERVİSLER</div>
+        <button id="btnJumpScan" class="result-nav-action" type="button" data-target="scan"><span>⌖</span>Tarama Ekranı<b>LIVE</b></button>
         <button class="result-nav-button" type="button" data-category="minecraft"><span>⌖</span>Minecraft ve Modlar<b id="countMinecraft">0</b></button>
+        <button class="result-nav-button" type="button" data-category="semantic"><span>⌬</span>YZ Bytecode Motoru<b id="countSemantic">0</b></button>
         <button class="result-nav-button" type="button" data-category="injection"><span>⬡</span>Bypass ve Enjeksiyon<b id="countInjection">0</b></button>
         <div class="results-nav-label">FORENSICS</div>
         <button class="result-nav-button" type="button" data-category="deleted"><span>◴</span>USN / Silinenler<b id="countDeleted">0</b></button>
         <button class="result-nav-button" type="button" data-category="execution"><span>▱</span>Prefetch ve RAM<b id="countExecution">0</b></button>
-        <button class="result-nav-button" type="button" data-category="network"><span>◎</span>Ağ ve İndirmeler<b id="countNetwork">0</b></button>
+        <button class="result-nav-button" type="button" data-category="autoclicker"><span>⌁</span>Tıklayıcı ve Makrolar<b id="countAutoclicker">0</b></button>
+        <button class="result-nav-button" type="button" data-category="browser"><span>◎</span>Tarayıcı İndirmeleri<b id="countBrowser">0</b></button>
+        <button class="result-nav-button" type="button" data-category="usb"><span>⌑</span>USB Bellekler<b id="countUsb">0</b></button>
+        <button class="result-nav-button" type="button" data-category="network"><span>◉</span>Ağ Kayıtları<b id="countNetwork">0</b></button>
         <button class="result-nav-button" type="button" data-category="other"><span>⌁</span>Diğer Bulgular<b id="countOther">0</b></button>
+        <button id="btnJumpTelemetry" class="result-nav-action" type="button" data-target="telemetry"><span>›_</span>Canlı Telemetri<b>↘</b></button>
       </nav>
       <div class="results-sidebar-foot"><span><i></i> Gerçek zamanlı aktif</span><div class="results-account"><b id="resultsUser">Yükleniyor…</b><small id="resultsEmail">—</small></div><button id="btnLogoutResult" type="button">Güvenli çıkış</button></div>
     </aside>
     <main class="results-main">
-      <header class="results-topbar"><div class="breadcrumb"><a href="dashboard.html">Dashboard</a><span>/</span><span>Results</span><span>/</span><code id="resultPinTop">—</code></div><div class="results-actions"><label class="result-search-wrap"><span>⌕</span><input id="resultSearch" placeholder="Bulgularda ara"><kbd>Ctrl+K</kbd></label><button id="btnRefreshResult" type="button">↻ Yenile</button><button id="btnBackDashboard" type="button">Tarama Ekranı</button><button id="btnExportResult" type="button">⇩ Raporu Dışa Aktar</button></div></header>
+      <header class="results-topbar"><div class="breadcrumb"><a href="dashboard.html">Dashboard</a><span>/</span><span>Results</span><span>/</span><code id="resultPinTop">—</code></div><div class="results-actions"><label class="result-search-wrap"><span>⌕</span><input id="resultSearch" placeholder="Bulgularda ara"><kbd>Ctrl+K</kbd></label><button id="btnRefreshResult" type="button">↻ Yenile</button><button id="btnNewScan" type="button">＋ Yeni Kontrol</button><button id="btnBackDashboard" type="button">Kontrol Paneli</button><button id="btnExportResult" type="button">⇩ JSON İndir</button></div></header>
       <div class="results-content">
         <div id="resultsStatus" class="results-alert hidden" role="status"></div>
         <section id="heroVerdictPanel" class="result-hero state-loading">
@@ -39,6 +45,7 @@
         </div>
 
         <section class="findings-explorer"><aside><span class="eyebrow">TESPİT SONUÇLARI</span><h2><span id="findingsTotal">0</span> kayıt</h2><p>Kanıt kayıtları kategori ve önem düzeyine göre listelenir.</p><div class="severity-summary"><button class="result-filter active" data-severity="all" type="button">Tümü <b id="severityAll">0</b></button><button class="result-filter" data-severity="critical" type="button">Kritik / Yüksek <b id="severityCritical">0</b></button><button class="result-filter" data-severity="medium" type="button">Uyarı <b id="severityMedium">0</b></button><button class="result-filter" data-severity="low" type="button">Bilgi <b id="severityLow">0</b></button></div></aside><div class="findings-main"><header><h2>Tüm Bulgular</h2><span id="visibleFindingsLabel">0 kayıt gösteriliyor</span></header><div id="findingsList" class="professional-findings"></div><div id="emptyFindings" class="empty-results hidden"><b>Bu görünümde bulgu yok</b><span>Filtreyi değiştirin veya taramanın tamamlanmasını bekleyin.</span></div></div></section>
+        <section class="result-toolbox" aria-label="Yetkili rapor işlemleri"><div><span class="eyebrow">YETKİLİ İŞLEMLERİ</span><h2>Raporu paylaşın veya işleme alın</h2><p>İşlemler yalnızca bu yetkili oturumundaki doğrulanmış rapor verisini kullanır.</p></div><div class="result-toolbox-actions"><button id="btnCopySummary" type="button">Özeti kopyala</button><button id="btnCopyResultLink" type="button">Yetkili linkini kopyala</button><button id="btnCopyModeration" type="button">Moderasyon komutunu kopyala</button><button id="btnPrintResult" type="button">Yazdır / PDF</button></div></section>
       </div>
     </main>
   </div>
