@@ -319,10 +319,12 @@ wss.on('connection', (ws) => {
             void cloudSync.sendProgress(percent, stage, log, finding, target, objectsCount).catch(() => {});
             // The player channel deliberately receives percentage only. Full
             // forensic details are sent exclusively to the staff portal.
-            broadcastPlayer({ type: 'PROGRESS', percent });
+            // The local scan can finish before the remote report upload does.
+            // Reserve 100% for SCAN_COMPLETE after that upload succeeds.
+            broadcastPlayer({ type: 'PROGRESS', percent: Math.min(99, percent) });
           });
           await cloudSync.completeSession(results);
-          broadcastPlayer({ type: 'SCAN_COMPLETE', sessionCode });
+          broadcastPlayer({ type: 'SCAN_COMPLETE', sessionCode, incomplete: results.scanStatus === 'INCOMPLETE' });
         } catch (err) {
           try { await cloudSync.failSession(err.message); } catch (_) {}
           broadcastPlayer({ type: 'SCAN_ERROR', message: 'Tarama tamamlanamadı. Lütfen yetkiliye bildirin.', sessionCode });

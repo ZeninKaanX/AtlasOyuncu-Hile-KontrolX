@@ -304,3 +304,6 @@ require('./testAutoClickerAndUsnFixes');
 
 // Run Modrinth 1000+ Clean Mod Whitelist & AI Semantic Bytecode Cheat Test Suite
 require('./testModrinthAndSemanticCheats');
+
+// Run Bounded Engine Execution & Honest Scan Completion Regression Suite
+require('./testScanEngineBounded');

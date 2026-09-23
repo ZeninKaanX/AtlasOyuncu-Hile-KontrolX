@@ -17,6 +17,7 @@ const pin = Array.from(crypto.randomBytes(8), byte => alphabet[byte % alphabet.l
 const adminHeaders = { apikey: secretKey, Authorization: `Bearer ${secretKey}`, 'Content-Type': 'application/json' };
 const publicHeaders = { apikey: anonKey, Authorization: `Bearer ${anonKey}`, 'Content-Type': 'application/json' };
 let sessionId = null;
+let incompleteSessionId = null;
 
 async function jsonFetch(url, options) {
   const response = await fetch(url, options);
@@ -89,10 +90,38 @@ async function main() {
 
     const replay = await publicAction({ action: 'claim', pin, clientId });
     if (replay.response.status !== 404) throw new Error('Completed PIN could be replayed.');
-    console.log('PASS remote PIN flow: private download, device binding, live persistence, platform metadata, completion, replay protection.');
+
+    const incompletePin = Array.from(crypto.randomBytes(8), byte => alphabet[byte % alphabet.length]).join('');
+    const incompleteCreated = await jsonFetch(`${SUPABASE_URL}/rest/v1/scan_sessions`, {
+      method: 'POST', headers: { ...adminHeaders, Prefer: 'return=representation' },
+      body: JSON.stringify({ session_code: incompletePin, player_name: 'INCOMPLETE_SMOKE_TEST',
+        game: 'Minecraft Java (PC)', status: 'pending', expires_at: new Date(Date.now() + 10 * 60_000).toISOString() })
+    });
+    if (!incompleteCreated.response.ok || !incompleteCreated.data?.[0]?.id) throw new Error('Incomplete test session create failed.');
+    incompleteSessionId = incompleteCreated.data[0].id;
+    const incompleteClaim = await publicAction({ action: 'claim', pin: incompletePin,
+      clientId: crypto.randomBytes(32).toString('hex'), clientPlatform: 'win32' });
+    if (!incompleteClaim.response.ok) throw new Error('Incomplete test claim failed.');
+    const incompleteComplete = await publicAction({ action: 'complete', sessionId: incompleteSessionId,
+      clientToken: incompleteClaim.data.clientToken,
+      findings: [{ title: 'Tarama Motoru Tamamlanamadı: DPS DIAGNOSTICS', category: 'INTEGRITY', severity: 'HIGH' }],
+      reportData: { scanStatus: 'INCOMPLETE', incompleteEngines: ['DPS DIAGNOSTICS'], scannedObjects: 3644 },
+      systemInfo: { platform: 'win32' } });
+    if (!incompleteComplete.response.ok || incompleteComplete.data.verdict !== 'suspicious') {
+      throw new Error('Incomplete scan was not recorded as requiring review.');
+    }
+    const incompleteStored = await jsonFetch(`${SUPABASE_URL}/rest/v1/scan_sessions?id=eq.${encodeURIComponent(incompleteSessionId)}&select=status,verdict,risk_score,report_data`, {
+      method: 'GET', headers: adminHeaders
+    });
+    const incompleteRow = incompleteStored.data?.[0];
+    if (!incompleteStored.response.ok || incompleteRow?.report_data?.scanStatus !== 'INCOMPLETE' ||
+        incompleteRow?.verdict !== 'suspicious' || incompleteRow?.risk_score !== 0) {
+      throw new Error('Incomplete scan was incorrectly treated as clean or confirmed cheating.');
+    }
+    console.log('PASS remote PIN flow: private download, device binding, live persistence, platform metadata, completion, replay protection, incomplete scan review.');
   } finally {
-    if (sessionId) {
-      await fetch(`${SUPABASE_URL}/rest/v1/scan_sessions?id=eq.${encodeURIComponent(sessionId)}`, {
+    for (const id of [sessionId, incompleteSessionId].filter(Boolean)) {
+      await fetch(`${SUPABASE_URL}/rest/v1/scan_sessions?id=eq.${encodeURIComponent(id)}`, {
         method: 'DELETE', headers: adminHeaders
       });
     }

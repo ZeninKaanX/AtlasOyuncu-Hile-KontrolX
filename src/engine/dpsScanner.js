@@ -13,9 +13,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
-const util = require('util');
-const execPromise = util.promisify(exec);
+const execGuarded = require('./guardedExec');
 const cheatKnowledgeBase = require('./cheatKnowledgeBase');
 
 const CHEAT_TARGET_REGEX = /vape|drip|slinky|meteor|wurst|liquidbounce|rise|novoline|astolfo|tenacity|raven|kura|augustus|phantom|entropy|whiteout|doomsday/i;
@@ -36,6 +34,7 @@ class DpsScanner {
     }
 
     const findings = [];
+    let dataSourceError = null;
     onProgress('DPS (Diagnostic Policy Service) Analizi: Başlatılıyor...', 10);
 
     try {
@@ -50,7 +49,7 @@ class DpsScanner {
         } | ConvertTo-Json -Compress
       `.trim();
 
-      const { stdout } = await execPromise(`powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "${psScript.replace(/\n/g, ' ')}"`, {
+      const { stdout } = await execGuarded(`powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "${psScript.replace(/\n/g, ' ')}"`, {
         timeout: 10000,
         maxBuffer: 4 * 1024 * 1024
       });
@@ -93,12 +92,18 @@ class DpsScanner {
           }
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      dataSourceError = e;
+    }
 
     onProgress('DPS Analizi tamamlandı.', 100);
+    const status = dataSourceError
+      ? (dataSourceError && dataSourceError.code === 'SCAN_EXEC_TIMEOUT' ? 'TIMEOUT' : 'ERROR')
+      : (findings.length > 0 ? 'FINDINGS_DETECTED' : 'CLEAN');
     return {
-      status: findings.length > 0 ? 'FINDINGS_DETECTED' : 'CLEAN',
-      findings
+      status,
+      findings,
+      ...(dataSourceError ? { error: dataSourceError.message || String(dataSourceError) } : {})
     };
   }
 }

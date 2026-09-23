@@ -13,9 +13,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { exec } = require('child_process');
-const util = require('util');
-const execPromise = util.promisify(exec);
+const execGuarded = require('./guardedExec');
 const cheatKnowledgeBase = require('./cheatKnowledgeBase');
 
 const KNOWN_INJECTOR_NAMES = /vape|drip|slinky|entropy|phantom|inject|hook|cheat|patcher|loader/i;
@@ -33,6 +31,7 @@ class JvmAttachDetector {
    */
   async scanJvmInjection(onProgress = () => {}) {
     const findings = [];
+    let dataSourceError = null;
     onProgress('JVM Bellek Enjeksiyonu ve JavaAgent Analizi: Başlatılıyor...', 10);
 
     try {
@@ -42,7 +41,7 @@ class JvmAttachDetector {
           Get-CimInstance Win32_Process -Filter "Name LIKE '%java%'" -ErrorAction SilentlyContinue | Select-Object ProcessId, Name, CommandLine | ConvertTo-Json -Compress
         `.trim();
 
-        const { stdout } = await execPromise(`powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "${psScript}"`, {
+        const { stdout } = await execGuarded(`powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "${psScript}"`, {
           timeout: 8000
         });
 
@@ -85,7 +84,7 @@ class JvmAttachDetector {
             // 2. Check for JVM Attach API Named Pipes on Windows (\\.\pipe\javavm_*)
             try {
               const pipeCheck = `[System.IO.Directory]::GetFiles('\\\\.\\pipe\\') | Where-Object { $_ -match 'javavm|java_pid' }`;
-              const { stdout: pipeOut } = await execPromise(`powershell -NoProfile -NonInteractive -Command "${pipeCheck}"`, { timeout: 4000 });
+              const { stdout: pipeOut } = await execGuarded(`powershell -NoProfile -NonInteractive -Command "${pipeCheck}"`, { timeout: 4000 });
               if (pipeOut && pipeOut.includes('javavm')) {
                 // Attach socket is actively opened
                 onProgress('Aktif JVM Attach soketi tespit edildi.', 40);
@@ -122,12 +121,18 @@ class JvmAttachDetector {
           }
         } catch (e) {}
       }
-    } catch (err) {}
+    } catch (err) {
+      dataSourceError = err;
+    }
 
     onProgress('JVM Enjeksiyon Analizi tamamlandı.', 100);
+    const status = dataSourceError
+      ? (dataSourceError && dataSourceError.code === 'SCAN_EXEC_TIMEOUT' ? 'TIMEOUT' : 'ERROR')
+      : (findings.length > 0 ? 'FINDINGS_DETECTED' : 'CLEAN');
     return {
-      status: findings.length > 0 ? 'FINDINGS_DETECTED' : 'CLEAN',
-      findings
+      status,
+      findings,
+      ...(dataSourceError ? { error: dataSourceError.message || String(dataSourceError) } : {})
     };
   }
 }

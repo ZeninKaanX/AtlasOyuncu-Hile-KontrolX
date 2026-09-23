@@ -35,7 +35,8 @@ function request(port, route, cookie = '', method = 'GET', payload = null) {
 async function main() {
   const serverSource = fs.readFileSync(path.join(__dirname, '..', 'src', 'main', 'server.js'), 'utf8');
   const playerSource = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui', 'js', 'player.js'), 'utf8');
-  assert(serverSource.includes("broadcastPlayer({ type: 'PROGRESS', percent })"), 'Player telemetry must be percentage-only');
+  assert(serverSource.includes("broadcastPlayer({ type: 'PROGRESS', percent: Math.min(99, percent) })"),
+    'Player telemetry must be percentage-only and reserve 100% until cloud upload completes');
   assert(!serverSource.includes("finishScan('SCAN_COMPLETE', { data: results"), 'Player completion event must not contain scan results');
   assert(!serverSource.includes('fuser -k') && !serverSource.includes('taskkill /F'), 'Port collision handling must never kill unrelated processes');
   assert(!playerSource.includes('finding') && !playerSource.includes('reportData'), 'Player UI must not process forensic evidence');

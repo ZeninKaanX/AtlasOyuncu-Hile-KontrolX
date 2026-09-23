@@ -3,7 +3,7 @@ import { admin, cors, json, randomKey, sha256 } from '../_shared/common.ts';
 const PIN_RE = /^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8}$/;
 const HEX_64_RE = /^[a-fA-F0-9]{64}$/;
 const MAX_FINDINGS = 500;
-const SCANNER_RELEASE = 'v1.1.3';
+const SCANNER_RELEASE = 'v1.1.4';
 type Db = ReturnType<typeof admin>;
 
 function text(value: unknown, max: number) {
@@ -153,19 +153,24 @@ Deno.serve(async req => {
     const critical = findings.filter(item => item.severity === 'CRITICAL').length;
     const high = findings.filter(item => item.severity === 'HIGH').length;
     const riskScore = critical ? Math.min(100, 85 + critical * 5) : high ? Math.min(90, 70 + high * 5) : findings.length ? Math.min(65, 40 + findings.length * 5) : 0;
-    const verdict = critical || high ? 'banned' : findings.length ? 'suspicious' : 'clean';
     const report = body.reportData && typeof body.reportData === 'object' ? body.reportData as Record<string, unknown> : {};
+    const incomplete = report.scanStatus === 'INCOMPLETE';
+    const incompleteEngines = Array.isArray(report.incompleteEngines)
+      ? report.incompleteEngines.slice(0, 33).map(item => text(item, 80)) : [];
+    const verdict = incomplete ? 'suspicious' : critical || high ? 'banned' : findings.length ? 'suspicious' : 'clean';
     const now = new Date().toISOString();
     const { error } = await db.from('scan_sessions').update({
-      status: 'completed', progress: 100, verdict, risk_score: riskScore, findings, findings_count: findings.length,
+      status: 'completed', progress: 100, verdict, risk_score: incomplete ? 0 : riskScore, findings, findings_count: findings.length,
       report_data: {
         timestamp: text(report.timestamp || now, 40), durationSeconds: Math.max(0, Math.min(Number(report.durationSeconds) || 0, 86400)),
         scannedObjects: Math.max(0, Math.min(Number(report.scannedObjects) || 0, 2_000_000_000)),
         scannedJars: Math.max(0, Math.min(Number(report.scannedJars) || 0, 10_000_000)),
-        criticalCount: critical, highCount: high, totalFindings: findings.length
+        criticalCount: critical, highCount: high, totalFindings: findings.length,
+        scanStatus: incomplete ? 'INCOMPLETE' : 'COMPLETE', incompleteEngines
       },
       system_info: safeSystemInfo(body.systemInfo),
-      current_stage: 'Tarama tamamlandı', current_log: verdict === 'clean' ? 'Doğrulanmış ihlal bulunamadı.' : `${findings.length} bulgu kaydedildi.`,
+      current_stage: incomplete ? 'Tarama eksik kaldı' : 'Tarama tamamlandı',
+      current_log: incomplete ? `${incompleteEngines.length} motor tamamlanamadı; sonuçlar yetkili incelemesi gerektirir.` : verdict === 'clean' ? 'Doğrulanmış ihlal bulunamadı.' : `${findings.length} bulgu kaydedildi.`,
       completed_at: now, last_heartbeat_at: now, updated_at: now, client_token_hash: null
     }).eq('id', session.id).eq('client_token_hash', tokenHash);
     if (error) return json({ error: 'Tarama sonucu kaydedilemedi.' }, 500, headers);

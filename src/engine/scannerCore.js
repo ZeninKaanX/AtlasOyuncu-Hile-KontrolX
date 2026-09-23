@@ -100,13 +100,48 @@ class ScannerCore {
       return Math.floor(currentPercent);
     };
 
-    // A timeout must never masquerade as a completed clean scan. Individual
-    // engines own their command-level timeouts; the orchestrator waits until
-    // each engine has produced a definitive SUCCESS/ERROR result.
-    const withBudget = async (_ms, _label, factory) => Promise.resolve().then(factory);
+    // Bounded engine runner. Every engine gets a hard deadline so a hung
+    // Windows child process can never freeze the whole scan at a mid-progress
+    // point. A timeout/error is surfaced later as an honest, incomplete engine
+    // — it is never silently presented as a clean result.
+    const runWithDeadline = (ms, label, factory) => {
+      let timer = null;
+      const work = Promise.resolve().then(factory);
+      // The engine may keep running in the background after a deadline; swallow
+      // its late rejection so it can never become an unhandled rejection.
+      work.catch(() => {});
+      const deadline = new Promise((_, reject) => {
+        timer = setTimeout(() => {
+          const err = new Error(`Motor zaman aşımı (${ms} ms): ${label}`);
+          err.code = 'SCAN_ENGINE_TIMEOUT';
+          reject(err);
+        }, ms);
+        if (timer && typeof timer.unref === 'function') timer.unref();
+      });
+      const raced = Promise.race([work, deadline]);
+      raced.then(
+        () => clearTimeout(timer),
+        () => clearTimeout(timer)
+      );
+      return raced;
+    };
+    const withBudget = (ms, label, factory) => runWithDeadline(ms, label, factory);
+
+    const PHASE2_ENGINE_BUDGET_MS = ScannerCore.PHASE2_ENGINE_BUDGET_MS;
+    const engineStatuses = [];
+    let scanOpen = true;
+    const recordEngineStatus = (stage, label, status, error) => {
+      engineStatuses.push({
+        stage,
+        label,
+        status,
+        error: error ? String((error && error.message) || error) : undefined
+      });
+    };
 
     let lastProgressTime = 0;
     const reportProgress = (stage, targetPercent, log, finding = null, target = null, countDelta = 0) => {
+      if (!scanOpen) return;
       if (countDelta > 0) totalScannedObjects += countDelta;
       const pct = setPercent(targetPercent);
       const now = Date.now();
@@ -128,7 +163,7 @@ class ScannerCore {
     // Helper: push findings array from a result object and immediately emit events
     const seenFindingKeys = new Set();
     const pushFindings = (findingsArr, stage, label) => {
-      if (!findingsArr || !findingsArr.length) return;
+      if (!scanOpen || !findingsArr || !findingsArr.length) return;
       for (const f of findingsArr) {
         const key = `${f.type || ''}|${f.path || ''}|${f.name || ''}|${f.file || ''}`;
         if (!seenFindingKeys.has(key)) {
@@ -230,9 +265,9 @@ class ScannerCore {
         // 1C. Injected Ghost Clients
         (async () => {
           reportProgress('BELLEK_TARAMASI', 8, 'JVM unbacked ve ghost client modülleri taranıyor...', null, 'Ghost Module Inspector', 5);
-          const res = await unloadedModulesScanner.scanInjectedGhostClients((subTarget, count) => {
+          const res = await withBudget(60000, 'GHOST CLIENT ANALIZI', () => unloadedModulesScanner.scanInjectedGhostClients((subTarget, count) => {
             reportProgress('BELLEK_TARAMASI', 12, `Ghost: ${subTarget}`, null, subTarget, count);
-          });
+          }));
           pushFindings(res, 'BELLEK_TARAMASI', 'GHOST CLIENT');
           advancePhase1();
           return res;
@@ -255,9 +290,9 @@ class ScannerCore {
         // 1E. Minecraft Logs
         (async () => {
           reportProgress('MINECRAFT_LOGLARI', 8, 'Minecraft oturum logları taranıyor...', null, 'Minecraft Log Subsystem', 10);
-          const res = await minecraftLogForensics.scanMinecraftLogs((subTarget, count) => {
+          const res = await withBudget(60000, 'MINECRAFT LOG ANALIZI', () => minecraftLogForensics.scanMinecraftLogs((subTarget, count) => {
             reportProgress('MINECRAFT_LOGLARI', 12, `Log: ${subTarget}`, null, subTarget, count);
-          });
+          }));
           pushFindings(Array.isArray(res) ? res : [], 'MINECRAFT_LOGLARI', 'LOG RECORD');
           advancePhase1();
           return res;
@@ -280,27 +315,52 @@ class ScannerCore {
       };
 
       const wrapPhase2 = async (stage, label, scanFn) => {
+        const engineOutcome = (status, error) => {
+          recordEngineStatus(stage, label, status, error);
+          const isTimeout = status === 'TIMEOUT';
+          pushFindings([{
+            level: 'HIGH',
+            severity: 'HIGH',
+            type: isTimeout ? 'SCAN_ENGINE_TIMEOUT' : 'SCAN_ENGINE_ERROR',
+            name: isTimeout
+              ? `Tarama Motoru Zaman Aşımına Uğradı: ${label}`
+              : `Tarama Motoru Tamamlanamadı: ${label}`,
+            category: 'INTEGRITY',
+            confidence: 'Eksik inceleme',
+            description: `${stage} motoru sonucu tamamlanamadı; bu alan temiz olarak kabul edilemez.`,
+            evidence: [
+              `Motor: ${label}`,
+              `Aşama: ${stage}`,
+              `Durum: ${isTimeout ? 'Zaman aşımı' : 'Hata'}`,
+              ...(error ? [`Ayrıntı: ${String(error).slice(0, 200)}`] : [])
+            ]
+          }], stage, isTimeout ? 'ENGINE TIMEOUT' : 'ENGINE ERROR');
+        };
+
         try {
-          const res = await Promise.resolve().then(scanFn);
+          const res = await withBudget(PHASE2_ENGINE_BUDGET_MS, label, scanFn);
           const findings = Array.isArray(res) ? res : (res && res.findings ? res.findings : []);
           if (findings.length > 0) {
             pushFindings(findings, stage, label);
           }
+          // An engine may itself report that its data source could not be read
+          // (e.g. a Windows PowerShell query timed out). Honor that instead of
+          // silently treating the whole area as clean.
+          const engineReportsIncomplete =
+            res && typeof res === 'object' &&
+            (res.status === 'TIMEOUT' || res.status === 'ERROR');
+          if (engineReportsIncomplete) {
+            engineOutcome(res.status === 'TIMEOUT' ? 'TIMEOUT' : 'ERROR', res.error || res.status);
+          } else {
+            recordEngineStatus(stage, label, 'OK');
+          }
           advancePhase2();
           return res;
         } catch (err) {
-          pushFindings([{
-            level: 'HIGH',
-            severity: 'HIGH',
-            type: 'SCAN_ENGINE_ERROR',
-            name: `Tarama Motoru Tamamlanamadı: ${label}`,
-            category: 'INTEGRITY',
-            confidence: 'Eksik inceleme',
-            description: `${stage} motoru hata verdi; bu alan temiz olarak kabul edilemez.`,
-            evidence: [`Motor: ${label}`, `Aşama: ${stage}`, `Hata: ${err.message}`]
-          }], stage, 'ENGINE ERROR');
+          const isTimeout = err && err.code === 'SCAN_ENGINE_TIMEOUT';
+          engineOutcome(isTimeout ? 'TIMEOUT' : 'ERROR', err && err.message);
           advancePhase2();
-          return { status: 'ERROR', error: err.message, findings: [] };
+          return { status: isTimeout ? 'TIMEOUT' : 'ERROR', error: err && err.message, findings: [] };
         }
       };
 
@@ -651,6 +711,9 @@ class ScannerCore {
 
       const durationSeconds = ((Date.now() - startTime) / 1000).toFixed(1);
 
+      const incompleteEngines = engineStatuses.filter((s) => s.status !== 'OK');
+      const scanFullyCompleted = incompleteEngines.length === 0;
+
       // Capture live Minecraft server status snapshot
       let liveServerStatus = null;
       try {
@@ -665,6 +728,9 @@ class ScannerCore {
         scannedJars: (mcResults && mcResults.scannedJars) || 0,
         scannedObjects: totalScannedObjects,
         serverStatus: liveServerStatus,
+        scanStatus: scanFullyCompleted ? 'COMPLETE' : 'INCOMPLETE',
+        engineStatuses,
+        incompleteEngines,
         allFindings,
         bypassResults,
         archiveScanResults,
@@ -710,12 +776,17 @@ class ScannerCore {
       }
 
       setPercent(100);
+      const incompleteNames = incompleteEngines.map((s) => s.label).join(', ');
       onProgress(
         'COMPLETED',
         100,
-        `Tarama tamamlandı! ${allFindings.length} bulgu tespit edildi (${durationSeconds}s). ${autoReportPath ? 'Rapor kaydedildi.' : ''}`,
+        scanFullyCompleted
+          ? `Tarama tamamlandı! ${allFindings.length} bulgu tespit edildi (${durationSeconds}s). ${autoReportPath ? 'Rapor kaydedildi.' : ''}`
+          : `Tarama TAMAMLANMADI: ${incompleteEngines.length} motor tamamlanamadı (${incompleteNames}) — eksik inceleme işaretlendi, temiz kabul edilmedi. ${allFindings.length} bulgu (${durationSeconds}s). ${autoReportPath ? 'Rapor kaydedildi.' : ''}`,
         null,
-        'Tüm hedef vektörler incelendi ve doğrulandı',
+        scanFullyCompleted
+          ? 'Tüm hedef vektörler incelendi ve doğrulandı'
+          : `Eksik motorlar: ${incompleteNames}`,
         totalScannedObjects
       );
 
@@ -725,6 +796,7 @@ class ScannerCore {
       onProgress('ERROR', 100, `Tarama sırasında hata oluştu: ${err.message}`);
       throw err;
     } finally {
+      scanOpen = false;
       this.isScanning = false;
     }
   }
@@ -744,5 +816,10 @@ class ScannerCore {
     return reporter.exportReport(data, targetPath);
   }
 }
+
+// Default hard deadline per Phase 2 engine (120 s). Engines run in parallel so
+// this only caps the single slowest one; the orchestrator never waits forever
+// on a hung engine. Tests may lower this via ScannerCore.PHASE2_ENGINE_BUDGET_MS.
+ScannerCore.PHASE2_ENGINE_BUDGET_MS = 120000;
 
 module.exports = new ScannerCore();

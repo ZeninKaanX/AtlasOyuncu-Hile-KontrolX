@@ -221,7 +221,11 @@ class CloudSync {
         timestamp: scanResults?.timestamp || new Date().toISOString(),
         durationSeconds: scanResults?.durationSeconds || 0,
         scannedObjects: scanResults?.scannedObjects || 0,
-        scannedJars: scanResults?.scannedJars || 0
+        scannedJars: scanResults?.scannedJars || 0,
+        scanStatus: scanResults?.scanStatus === 'INCOMPLETE' ? 'INCOMPLETE' : 'COMPLETE',
+        incompleteEngines: Array.isArray(scanResults?.incompleteEngines)
+          ? scanResults.incompleteEngines.map(engine => String(engine.label || '').slice(0, 80)).slice(0, 33)
+          : []
       },
       systemInfo: this.getSystemInfo()
     }, 30000);

@@ -55,6 +55,11 @@ assert(resultsJs.includes('setTimeout(loadScan'), 'results: canlı tarama istekl
 assert(!resultsJs.includes('innerHTML'), 'results: sunucudan gelen kanıtlar güvenli DOM API ile işlenmeli');
 assert(resultsJs.includes("scan.game || '').toLowerCase().includes('linux')"),
   'results: Linux oturumu sistem bilgisi gelmeden Windows olarak gösterilmemeli');
+assert(resultsJs.includes("scan.report_data?.scanStatus === 'INCOMPLETE'"),
+  'results: eksik tarama temiz veya hile tespiti olarak gösterilmemeli');
+assert(dashboardJs.includes("scan.report_data?.scanStatus === 'INCOMPLETE'") &&
+  dashboardJs.includes("s.report_data?.scanStatus === 'INCOMPLETE'"),
+  'dashboard: eksik tarama liste ve detayda açıkça gösterilmeli');
 const resultButtonIds = [...resultsHtml.matchAll(/<button[^>]+id="([^"]+)"/g)].map(match => match[1]);
 const deadResultButtons = resultButtonIds.filter(id => !resultsJs.includes(`byId('${id}')`));
 assert.deepStrictEqual(deadResultButtons, [], `results: işlev bağlanmamış düğmeler: ${deadResultButtons.join(', ')}`);
@@ -74,6 +79,8 @@ const packageJson = JSON.parse(read('package.json'));
 assert(playerHtml.includes(`PLAYER SCANNER · v${packageJson.version}`),
   'player: görünen sürüm package.json ile aynı olmalı');
 const scanSync = read('supabase/functions/scan-sync/index.ts');
+assert(scanSync.includes("report.scanStatus === 'INCOMPLETE'") && scanSync.includes("incomplete ? 'suspicious'"),
+  'scan-sync: eksik motorlar otomatik temiz veya hile kararı üretmemeli');
 assert(scanSync.includes(`const SCANNER_RELEASE = 'v${packageJson.version}'`),
   'scan-sync: değişmez paket yolu uygulama sürümüyle aynı olmalı');
 assert(scanSync.includes('AtlasAC-Windows-${SCANNER_RELEASE}.zip') && scanSync.includes('AtlasAC-Linux-${SCANNER_RELEASE}.zip'),

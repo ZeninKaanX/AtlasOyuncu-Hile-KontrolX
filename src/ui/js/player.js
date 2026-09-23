@@ -35,7 +35,7 @@
     const scanStatus = percent < 10 ? 'Güvenlik modülleri hazırlanıyor…'
       : percent < 35 ? 'Oyun dosyaları inceleniyor…'
         : percent < 70 ? 'Sistem bütünlüğü doğrulanıyor…'
-          : percent < 95 ? 'Son kontroller tamamlanıyor…' : 'Rapor güvenli biçimde aktarılıyor…';
+          : percent < 95 ? 'Adli kayıtlar inceleniyor…' : 'Rapor güvenli biçimde aktarılıyor…';
     byId('scanStatusText').textContent = scanStatus;
   }
 
@@ -81,6 +81,10 @@
         setProgress(message.percent);
       } else if (message.type === 'SCAN_COMPLETE') {
         setProgress(100);
+        byId('doneTitle').textContent = message.incomplete ? 'Tarama kısmen tamamlandı' : 'Tarama tamamlandı';
+        byId('doneDescription').textContent = message.incomplete
+          ? 'Bazı kontroller tamamlanamadı. Eksik inceleme yetkili panelinde işaretlendi; sonuç için yetkilinizi bekleyin.'
+          : 'Veriler yetkilinin paneline güvenli biçimde aktarıldı. Sonuç için yetkilinizi bekleyin.';
         show(doneView);
       } else if (message.type === 'SCAN_ERROR') {
         show(pinView);

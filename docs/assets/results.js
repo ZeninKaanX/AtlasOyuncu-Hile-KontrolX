@@ -99,6 +99,7 @@ function categoryOf(finding) {
 function verdictState(scan, findings) {
   if (scan.status === 'pending') return { state: 'pending', title: 'BAĞLANTI BEKLENİYOR', risk: 'Oyuncu PIN girişi bekleniyor', symbol: '…' };
   if (scan.status === 'scanning') return { state: 'scanning', title: 'TARANIYOR', risk: `%${number(scan.progress)} tamamlandı`, symbol: '⌁' };
+  if (scan.report_data?.scanStatus === 'INCOMPLETE') return { state: 'incomplete', title: 'EKSİK TARAMA', risk: `${(scan.report_data.incompleteEngines || []).length} motor tamamlanamadı · Yetkili incelemesi gerekli`, symbol: '!' };
   const dangerous = findings.some(item => ['critical', 'high'].includes(severityOf(item)));
   if (scan.verdict === 'banned' || dangerous || number(scan.findings_count) > 0) return { state: 'danger', title: 'HİLE TESPİTİ', risk: `%${number(scan.risk_score)} oyuncu risk skoru`, symbol: '!' };
   if (scan.status === 'completed' || scan.verdict === 'clean') return { state: 'clean', title: 'TEMİZ', risk: 'Raporlanan teknik bulgu yok', symbol: '✓' };
@@ -209,7 +210,7 @@ function renderScan(scan) {
   setText('heroRisk', verdict.risk);
   byId('heroVerdictPanel').className = `result-hero state-${verdict.state}`;
   byId('heroVerdictPanel').querySelector('.verdict-symbol').textContent = verdict.symbol;
-  setText('summaryVerdictBadge', verdict.state === 'danger' ? 'Tespitler' : verdict.state === 'clean' ? 'Temiz' : 'Canlı');
+  setText('summaryVerdictBadge', verdict.state === 'danger' ? 'Tespitler' : verdict.state === 'clean' ? 'Temiz' : verdict.state === 'incomplete' ? 'Eksik' : 'Canlı');
   setText('summaryScanned', objects.toLocaleString('tr-TR'));
 
   const isLive = scan.status === 'pending' || scan.status === 'scanning';
@@ -230,7 +231,7 @@ function renderScan(scan) {
   setText('sysStarted', formatDate(scan.claimed_at || scan.created_at));
   setText('sysCompleted', scan.completed_at ? formatDate(scan.completed_at) : isLive ? 'Tarama sürüyor' : '—');
   setText('sysObjects', objects.toLocaleString('tr-TR'));
-  setText('systemState', isLive ? 'CANLI' : scan.status === 'completed' ? 'TAMAMLANDI' : String(scan.status || '').toUpperCase());
+  setText('systemState', verdict.state === 'incomplete' ? 'EKSİK TARAMA' : isLive ? 'CANLI' : scan.status === 'completed' ? 'TAMAMLANDI' : String(scan.status || '').toUpperCase());
   updateCounts(findings);
   renderFindings();
 }

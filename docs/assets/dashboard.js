@@ -120,6 +120,8 @@ function renderScansTable(scans) {
       statusPill = `<span class="status-pill status-pending"><span class="live-radar-dot"></span> Bekleniyor</span>`;
     } else if (s.status === 'scanning') {
       statusPill = `<span class="status-pill status-scanning"><span class="live-radar-dot"></span> Taranıyor (%${s.progress || 0})</span>`;
+    } else if (s.report_data?.scanStatus === 'INCOMPLETE') {
+      statusPill = '<span class="status-pill status-pending">Eksik tarama</span>';
     } else if (s.status === 'completed') {
       statusPill = `<span class="status-pill status-finished">Tamamlandı</span>`;
     } else {
@@ -127,7 +129,9 @@ function renderScansTable(scans) {
     }
 
     let resultPill = '';
-    if (s.verdict === 'banned' || (s.findings_count > 0)) {
+    if (s.report_data?.scanStatus === 'INCOMPLETE') {
+      resultPill = '<span class="result-pill">İNCELEME GEREKLİ</span>';
+    } else if (s.verdict === 'banned' || (s.findings_count > 0)) {
       resultPill = `<span class="result-pill result-cheat">BULGU VAR</span>`;
     } else if (s.status === 'completed' || s.status === 'finished' || s.verdict === 'clean') {
       resultPill = `<span class="result-pill result-clean">BULGU YOK</span>`;
@@ -291,6 +295,11 @@ function renderInspectionView(scan) {
     verdictIcon.textContent = '';
     verdictTitle.textContent = 'OYUNCU BAĞLANTISI BEKLENİYOR';
     verdictDesc.textContent = `Oyuncunun Atlas AC uygulamasını açıp ${scan.session_code} kodunu girmesi bekleniyor...`;
+  } else if (scan.report_data?.scanStatus === 'INCOMPLETE') {
+    verdictBanner.classList.add('verdict-banner-suspicious');
+    verdictIcon.textContent = '!';
+    verdictTitle.textContent = 'EKSİK TARAMA — YETKİLİ İNCELEMESİ GEREKİYOR';
+    verdictDesc.textContent = `${(scan.report_data.incompleteEngines || []).length} motor tamamlanamadı. Bu sonuç temiz veya hile tespiti olarak değerlendirilmemeli.`;
   } else if (scan.verdict === 'banned' || (scan.findings_count > 0)) {
     verdictBanner.classList.add('verdict-banner-banned');
     verdictIcon.textContent = '';

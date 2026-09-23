@@ -11,9 +11,7 @@
 
 'use strict';
 
-const { exec } = require('child_process');
-const util = require('util');
-const execPromise = util.promisify(exec);
+const execGuarded = require('./guardedExec');
 const cheatKnowledgeBase = require('./cheatKnowledgeBase');
 
 const KNOWN_CHEAT_DOMAINS = [
@@ -41,27 +39,36 @@ class DnsCacheForensics {
     }
 
     const findings = [];
+    let dataSourceError = null;
     onProgress('DNS Çözümleyici Önbelleği Analizi: Başlatılıyor...', 10);
 
+    let records = [];
     try {
       // 1. Query DNS Cache via PowerShell Get-DnsClientCache
       const psCommand = `Get-DnsClientCache -ErrorAction SilentlyContinue | Select-Object Entry, Name, Data, Status, TimeToLive | ConvertTo-Json -Compress`;
-      const { stdout } = await execPromise(`powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "${psCommand}"`, {
+      const { stdout } = await execGuarded(`powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "${psCommand}"`, {
         timeout: 10000,
         maxBuffer: 4 * 1024 * 1024
       });
 
-      let records = [];
-      try {
-        const parsed = JSON.parse(stdout.trim());
-        records = Array.isArray(parsed) ? parsed : [parsed];
-      } catch (err) {
-        // Fallback or multi-line JSON streaming
-        const lines = stdout.split('\n').filter(Boolean);
-        for (const line of lines) {
-          try {
-            records.push(JSON.parse(line.trim()));
-          } catch (e) {}
+      if (stdout && stdout.trim()) {
+        let parsed = null;
+        try {
+          parsed = JSON.parse(stdout.trim());
+        } catch (err) {
+          // Multi-line JSON streaming
+        }
+        if (Array.isArray(parsed)) {
+          records = parsed;
+        } else if (parsed) {
+          records = [parsed];
+        } else {
+          const lines = stdout.split('\n').filter(Boolean);
+          for (const line of lines) {
+            try {
+              records.push(JSON.parse(line.trim()));
+            } catch (e) {}
+          }
         }
       }
 
@@ -112,17 +119,10 @@ class DnsCacheForensics {
         };
         findings.push(cheatKnowledgeBase.enrichFinding(flushFinding));
       }
-
-      onProgress('DNS Önbellek Analizi tamamlandı.', 100);
-      return {
-        status: findings.length > 0 ? 'FINDINGS_DETECTED' : 'CLEAN',
-        findings,
-        totalCachedRecords: records.length
-      };
     } catch (err) {
-      // Fallback via ipconfig /displaydns
+      // 2. Fallback via ipconfig /displaydns
       try {
-        const { stdout } = await execPromise('ipconfig /displaydns', { timeout: 8000, maxBuffer: 2 * 1024 * 1024 });
+        const { stdout } = await execGuarded('ipconfig /displaydns', { timeout: 8000, maxBuffer: 2 * 1024 * 1024 });
         for (const domain of KNOWN_CHEAT_DOMAINS) {
           if (stdout.toLowerCase().includes(domain)) {
             const finding = {
@@ -137,14 +137,21 @@ class DnsCacheForensics {
             findings.push(cheatKnowledgeBase.enrichFinding(finding));
           }
         }
-      } catch (e) {}
-
-      return {
-        status: findings.length > 0 ? 'FINDINGS_DETECTED' : 'CLEAN',
-        findings,
-        totalCachedRecords: 0
-      };
+      } catch (fbErr) {
+        dataSourceError = fbErr;
+      }
     }
+
+    onProgress(dataSourceError ? 'DNS Önbellek Analizi veri kaynağı okunamadı (eksik inceleme).' : 'DNS Önbellek Analizi tamamlandı.', 100);
+    const status = dataSourceError
+      ? (dataSourceError && dataSourceError.code === 'SCAN_EXEC_TIMEOUT' ? 'TIMEOUT' : 'ERROR')
+      : (findings.length > 0 ? 'FINDINGS_DETECTED' : 'CLEAN');
+    return {
+      status,
+      findings,
+      totalCachedRecords: records.length,
+      ...(dataSourceError ? { error: dataSourceError.message || String(dataSourceError) } : {})
+    };
   }
 }
 

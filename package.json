@@ -1,6 +1,6 @@
 {
   "name": "atlas-ac",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "Atlas AC Client Integrity & Anti-Cheat Forensics Engine",
   "main": "src/main/index.js",
   "bin": "src/main/index.js",

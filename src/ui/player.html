@@ -50,21 +50,23 @@
           <strong>ATLAS AC</strong>
         </div>
         <p class="scan-subtitle">ADVANCED AUTOMATIC INTEGRITY SCANNING</p>
+        <h2 class="scan-heading">Bilgisayar taranıyor</h2>
+        <p class="scan-description">Lütfen tarama tamamlanana kadar bu pencereyi açık tutun.</p>
 
         <div id="progressText" class="progress-readout" aria-label="0%"><strong id="percentText">0</strong>%</div>
         <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
         <div class="scan-stage"><span class="scan-spinner" aria-hidden="true"></span><span id="scanStatusText">Tarama modülleri hazırlanıyor…</span></div>
-        <p class="privacy-note"><span></span> Canlı ve güvenli aktarım etkin</p>
+        <p class="privacy-note"><span></span> Sonuçlar yalnızca yetkili panelinde görünür</p>
       </div>
 
       <div id="doneView" class="view">
         <div class="done-icon">✓</div>
-        <h2>Tarama tamamlandı</h2>
-        <p class="intro">Veriler yetkilinin paneline güvenli biçimde aktarıldı. Sonuç için yetkilinizi bekleyin.</p>
+        <h2 id="doneTitle">Tarama tamamlandı</h2>
+        <p id="doneDescription" class="intro">Veriler yetkilinin paneline güvenli biçimde aktarıldı. Sonuç için yetkilinizi bekleyin.</p>
         <button id="closeButton" type="button">Uygulamayı Kapat</button>
       </div>
 
-      <footer><span>ATLAS AC</span><span>PLAYER SCANNER · v1.1.3</span></footer>
+      <footer><span>ATLAS AC</span><span>PLAYER SCANNER · v1.1.4</span></footer>
     </section>
   </main>
   <script src="js/player.js" defer></script>
